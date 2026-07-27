@@ -1,0 +1,9 @@
+/* Fix sidebar to the left */
+@media (min-width: 992px) {
+    .aside {
+        position: sticky !important;
+        top: 0 !important;
+        height: 100vh !important;
+        overflow-y: auto !important;
+    }
+}
