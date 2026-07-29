@@ -538,7 +538,7 @@ export default function DataTable({ logsheets }) {
                             className="h-8 w-[132px] border border-slate-200 rounded-lg px-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 hover:border-indigo-300 transition-colors"
                         />
                         <span className="text-slate-400 text-xs">-</span>
-                        <span className="text-slate-500 text-xs font-medium">Sampai:</span>
+                        <span className="text-slate-500 text-xs font-medium">:</span>
                         <input
                             type="date" value={filterDateTo}
                             onChange={e => { setFilterDateTo(e.target.value); setCurrentPage(1); }}
