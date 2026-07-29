@@ -719,8 +719,8 @@ export default function DataTable({ logsheets }) {
                             </button>
 
                             {/* ── TABLE (shown when expanded or always during print) ── */}
-                            <div className={`overflow-x-auto ${isExpanded ? '' : 'no-print hidden'}`}>
-                                <table className="w-full text-left border-collapse whitespace-nowrap text-xs">
+                            <div className={`overflow-x-auto min-w-0 max-w-full ${isExpanded ? '' : 'no-print hidden'}`}>
+                                <table className="w-full min-w-full text-left border-collapse whitespace-normal sm:whitespace-nowrap break-words text-xs table-auto">
                                     <thead>
                                         <tr>
                                             <th className="px-3 py-2.5 text-xs font-bold text-white bg-[#1e3a5f] border-b border-[#152d4a] w-10 text-center">#</th>
@@ -733,8 +733,8 @@ export default function DataTable({ logsheets }) {
                                             <SortableHeader columnKey="rak">Rak/Rongga</SortableHeader>
                                             <SortableHeader columnKey="tray_count">Jml (Loyang/Pack)</SortableHeader>
                                             <th className="px-3 py-2.5 text-xs font-bold text-emerald-100 bg-emerald-700 border-b border-emerald-800 text-center">Total</th>
-                                            <SortableHeader columnKey="unplanned_stop">Unplanned Stop</SortableHeader>
-                                            <th className="no-print px-3 py-2.5 text-xs font-bold text-white bg-[#1e3a5f] border-b border-[#152d4a] text-center w-14">Aksi</th>
+                                            <SortableHeader columnKey="unplanned_stop" className="hidden lg:table-cell">Unplanned Stop</SortableHeader>
+                                            <th className="no-print hidden sm:table-cell px-3 py-2.5 text-xs font-bold text-white bg-[#1e3a5f] border-b border-[#152d4a] text-center w-14">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -746,17 +746,17 @@ export default function DataTable({ logsheets }) {
                                             return (
                                                 <tr key={row.id} className={`transition-colors ${PRODUCT_ROW_BG[pt] || 'hover:bg-slate-50'} ${printClass}`}>
                                                     <td className="px-3 py-1.5 text-center text-slate-400 font-mono">{idx + 1}</td>
-                                                    <td className="px-3 py-1.5 font-medium">{row.pic}</td>
-                                                    <td className="px-3 py-1.5">
+                                                    <td className="px-3 py-1.5 font-medium truncate max-w-[90px]">{row.pic}</td>
+                                                    <td className="px-3 py-1.5 truncate max-w-[90px]">
                                                         <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold border ${PRODUCT_BADGE[pt]?.bg} ${PRODUCT_BADGE[pt]?.text} ${PRODUCT_BADGE[pt]?.border}`}>
                                                             {formatProduct(pt)}
                                                         </span>
                                                     </td>
-                                                    <td className="px-3 py-1.5 font-mono text-slate-600">{row.batch_number}</td>
-                                                    <td className="px-3 py-1.5 font-mono text-slate-600">{row.suhu_panel}</td>
-                                                    <td className="px-3 py-1.5 font-mono text-slate-600">{row.suhu_produk}</td>
+                                                    <td className="px-3 py-1.5 font-mono text-slate-600 truncate max-w-[90px]">{row.batch_number}</td>
+                                                    <td className="px-3 py-1.5 font-mono text-slate-600 hidden sm:table-cell">{row.suhu_panel}</td>
+                                                    <td className="px-3 py-1.5 font-mono text-slate-600 hidden sm:table-cell">{row.suhu_produk}</td>
                                                     <td className="px-3 py-1.5 font-mono text-indigo-700 font-bold">{formatTime(row.time)}</td>
-                                                    <td className="px-3 py-1.5 text-center font-bold text-slate-700">{row.rak}</td>
+                                                    <td className="px-3 py-1.5 text-center font-bold text-slate-700 hidden md:table-cell">{row.rak}</td>
                                                     <td className="px-3 py-1.5 text-center">
                                                         <span className="inline-flex px-1.5 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded font-black text-[10px]">
                                                             {row.tray_count}
@@ -769,12 +769,12 @@ export default function DataTable({ logsheets }) {
                                                             </span>
                                                         ) : <span className="text-slate-200">—</span>}
                                                     </td>
-                                                    <td className="px-3 py-1.5 text-xs">
+                                                    <td className="hidden lg:table-cell px-3 py-1.5 text-xs">
                                                         {row.unplanned_stop !== '-' ? (
                                                             <span className="inline-flex px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded font-bold text-[10px]">{row.unplanned_stop}</span>
                                                         ) : <span className="text-slate-300">-</span>}
                                                     </td>
-                                                    <td className="no-print px-3 py-1.5 text-center">
+                                                    <td className="no-print hidden sm:table-cell px-3 py-1.5 text-center">
                                                         <div className="flex items-center justify-center gap-1.5">
                                                             <button
                                                                 className="h-6 w-6 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors flex items-center justify-center"

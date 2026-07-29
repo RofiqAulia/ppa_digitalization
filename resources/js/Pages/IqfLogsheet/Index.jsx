@@ -28,7 +28,7 @@ export default function Index({ logsheets }) {
                 </div>
             </div>
 
-            <div className="h-[calc(100vh-160px)]">
+            <div className="min-h-[calc(100vh-160px)] md:h-[calc(100vh-160px)]">
                 <DataTable logsheets={logsheets} />
             </div>
         </AppLayout>
