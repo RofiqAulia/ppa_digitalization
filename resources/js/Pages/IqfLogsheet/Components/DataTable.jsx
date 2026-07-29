@@ -506,8 +506,8 @@ export default function DataTable({ logsheets }) {
                 {/* Row 1 — date + shift + machine filters */}
                 <div className="flex flex-wrap items-center gap-2 px-3 py-3 border-b border-slate-100 sm:px-4">
                     {/* Date range */}
-                    <div className="grid w-full grid-cols-2 gap-2 text-sm sm:w-auto sm:flex sm:items-center sm:gap-1.5">
-                        <div className="col-span-2 flex items-center gap-1.5 sm:col-span-1">
+                    <div className="grid w-full grid-cols-1 gap-2 text-sm min-[380px]:grid-cols-2 sm:w-auto sm:flex sm:items-center sm:gap-1.5">
+                        <div className="flex items-center gap-1.5 min-[380px]:col-span-2 sm:col-span-1">
                             <Calendar className="w-4 h-4 text-indigo-400 shrink-0" />
                             <span className="text-slate-500 text-xs font-semibold sm:hidden">Filter tanggal</span>
                         </div>
