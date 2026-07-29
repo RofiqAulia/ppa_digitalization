@@ -504,36 +504,53 @@ export default function DataTable({ logsheets }) {
             {/* ── TOOLBAR (no-print) ───────────────── */}
             <div className="no-print mb-4 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden shrink-0">
                 {/* Row 1 — date + shift + machine filters */}
-                <div className="flex flex-wrap items-center gap-2 px-3 py-3 border-b border-slate-100 sm:px-4">
+                <div className="flex flex-wrap items-center gap-2 px-3 py-3 border-b border-slate-100 lg:px-4">
                     {/* Date range */}
-                    <div className="grid w-full grid-cols-1 gap-2 text-sm min-[380px]:grid-cols-2 sm:w-auto sm:flex sm:items-center sm:gap-1.5">
-                        <div className="flex items-center gap-1.5 min-[380px]:col-span-2 sm:col-span-1">
+                    <div className="w-full space-y-2 lg:hidden">
+                        <div className="flex items-center gap-1.5">
                             <Calendar className="w-4 h-4 text-indigo-400 shrink-0" />
-                            <span className="text-slate-500 text-xs font-semibold sm:hidden">Filter tanggal</span>
+                            <span className="text-slate-500 text-xs font-semibold">Filter tanggal</span>
                         </div>
-                        <label className="min-w-0 space-y-1 sm:flex sm:items-center sm:gap-1.5 sm:space-y-0">
-                            <span className="block text-[10px] font-semibold uppercase text-slate-500 sm:text-xs sm:normal-case">Dari</span>
+                        <label className="block min-w-0 space-y-1">
+                            <span className="block text-[10px] font-semibold uppercase text-slate-500">Dari</span>
                             <input
                                 type="date" value={filterDateFrom}
                                 onChange={e => { setFilterDateFrom(e.target.value); setCurrentPage(1); }}
-                                className="h-8 w-full min-w-0 border border-slate-200 rounded-lg px-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 hover:border-indigo-300 transition-colors sm:w-[132px]"
+                                className="block h-9 w-full max-w-full min-w-0 border border-slate-200 rounded-lg px-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 hover:border-indigo-300 transition-colors"
                             />
                         </label>
-                        <label className="min-w-0 space-y-1 sm:flex sm:items-center sm:gap-1.5 sm:space-y-0">
-                            <span className="block text-[10px] font-semibold uppercase text-slate-500 sm:text-xs sm:normal-case">Sampai</span>
+                        <label className="block min-w-0 space-y-1">
+                            <span className="block text-[10px] font-semibold uppercase text-slate-500">Sampai</span>
                             <input
                                 type="date" value={filterDateTo}
                                 onChange={e => { setFilterDateTo(e.target.value); setCurrentPage(1); }}
-                                className="h-8 w-full min-w-0 border border-slate-200 rounded-lg px-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 hover:border-indigo-300 transition-colors sm:w-[132px]"
+                                className="block h-9 w-full max-w-full min-w-0 border border-slate-200 rounded-lg px-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 hover:border-indigo-300 transition-colors"
                             />
                         </label>
                     </div>
 
-                    <div className="w-px h-5 bg-slate-200 mx-1 hidden sm:block" />
+                    <div className="hidden items-center gap-1.5 text-sm lg:flex">
+                        <Calendar className="w-4 h-4 text-indigo-400 shrink-0" />
+                        <span className="text-slate-500 text-xs font-medium">Dari:</span>
+                        <input
+                            type="date" value={filterDateFrom}
+                            onChange={e => { setFilterDateFrom(e.target.value); setCurrentPage(1); }}
+                            className="h-8 w-[132px] border border-slate-200 rounded-lg px-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 hover:border-indigo-300 transition-colors"
+                        />
+                        <span className="text-slate-400 text-xs">-</span>
+                        <span className="text-slate-500 text-xs font-medium">Sampai:</span>
+                        <input
+                            type="date" value={filterDateTo}
+                            onChange={e => { setFilterDateTo(e.target.value); setCurrentPage(1); }}
+                            className="h-8 w-[132px] border border-slate-200 rounded-lg px-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 hover:border-indigo-300 transition-colors"
+                        />
+                    </div>
+
+                    <div className="w-px h-5 bg-slate-200 mx-1 hidden lg:block" />
 
                     {/* Shift */}
                     <Select value={filterShift} onValueChange={v => { setFilterShift(v); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[calc(50%-0.25rem)] text-xs h-8 border-slate-200 sm:w-32"><SelectValue placeholder="Semua Shift" /></SelectTrigger>
+                        <SelectTrigger className="w-full text-xs h-8 border-slate-200 lg:w-32"><SelectValue placeholder="Semua Shift" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Semua Shift</SelectItem>
                             <SelectItem value="1">Shift 1</SelectItem>
@@ -544,7 +561,7 @@ export default function DataTable({ logsheets }) {
 
                     {/* Machine */}
                     <Select value={filterMachine} onValueChange={v => { setFilterMachine(v); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[calc(50%-0.25rem)] text-xs h-8 border-slate-200 sm:w-32"><SelectValue placeholder="Semua Mesin" /></SelectTrigger>
+                        <SelectTrigger className="w-full text-xs h-8 border-slate-200 lg:w-32"><SelectValue placeholder="Semua Mesin" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Semua Mesin</SelectItem>
                             <SelectItem value="IQF 1">IQF 1</SelectItem>
@@ -556,13 +573,13 @@ export default function DataTable({ logsheets }) {
                     {activeFilters > 0 && (
                         <button
                             onClick={resetFilters}
-                            className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors font-medium"
+                            className="flex w-full items-center justify-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors font-medium lg:w-auto"
                         >
                             <X className="w-3 h-3" /> Reset ({activeFilters})
                         </button>
                     )}
 
-                    <div className="ml-auto flex w-full items-center justify-end gap-1.5 sm:w-auto">
+                    <div className="ml-auto flex w-full items-center justify-end gap-1.5 lg:w-auto">
                         <button onClick={expandAll}   className="text-xs text-indigo-500 hover:underline">Buka Semua</button>
                         <span className="text-slate-300">|</span>
                         <button onClick={collapseAll} className="text-xs text-slate-400 hover:underline">Tutup Semua</button>
@@ -570,7 +587,7 @@ export default function DataTable({ logsheets }) {
                 </div>
 
                 {/* Row 2 — per-page + search + print + export */}
-                <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 sm:px-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 lg:px-4">
                     <div className="flex items-center gap-2 text-xs text-slate-500">
                         <span>Tampilkan:</span>
                         <Select value={groupsPerPage} onValueChange={v => { setGroupsPerPage(v); setCurrentPage(1); }}>
@@ -584,14 +601,14 @@ export default function DataTable({ logsheets }) {
                         </Select>
                     </div>
 
-                    <div className="flex w-full items-center gap-2 sm:w-auto">
+                    <div className="flex w-full items-center gap-2 lg:w-auto">
                         {/* Search */}
-                        <div className="relative min-w-0 flex-1 sm:flex-none">
+                        <div className="relative min-w-0 flex-1 lg:flex-none">
                             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                             <input
                                 type="text" value={search} placeholder="Cari data..."
                                 onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
-                                className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 hover:border-indigo-300 transition-colors sm:w-44"
+                                className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 hover:border-indigo-300 transition-colors lg:w-44"
                             />
                         </div>
 
