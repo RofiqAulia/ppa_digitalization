@@ -17,6 +17,15 @@ class IqfLogsheet extends Model
         'status',
     ];
 
+    public function canBeEdited(): bool
+    {
+        if (!$this->created_at) {
+            return false;
+        }
+
+        return now()->diffInHours($this->created_at) <= 24;
+    }
+
     public function details()
     {
         return $this->hasMany(IqfLogsheetDetail::class);

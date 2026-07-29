@@ -9,6 +9,16 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between shadow-2xs">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M4.93 19h14.14a2 2 0 001.79-2.98L13.79 4a2 2 0 00-3.58 0L3.14 16.02A2 2 0 004.93 19z"></path></svg>
+                    <span>{{ session('error') }}</span>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-red-600 hover:text-red-900 font-bold">&times;</button>
+            </div>
+        @endif
+
         @php
             $grouped = collect($logsheets)
                 ->groupBy('date')

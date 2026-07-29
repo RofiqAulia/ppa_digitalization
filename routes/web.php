@@ -3,12 +3,13 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('prepare-produksi.index');
+    return redirect()->route('iqf-logsheet.index');
 });
 
 Route::resource('prepare-produksi', \App\Http\Controllers\PrepareProductionController::class)->except(['destroy']);
 
 Route::post('/prepare-produksi/{prepareProduksi}/update', [\App\Http\Controllers\PrepareProductionController::class, 'update'])->name('prepare-produksi.update');
+Route::delete('/prepare-produksi/{prepareProduksi}', [\App\Http\Controllers\PrepareProductionController::class, 'destroy'])->name('prepare-produksi.destroy');
 
 // IQF Logsheet Routes
 Route::get('/iqf-logsheet/history', [App\Http\Controllers\IqfLogsheetController::class, 'history'])->name('iqf-logsheet.history');

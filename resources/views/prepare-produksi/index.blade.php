@@ -33,6 +33,12 @@
         </div>
     @endif
 
+    @if(session('error'))
+        <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
+            <span class="text-red-800 font-medium">{{ session('error') }}</span>
+        </div>
+    @endif
+
     <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden w-full relative z-0">
         <div class="overflow-x-auto relative w-full h-[75vh] custom-scrollbar">
             <!-- Clean Modern Table Layout -->
@@ -148,6 +154,7 @@
                         $siomay = $h->productDetails->where('product_type', 'siomay')->first();
                         $pentol = $h->productDetails->where('product_type', 'pentol')->first();
                         $lumpia = $h->productDetails->where('product_type', 'lumpia')->first();
+                        $canEdit = $h->canBeEdited();
                         
                         $r_siomay = $h->returDetails->where('product_type', 'siomay')->first();
                         $r_pentol = $h->returDetails->where('product_type', 'pentol')->first();
@@ -263,9 +270,25 @@
                         <td class="border-r border-gray-100 px-4 py-2 truncate max-w-[150px] text-left text-gray-400 text-[10px]" title="{{ $h->notes }}">{{ $h->notes ?? '-' }}</td>
                         <td class="px-2 py-2 sticky right-0 bg-white z-30 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.05)]">
                             <div class="flex items-center justify-center gap-1.5">
-                                <a href="{{ route('prepare-produksi.edit', $h->id) }}" title="Edit Data" class="text-gray-400 hover:text-primary-cyan transition p-1.5">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
-                                </a>
+                                @if($canEdit)
+                                    <a href="{{ route('prepare-produksi.edit', $h->id) }}" title="Edit Data" class="text-gray-400 hover:text-primary-cyan transition p-1.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
+                                    </a>
+                                    <form action="{{ route('prepare-produksi.destroy', $h->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data ini?')" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" title="Hapus Data" class="text-gray-400 hover:text-red-500 transition p-1.5">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4" /></svg>
+                                        </button>
+                                    </form>
+                                @else
+                                    <span title="Tidak bisa diedit karena melewati 24 jam" class="text-gray-300 cursor-not-allowed p-1.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
+                                    </span>
+                                    <span title="Tidak bisa dihapus karena melewati 24 jam" class="text-gray-300 cursor-not-allowed p-1.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4" /></svg>
+                                    </span>
+                                @endif
                                 <a href="{{ route('prepare-produksi.show', $h->id) }}" title="Lihat Data" class="text-gray-400 hover:text-slate-600 transition p-1.5">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
                                 </a>

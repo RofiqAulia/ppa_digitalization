@@ -16,6 +16,15 @@ class PrepareHeader extends Model
         'notes',
     ];
 
+    public function canBeEdited(): bool
+    {
+        if (!$this->created_at) {
+            return false;
+        }
+
+        return now()->diffInHours($this->created_at) <= 24;
+    }
+
     public function productDetails()
     {
         return $this->hasMany(PrepareProductDetail::class);

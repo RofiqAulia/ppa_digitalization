@@ -169,6 +169,12 @@ class IqfLogsheetController extends Controller
     public function destroyDetail($id)
     {
         $detail = IqfLogsheetDetail::findOrFail($id);
+        $logsheet = $detail->iqfLogsheet;
+
+        if ($logsheet && !$logsheet->canBeEdited()) {
+            return redirect()->back()->with('error', 'Data ini tidak bisa diedit karena sudah lebih dari 24 jam sejak diinputkan.');
+        }
+
         $detail->delete();
 
         return redirect()->back()->with('success', 'Detail baris berhasil dihapus.');
@@ -257,11 +263,19 @@ class IqfLogsheetController extends Controller
 
     public function edit(IqfLogsheet $iqfLogsheet)
     {
+        if (!$iqfLogsheet->canBeEdited()) {
+            return redirect()->route('iqf-logsheet.index')->with('error', 'Data ini tidak bisa diedit karena sudah lebih dari 24 jam sejak diinputkan.');
+        }
+
         return Inertia::render('IqfLogsheet/Edit', ['iqfLogsheet' => $iqfLogsheet]);
     }
 
     public function update(Request $request, IqfLogsheet $iqfLogsheet)
     {
+        if (!$iqfLogsheet->canBeEdited()) {
+            return back()->withInput()->with('error', 'Data ini tidak bisa diedit karena sudah lebih dari 24 jam sejak diinputkan.');
+        }
+
         $request->validate([
             'date' => 'required|date',
             'shift' => 'required|integer|in:1,2,3',

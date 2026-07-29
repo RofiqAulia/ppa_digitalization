@@ -75,12 +75,20 @@ class PrepareProductionController extends Controller
 
     public function edit(PrepareHeader $prepareProduksi)
     {
+        if (!$prepareProduksi->canBeEdited()) {
+            return redirect()->route('prepare-produksi.index')->with('error', 'Data ini tidak bisa diedit karena sudah lebih dari 24 jam sejak diinputkan.');
+        }
+
         $prepareProduksi->load(['productDetails', 'skinMaterials', 'wasteLogs', 'returDetails', 'toppings']);
         return Inertia::render('PrepareProduksi/Form', ['header' => $prepareProduksi]);
     }
 
     public function update(Request $request, PrepareHeader $prepareProduksi)
     {
+        if (!$prepareProduksi->canBeEdited()) {
+            return back()->withInput()->with('error', 'Data ini tidak bisa diedit karena sudah lebih dari 24 jam sejak diinputkan.');
+        }
+
         if ($request->pin !== '123456') {
             return back()->withInput()->with('error', 'Invalid PIN Code.');
         }
@@ -181,6 +189,31 @@ class PrepareProductionController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()->with('error', 'Failed to save data: ' . $e->getMessage());
+        }
+    }
+
+    public function destroy(PrepareHeader $prepareProduksi)
+    {
+        if (!$prepareProduksi->canBeEdited()) {
+            return redirect()->route('prepare-produksi.index')->with('error', 'Data ini tidak bisa diedit karena sudah lebih dari 24 jam sejak diinputkan.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            PrepareProductDetail::where('prepare_header_id', $prepareProduksi->id)->delete();
+            PrepareSkinMaterial::where('prepare_header_id', $prepareProduksi->id)->delete();
+            PrepareWasteLog::where('prepare_header_id', $prepareProduksi->id)->delete();
+            PrepareReturDetail::where('prepare_header_id', $prepareProduksi->id)->delete();
+            PrepareTopping::where('prepare_header_id', $prepareProduksi->id)->delete();
+            $prepareProduksi->delete();
+
+            DB::commit();
+
+            return redirect()->route('prepare-produksi.index')->with('success', 'Data berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error', 'Failed to delete data: ' . $e->getMessage());
         }
     }
 }
