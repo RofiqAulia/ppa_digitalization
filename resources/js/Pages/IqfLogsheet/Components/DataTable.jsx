@@ -520,7 +520,7 @@ export default function DataTable({ logsheets }) {
                             />
                         </label>
                         <label className="block min-w-0 space-y-1">
-                            <span className="block text-[10px] font-semibold uppercase text-slate-500">Sampai</span>
+                            <span className="block text-[10px] font-semibold uppercase text-slate-500"></span>
                             <input
                                 type="date" value={filterDateTo}
                                 onChange={e => { setFilterDateTo(e.target.value); setCurrentPage(1); }}
