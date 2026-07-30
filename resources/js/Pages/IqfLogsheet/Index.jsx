@@ -12,7 +12,7 @@ export default function Index({ logsheets }) {
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight text-slate-900">Formulir IQF & Freezing (Hari Ini)</h2>
-                    <p className="text-muted-foreground text-sm font-medium">List of today's production logsheet records</p>
+                    {/* <p className="text-muted-foreground text-sm font-medium">List of today's production logsheet records</p> */}
                 </div>
                 <div className="flex items-center gap-3">
                     <Link href="/iqf-logsheet/history">
