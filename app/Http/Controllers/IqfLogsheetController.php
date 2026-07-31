@@ -128,7 +128,7 @@ class IqfLogsheetController extends Controller
         ]);
 
         // Push ke Google Sheets secara background/sync
-        PushIqfLogsheetToGoogleSheets::dispatch($detail);
+        // PushIqfLogsheetToGoogleSheets::dispatch($detail); // Diganti dengan Cron 5 Menitan (SyncIqfToGoogleSheets)
 
         return response()->json([
             'success' => 'Data berhasil disimpan.',
@@ -235,7 +235,7 @@ class IqfLogsheetController extends Controller
         ]);
 
         // Push ke Google Sheets secara background/sync
-        PushIqfLogsheetToGoogleSheets::dispatch($detail);
+        // PushIqfLogsheetToGoogleSheets::dispatch($detail); // Diganti dengan Cron 5 Menitan (SyncIqfToGoogleSheets)
 
         // Calculate total achieve for this logsheet (current product)
         $totalAchieve = $logsheet->details()->sum('tray_count');

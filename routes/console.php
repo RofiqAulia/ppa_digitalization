@@ -20,4 +20,6 @@ Artisan::command('iqf:sync-google-sheets {--initial : Sync dari awal dan reset l
     );
 })->purpose('Sync data IQF dari MySQL ke Google Sheets RAW_DATA');
 
+use Illuminate\Support\Facades\Schedule;
 
+Schedule::command('sync:google-sheets')->everyFiveMinutes();
