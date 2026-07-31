@@ -22,4 +22,4 @@ Artisan::command('iqf:sync-google-sheets {--initial : Sync dari awal dan reset l
 
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('sync:google-sheets')->everyFiveMinutes();
+Schedule::command('sync:google-sheets')->everyMinute();
