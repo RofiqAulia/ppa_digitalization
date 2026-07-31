@@ -294,6 +294,36 @@ class SyncIqfToGoogleSheets extends Command
                     $key = "{$normalDate}|{$jenisRaw}|{$machineNum}|{$shiftRaw}";
                     $rowLookup[$key] = $rowNum;
                 }
+                // Tulis formula =SUM(G[row]:AD[row]) di kolom AE untuk SEMUA baris baru
+                $achieveBatch = [];
+                foreach ($datesToAdd as $addedDate) {
+                    foreach (self::SHIFT_ORDER as $addedShift) {
+                        foreach (self::JENIS_ORDER as $addedJenis) {
+                            foreach (self::MACHINE_ORDER as $addedMachine) {
+                                $addedKey = $this->normalizeDate(date('d-M', strtotime($addedDate)))
+                                    ?? $addedDate;
+                                $addedKey = "{$addedDate}|{$addedJenis}|{$addedMachine}|{$addedShift}";
+                                $addedRow = $rowLookup[$addedKey] ?? null;
+                                if (!$addedRow) continue;
+
+                                $aeCol = $this->indexToColumn(30); // AE
+                                $achieveBatch[] = new ValueRange([
+                                    'range'  => "'{$sheetName}'!{$aeCol}{$addedRow}",
+                                    'values' => [["=SUM(G{$addedRow}:AD{$addedRow})"]],
+                                ]);
+                            }
+                        }
+                    }
+                }
+
+                if (!empty($achieveBatch)) {
+                    $service->spreadsheets_values->batchUpdate($spreadsheetId, new BatchUpdateValuesRequest([
+                        'valueInputOption' => 'USER_ENTERED',
+                        'data'             => $achieveBatch,
+                    ]));
+                    $this->info('Formula Achieve ditulis untuk ' . count($achieveBatch) . ' baris baru.');
+                }
+
             } catch (\Exception $e) {
                 $this->error('Gagal menambahkan baris baru: ' . $e->getMessage());
                 return 1;
@@ -330,6 +360,13 @@ class SyncIqfToGoogleSheets extends Command
                                 'values' => [[$total]],
                             ]);
                         }
+
+                        // Tulis formula Achieve di kolom AE untuk baris yang memiliki data
+                        $aeCol = $this->indexToColumn(30); // AE
+                        $batchData[] = new ValueRange([
+                            'range'  => "'{$sheetName}'!{$aeCol}{$rowNumber}",
+                            'values' => [["=SUM(G{$rowNumber}:AD{$rowNumber})"]],
+                        ]);
                     }
                 }
             }
