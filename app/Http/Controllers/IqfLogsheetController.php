@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\IqfLogsheet;
 use App\Models\IqfLogsheetDetail;
+use App\Jobs\PushIqfLogsheetToGoogleSheets;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -126,6 +127,9 @@ class IqfLogsheetController extends Controller
             'tray_count' => $trayCount,
         ]);
 
+        // Push ke Google Sheets secara background/sync
+        PushIqfLogsheetToGoogleSheets::dispatch($detail);
+
         return response()->json([
             'success' => 'Data berhasil disimpan.',
             'detail' => $detail,
@@ -229,6 +233,9 @@ class IqfLogsheetController extends Controller
             'rak' => $request->rak,
             'tray_count' => $request->tray_count,
         ]);
+
+        // Push ke Google Sheets secara background/sync
+        PushIqfLogsheetToGoogleSheets::dispatch($detail);
 
         // Calculate total achieve for this logsheet (current product)
         $totalAchieve = $logsheet->details()->sum('tray_count');
