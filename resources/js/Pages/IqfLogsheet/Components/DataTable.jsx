@@ -800,9 +800,9 @@ export default function DataTable({ logsheets }) {
                                                     <td className="no-print hidden sm:table-cell px-3 py-1.5 text-center">
                                                         <div className="flex items-center justify-center gap-1.5">
                                                             <button
-                                                                className="h-6 w-6 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors flex items-center justify-center"
-                                                                onClick={() => openEditModal(row)}
-                                                                title="Edit"
+                                                                className="h-6 w-6 rounded text-slate-200 bg-slate-50 cursor-not-allowed flex items-center justify-center opacity-40"
+                                                                disabled
+                                                                title="Data riwayat tidak dapat diubah"
                                                             >
                                                                 <Edit2 className="w-3 h-3" />
                                                             </button>
