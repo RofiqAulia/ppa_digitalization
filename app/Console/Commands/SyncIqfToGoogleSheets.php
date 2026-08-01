@@ -12,7 +12,7 @@ use Google\Service\Sheets;
 use Google\Service\Sheets\ValueRange;
 use Google\Service\Sheets\BatchUpdateValuesRequest;
 
-#[Signature('sync:google-sheets {--reset : Reset sync state dan paksa hitung ulang semua sel}')]
+#[Signature('sync:google-sheets {--reset : Reset sync state dan paksa hitung ulang semua sel} {--force-recalc=* : Paksa hitung ulang untuk kombinasi tertentu (format: date|jenis|machine|shift)}')]
 #[Description('Sync data IQF dari MySQL langsung ke sheet Report IQF Dimsum')]
 class SyncIqfToGoogleSheets extends Command
 {
@@ -107,7 +107,9 @@ class SyncIqfToGoogleSheets extends Command
             return 1;
         }
 
-        if ($newRecords->isEmpty()) {
+        $forceRecalcs = $this->option('force-recalc') ?? [];
+
+        if ($newRecords->isEmpty() && empty($forceRecalcs) && !$this->option('reset')) {
             $this->info('Tidak ada data baru. Selesai.');
             return 0;
         }
@@ -117,6 +119,26 @@ class SyncIqfToGoogleSheets extends Command
         // 5. Kumpulkan kombinasi (date, jenis, machineNum, shift) yang terpengaruh
         $affectedCombinations = [];
         $highestId = $lastSyncedId;
+
+        // Tambahkan dari parameter force-recalc
+        foreach ($forceRecalcs as $fr) {
+            $parts = explode('|', $fr);
+            if (count($parts) === 4) {
+                $frDate = $parts[0];
+                $frJenis = strtoupper($parts[1]);
+                if ($frJenis === 'ADONAN_PANGSIT') $frJenis = 'ADONAN';
+                $frMachine = (int)$parts[2];
+                $frShift = (int)$parts[3];
+
+                $key = "{$frDate}|{$frJenis}|{$frMachine}|{$frShift}";
+                $affectedCombinations[$key] = [
+                    'date' => $frDate,
+                    'jenis' => $frJenis,
+                    'machine' => $frMachine,
+                    'shift' => $frShift,
+                ];
+            }
+        }
 
         foreach ($newRecords as $record) {
             $date       = $record->date; // "2026-07-28"
@@ -145,6 +167,11 @@ class SyncIqfToGoogleSheets extends Command
         $fullAggregated = []; // [date][jenis][machine][shift][hour] => total
 
         foreach ($affectedCombinations as $combo) {
+            // Inisialisasi semua jam dengan string kosong (agar jika data dihapus, sel akan ikut terhapus di Sheets)
+            foreach (self::HOUR_COLUMNS as $jamStr => $idx) {
+                $fullAggregated[$combo['date']][$combo['jenis']][$combo['machine']][$combo['shift']][$jamStr] = '';
+            }
+
             try {
                 $rows = DB::connection('mysql_readonly')
                     ->table('iqf_logsheet_details as d')
@@ -161,7 +188,7 @@ class SyncIqfToGoogleSheets extends Command
                     $timeParts = explode(':', $row->time ?? '00:00:00');
                     $jam = str_pad($timeParts[0], 2, '0', STR_PAD_LEFT) . ':00';
 
-                    if (!isset($fullAggregated[$combo['date']][$combo['jenis']][$combo['machine']][$combo['shift']][$jam])) {
+                    if ($fullAggregated[$combo['date']][$combo['jenis']][$combo['machine']][$combo['shift']][$jam] === '') {
                         $fullAggregated[$combo['date']][$combo['jenis']][$combo['machine']][$combo['shift']][$jam] = 0;
                     }
                     $fullAggregated
