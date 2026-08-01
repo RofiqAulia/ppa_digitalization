@@ -406,33 +406,12 @@ class IqfLogsheetController extends Controller
 
     private function dispatchSyncBackground($options = [])
     {
-        app()->terminating(function () use ($options) {
-            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                // Local Windows (Laragon) - eksekusi synchronous
-                try {
-                    \Illuminate\Support\Facades\Artisan::call('sync:google-sheets', $options);
-                } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::error('Real-time sync error (WIN): ' . $e->getMessage());
-                }
-            } else {
-                // Production Linux (Hostinger) - eksekusi background OS Process
-                $phpBin = '/opt/alt/php83/usr/bin/php';
-                if (!file_exists($phpBin)) {
-                    $phpBin = 'php'; // Fallback
-                }
-                $artisan = base_path('artisan');
-                $cmd = "{$phpBin} {$artisan} sync:google-sheets";
-                
-                if (isset($options['--force-recalc'])) {
-                    foreach ($options['--force-recalc'] as $recalc) {
-                        $cmd .= " --force-recalc=\"" . escapeshellarg($recalc) . "\"";
-                    }
-                }
-                
-                // > /dev/null 2>&1 & = Jangan tunggu proses selesai (asynchronous background)
-                $cmd .= " > /dev/null 2>&1 &";
-                exec($cmd);
-            }
-        });
+        // Jalankan secara langsung (synchronous) agar tidak terpengaruh oleh 
+        // limitasi LiteSpeed (app()->terminating diblokir) atau fungsi exec() yang dimatikan di Hostinger.
+        try {
+            \Illuminate\Support\Facades\Artisan::call('sync:google-sheets', $options);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Real-time sync error: ' . $e->getMessage());
+        }
     }
 }
