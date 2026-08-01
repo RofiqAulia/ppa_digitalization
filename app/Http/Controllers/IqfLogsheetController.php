@@ -127,8 +127,12 @@ class IqfLogsheetController extends Controller
             'tray_count' => $trayCount,
         ]);
 
-        // Push ke Google Sheets secara background/sync
-        // PushIqfLogsheetToGoogleSheets::dispatch($detail); // Diganti dengan Cron 5 Menitan (SyncIqfToGoogleSheets)
+        // Trigger sync ke Google Sheets secara real-time
+        try {
+            \Illuminate\Support\Facades\Artisan::call('sync:google-sheets');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Real-time sync error: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => 'Data berhasil disimpan.',
@@ -167,6 +171,18 @@ class IqfLogsheetController extends Controller
             }
         }
 
+        // Mundurkan last_synced_id agar perubahan terbaca oleh sync incremental
+        $syncState = DB::table('sync_states')->where('entity', 'iqf_logsheets')->first();
+        if ($syncState && $syncState->last_synced_id >= $detail->id) {
+            DB::table('sync_states')->where('entity', 'iqf_logsheets')->update(['last_synced_id' => $detail->id - 1]);
+        }
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('sync:google-sheets');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Real-time sync error: ' . $e->getMessage());
+        }
+
         return redirect()->back()->with('success', 'Detail baris berhasil diupdate.');
     }
 
@@ -179,7 +195,22 @@ class IqfLogsheetController extends Controller
             return redirect()->back()->with('error', 'Data ini tidak bisa diedit karena sudah lebih dari 24 jam sejak diinputkan.');
         }
 
+        $detailId = $detail->id;
         $detail->delete();
+
+        // Mundurkan last_synced_id agar query menghitung ulang kombinasi tersebut (jika ada baris lain)
+        // Perhatian: Jika ini baris terakhir untuk kombinasi tersebut, command sync incremental tidak akan 
+        // mendeteksi perubahannya kecuali dipaksa --reset.
+        $syncState = DB::table('sync_states')->where('entity', 'iqf_logsheets')->first();
+        if ($syncState && $syncState->last_synced_id >= $detailId) {
+            DB::table('sync_states')->where('entity', 'iqf_logsheets')->update(['last_synced_id' => $detailId - 1]);
+        }
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('sync:google-sheets');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Real-time sync error: ' . $e->getMessage());
+        }
 
         return redirect()->back()->with('success', 'Detail baris berhasil dihapus.');
     }
@@ -234,8 +265,12 @@ class IqfLogsheetController extends Controller
             'tray_count' => $request->tray_count,
         ]);
 
-        // Push ke Google Sheets secara background/sync
-        // PushIqfLogsheetToGoogleSheets::dispatch($detail); // Diganti dengan Cron 5 Menitan (SyncIqfToGoogleSheets)
+        // Trigger sync ke Google Sheets secara real-time
+        try {
+            \Illuminate\Support\Facades\Artisan::call('sync:google-sheets');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Real-time sync error: ' . $e->getMessage());
+        }
 
         // Calculate total achieve for this logsheet (current product)
         $totalAchieve = $logsheet->details()->sum('tray_count');
