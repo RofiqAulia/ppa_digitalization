@@ -158,12 +158,15 @@ class SyncIqfToGoogleSheets extends Command
                     $timeParts = explode(':', $row->time ?? '00:00:00');
                     $jam = str_pad($timeParts[0], 2, '0', STR_PAD_LEFT) . ':00';
 
+                    if (!isset($fullAggregated[$combo['date']][$combo['jenis']][$combo['machine']][$combo['shift']][$jam])) {
+                        $fullAggregated[$combo['date']][$combo['jenis']][$combo['machine']][$combo['shift']][$jam] = 0;
+                    }
                     $fullAggregated
                         [$combo['date']]
                         [$combo['jenis']]
                         [$combo['machine']]
                         [$combo['shift']]
-                        [$jam] = (int) $row->total;
+                        [$jam] += (int) $row->total;
                 }
             } catch (\Exception $e) {
                 $this->warn("Gagal agregasi untuk {$combo['date']}/{$combo['jenis']}/IQF{$combo['machine']}/Shift{$combo['shift']}: " . $e->getMessage());
