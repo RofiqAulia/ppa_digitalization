@@ -128,13 +128,7 @@ class IqfLogsheetController extends Controller
         ]);
 
         // Trigger sync ke Google Sheets secara real-time
-        app()->terminating(function () {
-            try {
-                \Illuminate\Support\Facades\Artisan::call('sync:google-sheets');
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Real-time sync error: ' . $e->getMessage());
-            }
-        });
+        $this->dispatchSyncBackground();
 
         return response()->json([
             'success' => 'Data berhasil disimpan.',
@@ -177,17 +171,11 @@ class IqfLogsheetController extends Controller
         }
 
         // Trigger sync ke Google Sheets secara real-time
-        app()->terminating(function () use ($comboKey) {
-            try {
-                $options = [];
-                if ($comboKey) {
-                    $options['--force-recalc'] = [$comboKey];
-                }
-                \Illuminate\Support\Facades\Artisan::call('sync:google-sheets', $options);
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Real-time sync error: ' . $e->getMessage());
-            }
-        });
+        $options = [];
+        if ($comboKey) {
+            $options['--force-recalc'] = [$comboKey];
+        }
+        $this->dispatchSyncBackground($options);
 
         return redirect()->back()->with('success', 'Detail baris berhasil diupdate.');
     }
@@ -209,17 +197,11 @@ class IqfLogsheetController extends Controller
         $detail->delete();
 
         // Trigger sync ke Google Sheets secara real-time
-        app()->terminating(function () use ($comboKey) {
-            try {
-                $options = [];
-                if ($comboKey) {
-                    $options['--force-recalc'] = [$comboKey];
-                }
-                \Illuminate\Support\Facades\Artisan::call('sync:google-sheets', $options);
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Real-time sync error: ' . $e->getMessage());
-            }
-        });
+        $options = [];
+        if ($comboKey) {
+            $options['--force-recalc'] = [$comboKey];
+        }
+        $this->dispatchSyncBackground($options);
 
         return redirect()->back()->with('success', 'Detail baris berhasil dihapus.');
     }
@@ -275,13 +257,7 @@ class IqfLogsheetController extends Controller
         ]);
 
         // Trigger sync ke Google Sheets secara real-time
-        app()->terminating(function () {
-            try {
-                \Illuminate\Support\Facades\Artisan::call('sync:google-sheets');
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Real-time sync error: ' . $e->getMessage());
-            }
-        });
+        $this->dispatchSyncBackground();
 
         // Calculate total achieve for this logsheet (current product)
         $totalAchieve = $logsheet->details()->sum('tray_count');
@@ -346,21 +322,15 @@ class IqfLogsheetController extends Controller
 
         $newCombo = $iqfLogsheet->date . '|' . strtoupper($iqfLogsheet->product_type) . '|' . (int) filter_var($iqfLogsheet->machine, FILTER_SANITIZE_NUMBER_INT) . '|' . $iqfLogsheet->shift;
 
-        app()->terminating(function () use ($oldCombo, $newCombo) {
-            try {
-                $recalcs = [];
-                if ($oldCombo) $recalcs[] = $oldCombo;
-                if ($newCombo && $newCombo !== $oldCombo) $recalcs[] = $newCombo;
+        $recalcs = [];
+        if ($oldCombo) $recalcs[] = $oldCombo;
+        if ($newCombo && $newCombo !== $oldCombo) $recalcs[] = $newCombo;
 
-                $options = [];
-                if (!empty($recalcs)) {
-                    $options['--force-recalc'] = $recalcs;
-                }
-                \Illuminate\Support\Facades\Artisan::call('sync:google-sheets', $options);
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Real-time sync error: ' . $e->getMessage());
-            }
-        });
+        $options = [];
+        if (!empty($recalcs)) {
+            $options['--force-recalc'] = $recalcs;
+        }
+        $this->dispatchSyncBackground($options);
 
         return redirect()->route('iqf-logsheet.index')->with('success', 'Logsheet berhasil diupdate.');
     }
@@ -432,5 +402,37 @@ class IqfLogsheetController extends Controller
         }
 
         return compact('shift', 'date');
+    }
+
+    private function dispatchSyncBackground($options = [])
+    {
+        app()->terminating(function () use ($options) {
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                // Local Windows (Laragon) - eksekusi synchronous
+                try {
+                    \Illuminate\Support\Facades\Artisan::call('sync:google-sheets', $options);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Real-time sync error (WIN): ' . $e->getMessage());
+                }
+            } else {
+                // Production Linux (Hostinger) - eksekusi background OS Process
+                $phpBin = '/opt/alt/php83/usr/bin/php';
+                if (!file_exists($phpBin)) {
+                    $phpBin = 'php'; // Fallback
+                }
+                $artisan = base_path('artisan');
+                $cmd = "{$phpBin} {$artisan} sync:google-sheets";
+                
+                if (isset($options['--force-recalc'])) {
+                    foreach ($options['--force-recalc'] as $recalc) {
+                        $cmd .= " --force-recalc=\"" . escapeshellarg($recalc) . "\"";
+                    }
+                }
+                
+                // > /dev/null 2>&1 & = Jangan tunggu proses selesai (asynchronous background)
+                $cmd .= " > /dev/null 2>&1 &";
+                exec($cmd);
+            }
+        });
     }
 }
