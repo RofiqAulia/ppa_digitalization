@@ -121,6 +121,9 @@ class SyncIqfToGoogleSheets extends Command
         foreach ($newRecords as $record) {
             $date       = $record->date; // "2026-07-28"
             $jenis      = strtoupper($record->product_type); // "SIOMAY"
+            if ($jenis === 'ADONAN_PANGSIT') {
+                $jenis = 'ADONAN';
+            }
             $machineNum = (int) filter_var(trim($record->machine), FILTER_SANITIZE_NUMBER_INT); // "IQF 1" → 1
             $shift      = (int) $record->shift;
 
