@@ -178,7 +178,13 @@ class SyncIqfToGoogleSheets extends Command
                     ->join('iqf_logsheets as h', 'd.iqf_logsheet_id', '=', 'h.id')
                     ->select('d.time', DB::raw('SUM(d.tray_count) as total'))
                     ->where('h.date', $combo['date'])
-                    ->where(DB::raw('UPPER(h.product_type)'), $combo['jenis'])
+                    ->where(function($q) use ($combo) {
+                        if ($combo['jenis'] === 'ADONAN') {
+                            $q->whereRaw("UPPER(h.product_type) IN ('ADONAN', 'ADONAN_PANGSIT')");
+                        } else {
+                            $q->whereRaw("UPPER(h.product_type) = ?", [$combo['jenis']]);
+                        }
+                    })
                     ->where('h.machine', 'LIKE', '%' . $combo['machine'])
                     ->where('h.shift', $combo['shift'])
                     ->groupBy('d.time')
