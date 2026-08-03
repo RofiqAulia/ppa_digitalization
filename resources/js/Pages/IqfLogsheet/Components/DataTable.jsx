@@ -784,7 +784,7 @@ export default function DataTable({ logsheets }) {
                                                     <td className="px-3 py-1.5 font-mono text-slate-600 hidden sm:table-cell">{row.suhu_panel}</td>
                                                     <td className="px-3 py-1.5 font-mono text-slate-600 hidden sm:table-cell">{row.suhu_produk}</td>
                                                     <td className="px-3 py-1.5 font-mono text-indigo-700 font-bold">{formatTime(row.time)}</td>
-                                                    <td className="px-3 py-1.5 text-center font-bold text-slate-700 hidden md:table-cell">{['lumpia','adonan_pangsit'].includes(pt) ? (row.rak ?? 0) || 0 : row.rak}</td>
+                                                    <td className="px-3 py-1.5 text-center font-bold text-slate-700 hidden md:table-cell">{['lumpia','adonan_pangsit'].includes(pt) ? <span className="text-slate-300">-</span> : row.rak}</td>
                                                     <td className="px-3 py-1.5 text-center">
                                                         <span className="inline-flex px-1.5 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded font-black text-[10px]">
                                                             {row.tray_count}
