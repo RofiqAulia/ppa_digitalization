@@ -11,6 +11,66 @@ const KENDALA_LIST = [
     { label: 'Lain-lain',       icon: '📝' },
 ];
 
+// Helper: dapatkan shift dan tanggal saat ini (mirror logika backend)
+const getCurrentShiftAndDate = () => {
+    const now = new Date();
+    // Gunakan waktu Asia/Jakarta
+    const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+    const hour = wib.getHours();
+
+    let shift, date;
+    if (hour >= 6 && hour < 14) {
+        shift = 1;
+        date  = wib.toISOString().slice(0, 10);
+    } else if (hour >= 14 && hour < 22) {
+        shift = 2;
+        date  = wib.toISOString().slice(0, 10);
+    } else if (hour >= 22) {
+        shift = 3;
+        date  = wib.toISOString().slice(0, 10);
+    } else {
+        // 00:00–05:59 masih Shift 3 hari sebelumnya
+        shift = 3;
+        const prev = new Date(wib);
+        prev.setDate(prev.getDate() - 1);
+        date = prev.toISOString().slice(0, 10);
+    }
+    return { shift, date };
+};
+
+// Helper: baca lastRak dari localStorage, reset jika tanggal/shift berbeda
+const readLastRakSafe = (machine, product) => {
+    const rakKey      = `iqf_lastRak_${machine}_${product}`;
+    const rakDateKey  = `iqf_lastRakDate_${machine}_${product}`;
+    const rakShiftKey = `iqf_lastRakShift_${machine}_${product}`;
+
+    const savedRak   = localStorage.getItem(rakKey)   || '';
+    const savedDate  = localStorage.getItem(rakDateKey)  || '';
+    const savedShift = localStorage.getItem(rakShiftKey) || '';
+
+    if (!savedRak) return '';
+
+    const { shift: curShift, date: curDate } = getCurrentShiftAndDate();
+
+    // Jika tanggal atau shift berbeda → reset lastRak
+    if (savedDate !== curDate || savedShift !== String(curShift)) {
+        localStorage.removeItem(rakKey);
+        localStorage.removeItem(rakDateKey);
+        localStorage.removeItem(rakShiftKey);
+        return '';
+    }
+
+    return savedRak;
+};
+
+// Helper: simpan lastRak beserta konteks tanggal+shift
+const saveLastRak = (machine, product, rak) => {
+    const { shift, date } = getCurrentShiftAndDate();
+    localStorage.setItem(`iqf_lastRak_${machine}_${product}`,      String(rak));
+    localStorage.setItem(`iqf_lastRakDate_${machine}_${product}`,  date);
+    localStorage.setItem(`iqf_lastRakShift_${machine}_${product}`, String(shift));
+};
+
 export default function Kiosk() {
     const [step, setStep]               = useState(1);
     const [currentTime, setCurrentTime] = useState('');
@@ -21,7 +81,7 @@ export default function Kiosk() {
     const [batchNumber, setBatchNumber] = useState('');
     const [rak,             setRak]            = useState('');
     const [trayCount,       setTrayCount]      = useState('');
-    const [lastRak,         setLastRak]        = useState('');  // highest Rak this session
+    const [lastRak,         setLastRak]        = useState('');  // highest Rak shift ini (auto-reset antar shift/hari)
     const [totalsByProduct, setTotalsByProduct]= useState(null);
     const [loading,         setLoading]        = useState(false);
     const [toast,           setToast]          = useState({ show: false, type: '', title: '', message: '' });
@@ -47,9 +107,8 @@ export default function Kiosk() {
             setProduct(savedProduct);
             setMachine(savedMachine);
 
-            // Restore lastRak per machine+product
-            const rakKey   = `iqf_lastRak_${savedMachine}_${savedProduct}`;
-            const savedRak = localStorage.getItem(rakKey) || '';
+            // Restore lastRak per machine+product — auto-reset jika shift/hari berbeda
+            const savedRak = readLastRakSafe(savedMachine, savedProduct);
             setLastRak(savedRak);
             setRak(savedRak);
 
@@ -90,9 +149,8 @@ export default function Kiosk() {
             localStorage.setItem('iqf_product', product);
             localStorage.setItem('iqf_machine', machine);
 
-            // Load lastRak per machine+product
-            const rakKey   = `iqf_lastRak_${machine}_${product}`;
-            const savedRak = localStorage.getItem(rakKey) || '';
+            // Load lastRak per machine+product — auto-reset jika shift/hari berbeda
+            const savedRak = readLastRakSafe(machine, product);
             setRak(savedRak);
             setLastRak(savedRak);
 
@@ -147,10 +205,10 @@ export default function Kiosk() {
             setTotalsByProduct(response.data.totals_by_product || null);
             showNotification('success', 'Berhasil Dicatat!', `Rak ${rak} - ${trayCount} dimasukkan.`);
 
-            // Update lastRak per mesin+produk
+            // Update lastRak per mesin+produk (beserta konteks tanggal+shift)
             if (lastRak === '' || parseInt(rak) >= parseInt(lastRak)) {
                 setLastRak(String(rak));
-                localStorage.setItem(`iqf_lastRak_${machine}_${product}`, String(rak));
+                saveLastRak(machine, product, rak);
             }
             // Update lastBatch per mesin+produk
             localStorage.setItem(`iqf_lastBatch_${machine}_${product}`, String(batchNumber));
