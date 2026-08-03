@@ -233,7 +233,7 @@ export default function DataTable({ logsheets }) {
 
     const formatTime = t => (!t || t === '-') ? '-' : t.substring(0, 5);
     const formatProduct = t => PRODUCT_LABELS[t] || t;
-    const unitLabel = pt => ['lumpia','adonan_pangsit'].includes(pt) ? 'P' : 'L';
+    const unitLabel = pt => ['lumpia','adonan_pangsit'].includes(pt) ? 'K' : 'L';
 
     const handleSort = key => {
         setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' }));
@@ -714,8 +714,8 @@ export default function DataTable({ logsheets }) {
                                     {[
                                         { pt: 'siomay',         val: group.totals.siomay, unit: 'L' },
                                         { pt: 'pentol',         val: group.totals.pentol, unit: 'L' },
-                                        { pt: 'lumpia',         val: group.totals.lumpia, unit: 'P' },
-                                        { pt: 'adonan_pangsit', val: group.totals.adonan, unit: 'P' },
+                                        { pt: 'lumpia',         val: group.totals.lumpia, unit: 'K' },
+                                        { pt: 'adonan_pangsit', val: group.totals.adonan, unit: 'K' },
                                     ].filter(b => b.val > 0).map(({ pt, val, unit }) => {
                                         const bc = PRODUCT_BADGE[pt];
                                         return (
@@ -784,7 +784,7 @@ export default function DataTable({ logsheets }) {
                                                     <td className="px-3 py-1.5 font-mono text-slate-600 hidden sm:table-cell">{row.suhu_panel}</td>
                                                     <td className="px-3 py-1.5 font-mono text-slate-600 hidden sm:table-cell">{row.suhu_produk}</td>
                                                     <td className="px-3 py-1.5 font-mono text-indigo-700 font-bold">{formatTime(row.time)}</td>
-                                                    <td className="px-3 py-1.5 text-center font-bold text-slate-700 hidden md:table-cell">{row.rak}</td>
+                                                    <td className="px-3 py-1.5 text-center font-bold text-slate-700 hidden md:table-cell">{['lumpia','adonan_pangsit'].includes(pt) ? (row.rak ?? 0) || 0 : row.rak}</td>
                                                     <td className="px-3 py-1.5 text-center">
                                                         <span className="inline-flex px-1.5 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded font-black text-[10px]">
                                                             {row.tray_count}
