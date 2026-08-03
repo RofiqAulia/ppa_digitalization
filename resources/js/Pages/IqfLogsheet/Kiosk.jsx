@@ -270,7 +270,7 @@ export default function Kiosk() {
                         <img src="/images/ppa.jpg" alt="PPA" className="h-8 object-contain" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black uppercase tracking-wider">IQF <span className="text-blue-600">KIOSK</span></h1>
+                        <h1 className="text-2xl font-black uppercase tracking-wider">IQF <span className="text-blue-600">Terminal</span></h1>
                         <p className="text-sm font-semibold text-slate-500">{currentTime}</p>
                     </div>
                 </div>
@@ -332,12 +332,13 @@ export default function Kiosk() {
                             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-cyan-400 to-blue-500"></div>
                             <div className="p-6">
                                 {/* Grid: Batch | (Rak) | Jml */}
-                                <div className={`grid gap-4 ${isPack ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                                <div className={`grid gap-3 items-end ${isPack ? 'grid-cols-2' : 'grid-cols-3'}`}>
 
                                     {/* No. Batch — amber */}
-                                    <div>
-                                        <label className="block text-slate-500 font-bold mb-1 uppercase text-xs text-center">No. Batch</label>
-                                        <div className="h-5 mb-1" />{/* spacer agar rata dengan Rak yang ada sub-label */}
+                                    <div className="flex flex-col">
+                                        <div className="h-12 flex flex-col justify-end pb-1">
+                                            <label className="block text-slate-500 font-bold uppercase text-xs text-center leading-tight">No. Batch</label>
+                                        </div>
                                         <input
                                             type="number"
                                             value={batchNumber}
@@ -349,11 +350,13 @@ export default function Kiosk() {
 
                                     {/* No. Rak — indigo */}
                                     {!isPack && (
-                                    <div>
-                                        <label className="block text-slate-500 font-bold mb-1 uppercase text-xs text-center">No. Rak</label>
-                                        {lastRak !== '' ? (
-                                            <p className="text-center text-[10px] font-bold mb-1 text-amber-600">Min: Rak {lastRak} ↑</p>
-                                        ) : <div className="h-5 mb-1" />}
+                                    <div className="flex flex-col">
+                                        <div className="h-12 flex flex-col justify-end pb-1">
+                                            <label className="block text-slate-500 font-bold uppercase text-xs text-center leading-tight">No. Rak</label>
+                                            {lastRak !== '' && (
+                                                <p className="text-center text-[10px] font-bold mt-0.5 text-amber-600">Min: Rak {lastRak} ↑</p>
+                                            )}
+                                        </div>
                                         <input
                                             type="number"
                                             value={rak}
@@ -368,10 +371,11 @@ export default function Kiosk() {
                                     </div>
                                     )}
 
-                                    {/* Jml Loyang — emerald */}
-                                    <div>
-                                        <label className="block text-slate-500 font-bold mb-1 uppercase text-xs text-center">Jumlah {isPack ? 'Keranjang' : 'Loyang'}</label>
-                                        <div className="h-5 mb-1" />
+                                    {/* Jml Loyang/Keranjang — emerald */}
+                                    <div className="flex flex-col">
+                                        <div className="h-12 flex flex-col justify-end pb-1">
+                                            <label className="block text-slate-500 font-bold uppercase text-xs text-center leading-tight">Jumlah {isPack ? 'Keranjang' : 'Loyang'}</label>
+                                        </div>
                                         <input
                                             type="number"
                                             value={trayCount}
