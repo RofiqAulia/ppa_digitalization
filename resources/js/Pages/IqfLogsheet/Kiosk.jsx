@@ -178,8 +178,10 @@ export default function Kiosk() {
     };
 
     const submitData = async () => {
-        if (loading || !trayCount || trayCount <= 0 || !rak) {
-            showNotification('error', 'Gagal', 'Rak dan Jumlah harus diisi dengan benar');
+        const isPackItem = product === 'lumpia' || product === 'adonan_pangsit';
+        
+        if (loading || !trayCount || trayCount <= 0 || (!isPackItem && !rak)) {
+            showNotification('error', 'Gagal', isPackItem ? 'Jumlah harus diisi dengan benar' : 'Rak dan Jumlah harus diisi dengan benar');
             return;
         }
         if (!batchNumber) {
@@ -188,7 +190,7 @@ export default function Kiosk() {
         }
 
         // Validate: Rak tidak boleh lebih kecil dari Rak terakhir
-        if (lastRak !== '' && parseInt(rak) < parseInt(lastRak)) {
+        if (!isPackItem && lastRak !== '' && parseInt(rak) < parseInt(lastRak)) {
             showNotification(
                 'error',
                 '⛔ Rak Tidak Valid',
@@ -200,13 +202,13 @@ export default function Kiosk() {
         setLoading(true);
         try {
             const response = await axios.post('/iqf-kiosk/store', {
-                product_type: product, machine, batch_number: batchNumber, rak, tray_count: trayCount,
+                product_type: product, machine, batch_number: batchNumber, rak: isPackItem ? null : rak, tray_count: trayCount,
             });
             setTotalsByProduct(response.data.totals_by_product || null);
-            showNotification('success', 'Berhasil Dicatat!', `Rak ${rak} - ${trayCount} dimasukkan.`);
+            showNotification('success', 'Berhasil Dicatat!', isPackItem ? `${trayCount} dimasukkan.` : `Rak ${rak} - ${trayCount} dimasukkan.`);
 
             // Update lastRak per mesin+produk (beserta konteks tanggal+shift)
-            if (lastRak === '' || parseInt(rak) >= parseInt(lastRak)) {
+            if (!isPackItem && (lastRak === '' || parseInt(rak) >= parseInt(lastRak))) {
                 setLastRak(String(rak));
                 saveLastRak(machine, product, rak);
             }
@@ -329,8 +331,8 @@ export default function Kiosk() {
                         <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] shadow-xl border overflow-hidden relative">
                             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-cyan-400 to-blue-500"></div>
                             <div className="p-6">
-                                {/* 3-column grid: Batch | Rak | Jml */}
-                                <div className="grid grid-cols-3 gap-4">
+                                {/* Grid: Batch | (Rak) | Jml */}
+                                <div className={`grid gap-4 ${isPack ? 'grid-cols-2' : 'grid-cols-3'}`}>
 
                                     {/* No. Batch — amber */}
                                     <div>
@@ -346,8 +348,9 @@ export default function Kiosk() {
                                     </div>
 
                                     {/* No. Rak — indigo */}
+                                    {!isPack && (
                                     <div>
-                                        <label className="block text-slate-500 font-bold mb-1 uppercase text-xs text-center">No. {isPack ? 'Rongga' : 'Rak'}</label>
+                                        <label className="block text-slate-500 font-bold mb-1 uppercase text-xs text-center">No. Rak</label>
                                         {lastRak !== '' ? (
                                             <p className="text-center text-[10px] font-bold mb-1 text-amber-600">Min: Rak {lastRak} ↑</p>
                                         ) : <div className="h-5 mb-1" />}
@@ -363,10 +366,11 @@ export default function Kiosk() {
                                             placeholder="0"
                                         />
                                     </div>
+                                    )}
 
                                     {/* Jml Loyang — emerald */}
                                     <div>
-                                        <label className="block text-slate-500 font-bold mb-1 uppercase text-xs text-center">Jml {isPack ? 'Pack' : 'Loyang'}</label>
+                                        <label className="block text-slate-500 font-bold mb-1 uppercase text-xs text-center">Jumlah {isPack ? 'Keranjang' : 'Loyang'}</label>
                                         <div className="h-5 mb-1" />
                                         <input
                                             type="number"
@@ -389,13 +393,13 @@ export default function Kiosk() {
 
                         {totalsByProduct !== null && (
                             <div className="mt-4 bg-white/90 backdrop-blur-md rounded-2xl border shadow-lg p-5 animate-in fade-in">
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4 text-center">Total Shift Ini (Loyang / Pack/ Solid)</p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4 text-center">Total Shift Ini (Loyang / Keranjang)</p>
                                 <div className="grid grid-cols-2 gap-3">
                                     {[
                                         { key: 'siomay', label: 'Siomay', unit: 'L', color: 'bg-pink-50 border-pink-200 text-pink-700' },
                                         { key: 'pentol', label: 'Pentol', unit: 'L', color: 'bg-blue-50 border-blue-200 text-blue-700' },
-                                        { key: 'lumpia', label: 'Lumpia', unit: 'P', color: 'bg-amber-50 border-amber-200 text-amber-700' },
-                                        { key: 'adonan_pangsit', label: 'Adonan Pangsit', unit: 'P', color: 'bg-purple-50 border-purple-200 text-purple-700' },
+                                        { key: 'lumpia', label: 'Lumpia', unit: 'K', color: 'bg-amber-50 border-amber-200 text-amber-700' },
+                                        { key: 'adonan_pangsit', label: 'Adonan Pangsit', unit: 'K', color: 'bg-purple-50 border-purple-200 text-purple-700' },
                                     ].map(({ key, label, unit, color }) => (
                                         <div key={key} className={`rounded-xl border p-3 flex flex-col items-center ${color}`}>
                                             <span className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-70">{label}</span>

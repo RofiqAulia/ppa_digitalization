@@ -18,98 +18,103 @@ import * as XLSX from 'xlsx-js-style';
 ───────────────────────────────────────────── */
 const PRINT_STYLE = `
 @media print {
-  @page { size: A4 landscape; margin: 10mm 12mm; }
+  @page { size: A4 landscape; margin: 6mm 6mm; }
 
-  /* Hide everything in body EXCEPT our print portal */
   body > *:not(#iqf-spt) { display: none !important; }
   #iqf-spt {
     display: block !important;
-    position: static !important;  /* allow natural page flow — NOT fixed */
+    position: static !important;
     width: 100%;
     background: white;
     padding: 0;
     font-family: Arial, sans-serif;
-    font-size: 9px;
+    font-size: 7px;
   }
 
-  /* Kop surat */
-  .spt-header {
+  /* === MAIN HEADER === */
+  .spt-main-header {
     display: flex !important;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    border-bottom: 2px solid #333;
-    padding-bottom: 8px;
-    margin-bottom: 8px;
+    border-bottom: 2px solid #222;
+    padding-bottom: 5px;
+    margin-bottom: 4px;
+    gap: 8px;
   }
-  .spt-info {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px 48px;
-    font-size: 9px;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 6px;
-    margin-bottom: 10px;
-  }
-  .spt-lbl { font-weight: 700; display: inline-block; width: 52px; }
+  .spt-title-block { flex: 1; text-align: center; padding-top: 4px; }
+  .spt-t1 { font-weight: 900; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; }
+  .spt-t2 { font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
 
-  /* Table — allow multi-page, repeat header each page */
-  table {
-    font-size: 8.5px;
+  /* Document info table — top right */
+  .spt-doc-table { border-collapse: collapse; font-size: 7px; }
+  .spt-doc-table td { border: 0.5px solid #444; padding: 2px 5px; white-space: nowrap; }
+  .spt-doc-label { font-weight: 700; background: #f0f0f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* === SUB-HEADER: Tanggal, PIC, IQF, Shift === */
+  .spt-info-row {
+    display: flex !important;
+    gap: 16px;
+    font-size: 8px;
+    border-bottom: 1px solid #ccc;
+    padding: 2px 0 3px;
+    margin-bottom: 3px;
+    flex-wrap: wrap;
+  }
+  .spt-info-row b { font-weight: 700; margin-right: 2px; }
+
+  .spt-printed { font-size: 6.5px; color: #888; text-align: right; font-style: italic; margin-bottom: 2px; }
+
+  /* === MATRIX DATA TABLE === */
+  table.spt-tbl {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
     page-break-inside: auto;
+    font-size: 6.5px;
   }
-  table thead {
-    display: table-header-group; /* repeat header on every page */
-  }
-  table tfoot {
-    display: table-footer-group;
-  }
-  table tbody {
-    page-break-inside: auto;
-  }
-  table th, table td { border: 1px solid #bbb; padding: 3px 5px; }
-  table th {
-    background: #1e3a5f !important; color: white !important;
-    -webkit-print-color-adjust: exact; print-color-adjust: exact;
-  }
-  table tr {
-    page-break-inside: avoid; /* don't split a single row across pages */
-    page-break-after: auto;
+  table.spt-tbl thead { display: table-header-group; }
+  table.spt-tbl tfoot { display: table-footer-group; }
+  table.spt-tbl tr { page-break-inside: avoid; }
+  table.spt-tbl th, table.spt-tbl td {
+    border: 0.5px solid #aaa;
+    padding: 1.5px 2px;
+    text-align: center;
+    vertical-align: middle;
+    overflow: hidden;
+    word-break: break-all;
   }
 
-  .spt-th-green {
-    background: #065f46 !important; color: white !important;
-    -webkit-print-color-adjust: exact; print-color-adjust: exact;
-  }
-  .spt-row-siomay td { background: #fff9e6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-row-pentol  td { background: #e8f4ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-row-lumpia  td { background: #edfff0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-row-adonan  td { background: #fdf0ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* Group header colors (top row) */
+  .spt-gh-siomay { background: #e65100 !important; color: #fff !important; font-weight: 900; font-size: 7.5px; letter-spacing: 0.5px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-gh-pentol { background: #1565c0 !important; color: #fff !important; font-weight: 900; font-size: 7.5px; letter-spacing: 0.5px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-gh-lumpia { background: #2e7d32 !important; color: #fff !important; font-weight: 900; font-size: 7.5px; letter-spacing: 0.5px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-gh-adonan { background: #6a1b9a !important; color: #fff !important; font-weight: 900; font-size: 7.5px; letter-spacing: 0.5px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-gh-stop   { background: #b71c1c !important; color: #fff !important; font-weight: 900; font-size: 7.5px; letter-spacing: 0.5px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
-  /* Kop surat header rows inside thead — repeat every page */
-  .spt-thead-kop td {
-    background: white !important;
-    border: none !important;
-    padding: 0 !important;
-  }
-  .spt-thead-info td {
-    background: white !important;
-    border-left: none !important;
-    border-right: none !important;
-    border-top: none !important;
-    border-bottom: 1px solid #ccc !important;
-    padding: 3px 0 4px 0 !important;
-    font-size: 9px !important;
-  }
-  .spt-thead-printed td {
-    background: white !important;
-    border: none !important;
-    padding: 2px 0 6px 0 !important;
-    font-size: 8px !important;
-    color: #666 !important;
-    font-style: italic !important;
-  }
+  /* Sub-header row per product */
+  .spt-sh-siomay { background: #fff3e0 !important; font-weight: 700; font-size: 5.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-sh-pentol { background: #e3f2fd !important; font-weight: 700; font-size: 5.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-sh-lumpia { background: #e8f5e9 !important; font-weight: 700; font-size: 5.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-sh-adonan { background: #f3e5f5 !important; font-weight: 700; font-size: 5.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-sh-stop   { background: #ffebee !important; font-weight: 700; font-size: 5.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* Data cell colors per product */
+  .spt-d-siomay { background: #fff9f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-d-pentol { background: #f0f7ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-d-lumpia { background: #f0fff4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-d-adonan { background: #faf0ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-d-stop   { background: #fff5f5 !important; vertical-align: top !important; text-align: left !important; padding: 3px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* Column width classes (used on <col>) */
+  .spt-c-batch { width: 13mm; }
+  .spt-c-suhu  { width: 9mm; }
+  .spt-c-time  { width: 12mm; }
+  .spt-c-rak   { width: 9mm; }
+  .spt-c-qty   { width: 10mm; }
+  .spt-c-stop  { width: 22mm; }
+
+  /* Total / footer rows */
+  .spt-total-row td { font-weight: 700; font-size: 7px; border-top: 1.5px solid #555 !important; }
 }
 `;
 
@@ -754,7 +759,7 @@ export default function DataTable({ logsheets }) {
                                             <SortableHeader columnKey="suhu_produk">Suhu Produk</SortableHeader>
                                             <SortableHeader columnKey="time">Waktu</SortableHeader>
                                             <SortableHeader columnKey="rak">Rak/Rongga</SortableHeader>
-                                            <SortableHeader columnKey="tray_count">Jml (Loyang/Pack)</SortableHeader>
+                                            <SortableHeader columnKey="tray_count">Jumlah (Loyang/Keranjang)</SortableHeader>
                                             <th className="px-3 py-2.5 text-xs font-bold text-emerald-100 bg-emerald-700 border-b border-emerald-800 text-center">Total</th>
                                             <SortableHeader columnKey="unplanned_stop" className="hidden lg:table-cell">Unplanned Stop</SortableHeader>
                                             <th className="no-print hidden sm:table-cell px-3 py-2.5 text-xs font-bold text-white bg-[#1e3a5f] border-b border-[#152d4a] text-center w-14">Aksi</th>
@@ -846,8 +851,8 @@ export default function DataTable({ logsheets }) {
                                                     {[
                                                         { label:'Siomay', val: group.totals.siomay, unit:'L', cls:'text-yellow-800 bg-yellow-100 border-yellow-300' },
                                                         { label:'Pentol', val: group.totals.pentol, unit:'L', cls:'text-blue-800 bg-blue-100 border-blue-300' },
-                                                        { label:'Lumpia', val: group.totals.lumpia, unit:'P', cls:'text-green-800 bg-green-100 border-green-300' },
-                                                        { label:'Adonan', val: group.totals.adonan, unit:'P', cls:'text-purple-800 bg-purple-100 border-purple-300' },
+                                                        { label:'Lumpia', val: group.totals.lumpia, unit:'K', cls:'text-green-800 bg-green-100 border-green-300' },
+                                                        { label:'Adonan', val: group.totals.adonan, unit:'K', cls:'text-purple-800 bg-purple-100 border-purple-300' },
                                                     ].map(({ label, val, unit, cls }) => (
                                                         <div key={label} className="flex items-center gap-1">
                                                             <span className="text-slate-400">{label}:</span>
@@ -944,7 +949,7 @@ export default function DataTable({ logsheets }) {
                                     <Input name="batch_number" value={editData.batch_number} onChange={handleEditChange} />
                                 </div>
                                 <div className="space-y-1">
-                                    <Label>Jumlah (Loyang/Pack)</Label>
+                                    <Label>Jumlah (Loyang/Keranjang)</Label>
                                     <Input type="number" name="tray_count" value={editData.tray_count} onChange={handleEditChange} />
                                 </div>
                             </div>
@@ -1010,97 +1015,222 @@ export default function DataTable({ logsheets }) {
                 const pg = groupedData.find(g => g.key === printGroupKey);
                 if (!pg || typeof document === 'undefined') return null;
 
-                const pgLastIdxMap = getLastIdxMap(pg.rows);
-                const pgPT = { siomay: 0, pentol: 0, lumpia: 0, adonan_pangsit: 0 };
-                pg.rows.forEach(r => { if (pgPT[r.product_type] !== undefined) pgPT[r.product_type] += r.tray_count || 0; });
+                /* ── Pisahkan baris per jenis produk ── */
+                const siomayRows = pg.rows.filter(r => r.product_type === 'siomay');
+                const pentolRows  = pg.rows.filter(r => r.product_type === 'pentol');
+                const lumpiaRows  = pg.rows.filter(r => r.product_type === 'lumpia');
+                const adonanRows  = pg.rows.filter(r => r.product_type === 'adonan_pangsit');
+
+                /* Pentol dibagi 2 kolom karena volume terbanyak */
+                const pentolHalf = Math.ceil(pentolRows.length / 2);
+                const pentolCol1 = pentolRows.slice(0, pentolHalf);
+                const pentolCol2 = pentolRows.slice(pentolHalf);
+
+                const maxRows = Math.max(
+                    siomayRows.length, pentolCol1.length, pentolCol2.length,
+                    lumpiaRows.length, adonanRows.length, 1
+                );
+
+                /* Totals */
+                const totSiomay = siomayRows.reduce((s, r) => s + (r.tray_count || 0), 0);
+                const totPentol = pentolRows.reduce((s, r) => s + (r.tray_count || 0), 0);
+                const totLumpia = lumpiaRows.reduce((s, r) => s + (r.tray_count || 0), 0);
+                const totAdonan = adonanRows.reduce((s, r) => s + (r.tray_count || 0), 0);
+
+                /* Unplanned stops & PICs */
+                const unplannedStops = [...new Set(pg.rows.map(r => r.unplanned_stop).filter(s => s && s !== '-'))].join('\n') || '';
                 const pgPics = [...new Set(pg.rows.map(r => r.pic).filter(p => p && p !== '--'))].join(', ') || '-';
 
-                const PRINT_ROW_CLS = {
-                    siomay: 'spt-row-siomay', pentol: 'spt-row-pentol',
-                    lumpia: 'spt-row-lumpia', adonan_pangsit: 'spt-row-adonan',
-                };
+                /* Tanggal berlaku = hari ini */
+                const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+
+                /* Helpers */
+                const cv  = (row, f) => row ? (row[f] ?? '') : '';
+                const tc  = (row)    => row ? formatTime(row.time) : '';
+                const bold = (row)   => row ? 700 : 'normal';
 
                 return createPortal(
                     <div id="iqf-spt">
-                        {/* Table — kop surat inside thead so it repeats every page */}
-                        <table>
+
+                        {/* ── MAIN HEADER ── */}
+                        <div className="spt-main-header">
+                            <img src="/images/ppa.jpg" alt="Logo PPA" style={{ height: '48px', objectFit: 'contain' }} />
+                            <div className="spt-title-block">
+                                <div className="spt-t1">FORMULIR</div>
+                                <div className="spt-t2">INPUT IQF DAN FREEZING</div>
+                            </div>
+                            <table className="spt-doc-table">
+                                <tbody>
+                                    <tr><td className="spt-doc-label">Departemen</td><td>Produksi</td></tr>
+                                    <tr><td className="spt-doc-label">Nomor Dokumen</td><td>Form/PROS/IQF-01</td></tr>
+                                    <tr><td className="spt-doc-label">Tanggal Berlaku</td><td>{today}</td></tr>
+                                    <tr><td className="spt-doc-label">Factory</td><td>Malang</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* ── SUB-HEADER INFO ── */}
+                        <div className="spt-info-row">
+                            <span><b>Tanggal</b>: {formatDate(pg.date)}</span>
+                            <span><b>PIC</b>: {pgPics}</span>
+                            <span><b>IQF</b>: {pg.machine}</span>
+                            <span><b>Shift</b>: {pg.shift}</span>
+                        </div>
+
+                        {/* ── PRINTED TIMESTAMP ── */}
+                        <div className="spt-printed">Dicetak pada: {printTime}</div>
+
+                        {/* ── MATRIX TABLE ──
+                            Kolom: SIOMAY(6) | PENTOL(6) | PENTOL(6) | LUMPIA(5) | ADONAN PANGSIT(5) | STOP(1) = 29
+                        ── */}
+                        <table className="spt-tbl">
+                            <colgroup>
+                                {/* SIOMAY: Batch|PnlSuhu|PrdSuhu|Mulai|Rak|Loy */}
+                                <col className="spt-c-batch"/><col className="spt-c-suhu"/><col className="spt-c-suhu"/>
+                                <col className="spt-c-time" /><col className="spt-c-rak" /><col className="spt-c-qty" />
+                                {/* PENTOL 1 */}
+                                <col className="spt-c-batch"/><col className="spt-c-suhu"/><col className="spt-c-suhu"/>
+                                <col className="spt-c-time" /><col className="spt-c-rak" /><col className="spt-c-qty" />
+                                {/* PENTOL 2 */}
+                                <col className="spt-c-batch"/><col className="spt-c-suhu"/><col className="spt-c-suhu"/>
+                                <col className="spt-c-time" /><col className="spt-c-rak" /><col className="spt-c-qty" />
+                                {/* LUMPIA: Batch|PnlSuhu|PrdSuhu|Mulai|Keranjang (tanpa Rak) */}
+                                <col className="spt-c-batch"/><col className="spt-c-suhu"/><col className="spt-c-suhu"/>
+                                <col className="spt-c-time" /><col className="spt-c-qty" />
+                                {/* ADONAN: Batch|PnlSuhu|PrdSuhu|Mulai|Keranjang (tanpa Rak) */}
+                                <col className="spt-c-batch"/><col className="spt-c-suhu"/><col className="spt-c-suhu"/>
+                                <col className="spt-c-time" /><col className="spt-c-qty" />
+                                {/* UNPLANNED STOP */}
+                                <col className="spt-c-stop"/>
+                            </colgroup>
+
                             <thead>
-                                {/* Row 1: Kop Surat */}
-                                <tr className="spt-thead-kop">
-                                    <td colSpan={10}>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '2px solid #333', paddingBottom: '6px', marginBottom: '4px' }}>
-                                            <img src="/images/ppa.jpg" alt="Logo PPA" style={{ height: '50px', objectFit: 'contain' }} />
-                                            <div style={{ flex: 1, textAlign: 'center' }}>
-                                                <div style={{ fontWeight: 900, fontSize: '14px', letterSpacing: '3px', textTransform: 'uppercase' }}>FORMULIR</div>
-                                                <div style={{ fontWeight: 700, fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', marginTop: '2px' }}>INPUT IQF DAN FREEZING</div>
-                                            </div>
-                                            <div style={{ width: '80px' }} />
-                                        </div>
-                                    </td>
-                                </tr>
-                                {/* Row 2: Info fields */}
-                                <tr className="spt-thead-info">
-                                    <td colSpan={10}>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 48px', fontSize: '9px', paddingBottom: '4px' }}>
-                                            <div><span style={{ fontWeight: 700, display: 'inline-block', width: '52px' }}>Tanggal</span>: {formatDate(pg.date)}</div>
-                                            <div><span style={{ fontWeight: 700, display: 'inline-block', width: '52px' }}>PIC</span>: {pgPics}</div>
-                                            <div><span style={{ fontWeight: 700, display: 'inline-block', width: '52px' }}>IQF</span>: {pg.machine}</div>
-                                            <div><span style={{ fontWeight: 700, display: 'inline-block', width: '52px' }}>Shift</span>: {pg.shift}</div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {/* Row 3: Printed timestamp */}
-                                <tr className="spt-thead-printed">
-                                    <td colSpan={10} style={{ textAlign: 'right' }}>
-                                        Dicetak pada: {printTime}
-                                    </td>
-                                </tr>
-                                {/* Row 4: Column headers */}
+                                {/* ROW A: Group Headers */}
                                 <tr>
-                                    <th style={{ textAlign: 'center', width: '22px' }}>#</th>
-                                    <th>Jenis Produk</th>
-                                    <th>No Batch</th>
-                                    <th>Suhu Panel</th>
-                                    <th>Suhu Produk</th>
-                                    <th>Waktu</th>
-                                    <th>Rak/Rongga</th>
-                                    <th>Jml (Loyang/Pack)</th>
-                                    <th className="spt-th-green" style={{ textAlign: 'center' }}>Total</th>
-                                    <th>Unplanned Stop</th>
+                                    <th colSpan={6} className="spt-gh-siomay">SIOMAY</th>
+                                    <th colSpan={6} className="spt-gh-pentol">PENTOL</th>
+                                    <th colSpan={6} className="spt-gh-pentol">PENTOL</th>
+                                    <th colSpan={5} className="spt-gh-lumpia">LUMPIA</th>
+                                    <th colSpan={5} className="spt-gh-adonan">ADONAN PANGSIT</th>
+                                    <th rowSpan={2} className="spt-gh-stop">UNPLANNED STOP</th>
+                                </tr>
+                                {/* ROW B: Sub-headers */}
+                                <tr>
+                                    {/* SIOMAY */}
+                                    <th className="spt-sh-siomay">No.Batch</th>
+                                    <th className="spt-sh-siomay">Suhu Panel</th>
+                                    <th className="spt-sh-siomay">Suhu Produk</th>
+                                    <th className="spt-sh-siomay">Mulai</th>
+                                    <th className="spt-sh-siomay">Rak</th>
+                                    <th className="spt-sh-siomay">Loyang</th>
+                                    {/* PENTOL 1 */}
+                                    <th className="spt-sh-pentol">No.Batch</th>
+                                    <th className="spt-sh-pentol">Suhu Panel</th>
+                                    <th className="spt-sh-pentol">Suhu Produk</th>
+                                    <th className="spt-sh-pentol">Mulai</th>
+                                    <th className="spt-sh-pentol">Rak</th>
+                                    <th className="spt-sh-pentol">Loyang</th>
+                                    {/* PENTOL 2 */}
+                                    <th className="spt-sh-pentol">No.Batch</th>
+                                    <th className="spt-sh-pentol">Suhu Panel</th>
+                                    <th className="spt-sh-pentol">Suhu Produk</th>
+                                    <th className="spt-sh-pentol">Mulai</th>
+                                    <th className="spt-sh-pentol">Rak</th>
+                                    <th className="spt-sh-pentol">Loyang</th>
+                                    {/* LUMPIA — tanpa Rak */}
+                                    <th className="spt-sh-lumpia">No.Batch</th>
+                                    <th className="spt-sh-lumpia">Suhu Panel</th>
+                                    <th className="spt-sh-lumpia">Suhu Produk</th>
+                                    <th className="spt-sh-lumpia">Mulai</th>
+                                    <th className="spt-sh-lumpia">Keranjang</th>
+                                    {/* ADONAN PANGSIT — tanpa Rak */}
+                                    <th className="spt-sh-adonan">No.Batch</th>
+                                    <th className="spt-sh-adonan">Suhu Panel</th>
+                                    <th className="spt-sh-adonan">Suhu Produk</th>
+                                    <th className="spt-sh-adonan">Mulai</th>
+                                    <th className="spt-sh-adonan">Keranjang</th>
                                 </tr>
                             </thead>
+
                             <tbody>
-                                {pg.rows.map((row, idx) => {
-                                    const pt           = row.product_type;
-                                    const isLast       = pgLastIdxMap[pt] === idx;
-                                    const rowTotal     = pgPT[pt];
+                                {Array.from({ length: maxRows }, (_, i) => {
+                                    const s  = siomayRows[i]  || null;
+                                    const p1 = pentolCol1[i]  || null;
+                                    const p2 = pentolCol2[i]  || null;
+                                    const l  = lumpiaRows[i]  || null;
+                                    const a  = adonanRows[i]  || null;
                                     return (
-                                        <tr key={row.id} className={PRINT_ROW_CLS[pt] || ''}>
-                                            <td style={{ textAlign: 'center' }}>{idx + 1}</td>
-                                            <td>{formatProduct(pt)}</td>
-                                            <td>{row.batch_number}</td>
-                                            <td>{row.suhu_panel}</td>
-                                            <td>{row.suhu_produk}</td>
-                                            <td>{formatTime(row.time)}</td>
-                                            <td style={{ textAlign: 'center' }}>{row.rak}</td>
-                                            <td style={{ textAlign: 'center', fontWeight: 700 }}>{row.tray_count}</td>
-                                            <td style={{ textAlign: 'center', fontWeight: isLast ? 900 : 'normal', background: isLast ? '#d1fae5' : 'transparent' }}>
-                                                {isLast ? `${rowTotal} ${unitLabel(pt)}` : '—'}
-                                            </td>
-                                            <td>{row.unplanned_stop !== '-' ? row.unplanned_stop : ''}</td>
+                                        <tr key={i}>
+                                            {/* SIOMAY */}
+                                            <td className="spt-d-siomay">{cv(s,'batch_number')}</td>
+                                            <td className="spt-d-siomay">{cv(s,'suhu_panel')}</td>
+                                            <td className="spt-d-siomay">{cv(s,'suhu_produk')}</td>
+                                            <td className="spt-d-siomay">{tc(s)}</td>
+                                            <td className="spt-d-siomay" style={{fontWeight:bold(s)}}>{cv(s,'rak')}</td>
+                                            <td className="spt-d-siomay" style={{fontWeight:bold(s)}}>{s ? s.tray_count : ''}</td>
+                                            {/* PENTOL 1 */}
+                                            <td className="spt-d-pentol">{cv(p1,'batch_number')}</td>
+                                            <td className="spt-d-pentol">{cv(p1,'suhu_panel')}</td>
+                                            <td className="spt-d-pentol">{cv(p1,'suhu_produk')}</td>
+                                            <td className="spt-d-pentol">{tc(p1)}</td>
+                                            <td className="spt-d-pentol" style={{fontWeight:bold(p1)}}>{cv(p1,'rak')}</td>
+                                            <td className="spt-d-pentol" style={{fontWeight:bold(p1)}}>{p1 ? p1.tray_count : ''}</td>
+                                            {/* PENTOL 2 — lanjutan */}
+                                            <td className="spt-d-pentol">{cv(p2,'batch_number')}</td>
+                                            <td className="spt-d-pentol">{cv(p2,'suhu_panel')}</td>
+                                            <td className="spt-d-pentol">{cv(p2,'suhu_produk')}</td>
+                                            <td className="spt-d-pentol">{tc(p2)}</td>
+                                            <td className="spt-d-pentol" style={{fontWeight:bold(p2)}}>{cv(p2,'rak')}</td>
+                                            <td className="spt-d-pentol" style={{fontWeight:bold(p2)}}>{p2 ? p2.tray_count : ''}</td>
+                                            {/* LUMPIA — tanpa kolom rak */}
+                                            <td className="spt-d-lumpia">{cv(l,'batch_number')}</td>
+                                            <td className="spt-d-lumpia">{cv(l,'suhu_panel')}</td>
+                                            <td className="spt-d-lumpia">{cv(l,'suhu_produk')}</td>
+                                            <td className="spt-d-lumpia">{tc(l)}</td>
+                                            <td className="spt-d-lumpia" style={{fontWeight:bold(l)}}>{l ? l.tray_count : ''}</td>
+                                            {/* ADONAN PANGSIT — tanpa kolom rak */}
+                                            <td className="spt-d-adonan">{cv(a,'batch_number')}</td>
+                                            <td className="spt-d-adonan">{cv(a,'suhu_panel')}</td>
+                                            <td className="spt-d-adonan">{cv(a,'suhu_produk')}</td>
+                                            <td className="spt-d-adonan">{tc(a)}</td>
+                                            <td className="spt-d-adonan" style={{fontWeight:bold(a)}}>{a ? a.tray_count : ''}</td>
+                                            {/* UNPLANNED STOP — rowSpan, hanya pada baris pertama */}
+                                            {i === 0 && (
+                                                <td rowSpan={maxRows} className="spt-d-stop" style={{whiteSpace:'pre-line'}}>
+                                                    {unplannedStops}
+                                                </td>
+                                            )}
                                         </tr>
                                     );
                                 })}
                             </tbody>
+
                             <tfoot>
-                                <tr>
-                                    <td colSpan={10} style={{ paddingTop: '8px', fontWeight: 700, fontSize: '9px', textAlign: 'right', borderTop: '2px solid #555' }}>
-                                        Rekap Produksi:&nbsp;&nbsp;
-                                        {pgPT.siomay > 0 && <span style={{ marginRight: '16px' }}>Siomay: <b>{pgPT.siomay} L</b></span>}
-                                        {pgPT.pentol > 0 && <span style={{ marginRight: '16px' }}>Pentol: <b>{pgPT.pentol} L</b></span>}
-                                        {pgPT.lumpia > 0 && <span style={{ marginRight: '16px' }}>Lumpia: <b>{pgPT.lumpia} P</b></span>}
-                                        {pgPT.adonan_pangsit > 0 && <span>Adonan Pangsit: <b>{pgPT.adonan_pangsit} P</b></span>}
+                                <tr className="spt-total-row">
+                                    {/* SIOMAY total */}
+                                    <td colSpan={4} style={{textAlign:'right'}}>TOTAL</td>
+                                    <td colSpan={2} style={{fontWeight:900,color:'#e65100'}}>
+                                        {totSiomay > 0 ? `${totSiomay} L` : '-'}
                                     </td>
+                                    {/* PENTOL 1 total */}
+                                    <td colSpan={4} style={{textAlign:'right'}}>TOTAL</td>
+                                    <td colSpan={2} style={{fontWeight:900,color:'#1565c0'}}>
+                                        {totPentol > 0 ? `${totPentol} L` : '-'}
+                                    </td>
+                                    {/* PENTOL 2 — kosong (total sudah di PENTOL 1) */}
+                                    <td colSpan={6} />
+                                    {/* LUMPIA total */}
+                                    <td colSpan={3} style={{textAlign:'right'}}>TOTAL</td>
+                                    <td colSpan={2} style={{fontWeight:900,color:'#2e7d32'}}>
+                                        {totLumpia > 0 ? `${totLumpia}` : '-'}
+                                    </td>
+                                    {/* ADONAN total */}
+                                    <td colSpan={3} style={{textAlign:'right'}}>TOTAL</td>
+                                    <td colSpan={2} style={{fontWeight:900,color:'#6a1b9a'}}>
+                                        {totAdonan > 0 ? `${totAdonan}` : '-'}
+                                    </td>
+                                    {/* STOP */}
+                                    <td />
                                 </tr>
                             </tfoot>
                         </table>
