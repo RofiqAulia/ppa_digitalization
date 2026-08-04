@@ -12,6 +12,52 @@ use Inertia\Inertia;
 
 class IqfLogsheetController extends Controller
 {
+    public function dashboardStats(Request $request)
+    {
+        extract($this->getCurrentShiftAndDate());
+
+        $fromTime = $request->get('from_time', '00:00');
+        $toTime   = $request->get('to_time',   '23:59');
+        $queryDate = $request->get('date', $date);
+
+        $products = ['siomay', 'pentol', 'lumpia', 'adonan_pangsit'];
+        $machines = ['IQF 1', 'IQF 2'];
+
+        $byMachine   = [];
+        $grandTotal  = array_fill_keys($products, 0);
+
+        foreach ($machines as $m) {
+            $byMachine[$m] = array_fill_keys($products, 0);
+        }
+
+        $rows = DB::table('iqf_logsheets as h')
+            ->join('iqf_logsheet_details as d', 'd.iqf_logsheet_id', '=', 'h.id')
+            ->select('h.machine', 'h.product_type', DB::raw('SUM(d.tray_count) as total'))
+            ->where('h.date', $queryDate)
+            ->where('d.time', '>=', $fromTime . ':00')
+            ->where('d.time', '<=', $toTime . ':59')
+            ->groupBy('h.machine', 'h.product_type')
+            ->get();
+
+        foreach ($rows as $row) {
+            $pt = strtolower($row->product_type);
+            $mc = $row->machine;
+            if (isset($byMachine[$mc][$pt])) {
+                $byMachine[$mc][$pt] = (int) $row->total;
+                $grandTotal[$pt]    += (int) $row->total;
+            }
+        }
+
+        return response()->json([
+            'date'        => $queryDate,
+            'shift'       => $shift,
+            'from_time'   => $fromTime,
+            'to_time'     => $toTime,
+            'by_machine'  => $byMachine,
+            'grand_total' => $grandTotal,
+        ]);
+    }
+
     public function index(Request $request)
     {
         extract($this->getCurrentShiftAndDate());

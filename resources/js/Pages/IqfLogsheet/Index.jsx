@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Button } from '@/components/ui/button';
 import DataTable from './Components/DataTable';
+import IqfDashboard from './Components/IqfDashboard';
 
 export default function Index({ logsheets }) {
     return (
@@ -11,7 +12,7 @@ export default function Index({ logsheets }) {
             
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900">Formulir IQF & Freezing (Hari Ini)</h2>
+                    <h2 className="text-3xl font-bold tracking-tight text-slate-900">Formulir IQF &amp; Freezing (Hari Ini)</h2>
                     <p className="text-muted-foreground text-sm font-medium">List of today's production logsheet records</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -27,6 +28,9 @@ export default function Index({ logsheets }) {
                     </a>
                 </div>
             </div>
+
+            {/* Dashboard produksi per mesin & jenis dimsum */}
+            <IqfDashboard />
 
             <div className="min-h-[calc(100vh-160px)] md:h-[calc(100vh-160px)]">
                 <DataTable logsheets={logsheets} />

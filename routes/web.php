@@ -26,5 +26,6 @@ Route::get('/iqf-logsheet/export-excel', [App\Http\Controllers\IqfExportControll
 Route::get('/iqf-kiosk', [App\Http\Controllers\IqfLogsheetController::class, 'kiosk'])->name('iqf-logsheet.kiosk');
 Route::post('/iqf-kiosk/store', [App\Http\Controllers\IqfLogsheetController::class, 'storeKiosk'])->name('iqf-logsheet.storeKiosk');
 Route::post('/iqf-kiosk/unplanned-stop', [App\Http\Controllers\IqfLogsheetController::class, 'storeUnplannedStop'])->name('iqf-logsheet.storeUnplannedStop');
+Route::get('/iqf-kiosk/stats', [App\Http\Controllers\IqfLogsheetController::class, 'dashboardStats'])->name('iqf-logsheet.stats');
 
 
