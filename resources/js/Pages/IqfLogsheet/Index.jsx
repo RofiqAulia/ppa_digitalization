@@ -3,7 +3,6 @@ import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Button } from '@/components/ui/button';
 import DataTable from './Components/DataTable';
-import IqfDashboard from './Components/IqfDashboard';
 
 export default function Index({ logsheets }) {
     return (
@@ -28,9 +27,6 @@ export default function Index({ logsheets }) {
                     </a>
                 </div>
             </div>
-
-            {/* Dashboard produksi per mesin & jenis dimsum */}
-            <IqfDashboard />
 
             <div className="min-h-[calc(100vh-160px)] md:h-[calc(100vh-160px)]">
                 <DataTable logsheets={logsheets} />

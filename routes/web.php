@@ -12,8 +12,12 @@ Route::post('/prepare-produksi/{prepareProduksi}/update', [\App\Http\Controllers
 Route::delete('/prepare-produksi/{prepareProduksi}', [\App\Http\Controllers\PrepareProductionController::class, 'destroy'])->name('prepare-produksi.destroy');
 
 // IQF Logsheet Routes
+Route::get('/iqf-logsheet/dashboard', function () {
+    return Inertia\Inertia::render('IqfLogsheet/Dashboard');
+})->name('iqf-logsheet.dashboard');
 Route::get('/logsheet-iqf', [App\Http\Controllers\IqfLogsheetController::class, 'index'])->name('logsheet-iqf.index');
 Route::get('/iqf-logsheet/history', [App\Http\Controllers\IqfLogsheetController::class, 'history'])->name('iqf-logsheet.history');
+
 Route::resource('iqf-logsheet', App\Http\Controllers\IqfLogsheetController::class);
 Route::post('/iqf-logsheet/{iqfLogsheet}/detail', [App\Http\Controllers\IqfLogsheetController::class, 'storeDetail'])->name('iqf-logsheet.storeDetail');
 Route::put('/iqf-logsheet-detail/{id}', [App\Http\Controllers\IqfLogsheetController::class, 'updateDetail'])->name('iqf-logsheet.updateDetail');

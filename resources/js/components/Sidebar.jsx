@@ -17,11 +17,13 @@ const navigation = [
         name: '4. IQF',
         icon: Snowflake,
         children: [
+            { name: 'Dashboard',    href: '/iqf-logsheet/dashboard', icon: LayoutDashboard },
             { name: 'IQF Logsheet', href: '/iqf-logsheet',         icon: FileText },
             { name: 'IQF Kiosk',    href: '/iqf-kiosk',            icon: MonitorSmartphone },
             { name: 'History IQF',  href: '/iqf-logsheet/history', icon: History },
         ]
     },
+
     { name: '5. Packaging', href: '#packaging',         icon: Package,      disabled: true },
 ];
 
