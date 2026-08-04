@@ -422,6 +422,21 @@ class SyncIqfToGoogleSheets extends Command
             }
         }
 
+        // 10.5 Paksa format tanggal untuk SEMUA baris yang ada di spreadsheet
+        foreach ($rowLookup as $key => $rowNumber) {
+            $parts = explode('|', $key);
+            if (count($parts) === 4) {
+                $ts = strtotime($parts[0]);
+                $bulanIndo = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                $tglFormatted = date('d', $ts) . ' ' . $bulanIndo[(int)date('n', $ts)] . ' ' . date('Y', $ts);
+                
+                $batchData[] = new ValueRange([
+                    'range'  => "'{$sheetName}'!B{$rowNumber}",
+                    'values' => [[$tglFormatted]],
+                ]);
+            }
+        }
+
         // 11. Kirim batch update ke Google Sheets
         if (!empty($batchData)) {
             try {
@@ -440,19 +455,19 @@ class SyncIqfToGoogleSheets extends Command
             $this->info('Tidak ada sel yang perlu diupdate.');
         }
 
-        // 11.5 Warnai baris berdasarkan Shift
+        // 11.5 Warnai SEMUA baris berdasarkan Shift
         if ($sheetId !== null) {
             $formatRequests = [];
-            foreach ($affectedCombinations as $combo) {
-                $key = "{$combo['date']}|{$combo['jenis']}|{$combo['machine']}|{$combo['shift']}";
-                $rowNumber = $rowLookup[$key] ?? null;
-                if ($rowNumber) {
+            foreach ($rowLookup as $key => $rowNumber) {
+                $parts = explode('|', $key);
+                if (count($parts) === 4) {
+                    $shift = (int)$parts[3];
                     $color = ['red' => 1.0, 'green' => 1.0, 'blue' => 1.0]; // default white
-                    if ($combo['shift'] === 1) {
+                    if ($shift === 1) {
                         $color = ['red' => 0.85, 'green' => 0.92, 'blue' => 0.83]; // Ijo
-                    } elseif ($combo['shift'] === 2) {
+                    } elseif ($shift === 2) {
                         $color = ['red' => 1.0, 'green' => 0.95, 'blue' => 0.80]; // Kuning
-                    } elseif ($combo['shift'] === 3) {
+                    } elseif ($shift === 3) {
                         $color = ['red' => 0.98, 'green' => 0.90, 'blue' => 0.80]; // Orange
                     }
                     
