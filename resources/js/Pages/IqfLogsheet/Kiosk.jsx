@@ -336,7 +336,7 @@ export default function Kiosk() {
 
                                     {/* No. Batch — amber */}
                                     <div className="flex flex-col">
-                                        <div className="h-12 flex flex-col justify-end pb-1">
+                                        <div className="h-12 flex flex-col justify-center">
                                             <label className="block text-slate-500 font-bold uppercase text-xs text-center leading-tight">No. Batch</label>
                                         </div>
                                         <input
@@ -351,7 +351,7 @@ export default function Kiosk() {
                                     {/* No. Rak — indigo */}
                                     {!isPack && (
                                     <div className="flex flex-col">
-                                        <div className="h-12 flex flex-col justify-end pb-1">
+                                        <div className="h-12 flex flex-col justify-center">
                                             <label className="block text-slate-500 font-bold uppercase text-xs text-center leading-tight">No. Rak</label>
                                             {lastRak !== '' && (
                                                 <p className="text-center text-[10px] font-bold mt-0.5 text-amber-600">Min: Rak {lastRak} ↑</p>
@@ -373,7 +373,7 @@ export default function Kiosk() {
 
                                     {/* Jml Loyang/Keranjang — emerald */}
                                     <div className="flex flex-col">
-                                        <div className="h-12 flex flex-col justify-end pb-1">
+                                        <div className="h-12 flex flex-col justify-center">
                                             <label className="block text-slate-500 font-bold uppercase text-xs text-center leading-tight">Jumlah {isPack ? 'Keranjang' : 'Loyang'}</label>
                                         </div>
                                         <input
