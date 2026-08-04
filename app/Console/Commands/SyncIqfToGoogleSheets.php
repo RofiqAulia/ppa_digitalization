@@ -478,7 +478,7 @@ class SyncIqfToGoogleSheets extends Command
                                 'startRowIndex' => $rowNumber - 1,
                                 'endRowIndex' => $rowNumber,
                                 'startColumnIndex' => 0,
-                                'endColumnIndex' => 31 // Sampai kolom AE
+                                'endColumnIndex' => 32 // Sampai kolom AF (Indeks 32 eksklusif)
                             ],
                             'cell' => [
                                 'userEnteredFormat' => [
