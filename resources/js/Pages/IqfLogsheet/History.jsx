@@ -2,7 +2,7 @@ import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ClipboardList } from 'lucide-react';
+import { ArrowLeft, ClipboardList, FileDown } from 'lucide-react';
 import DataTable from './Components/DataTable';
 
 export default function History({ logsheets }) {
@@ -26,12 +26,22 @@ export default function History({ logsheets }) {
                     </div>
                 </div>
 
-                <Link href="/iqf-logsheet">
-                    <Button variant="outline" className="text-slate-600 border-slate-300 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 shadow-sm transition-colors">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Kembali ke Hari Ini
-                    </Button>
-                </Link>
+                <div className="flex items-center gap-3">
+                    {/* Tombol Download Excel */}
+                    <a href="/iqf-logsheet/export-excel">
+                        <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-colors">
+                            <FileDown className="w-4 h-4 mr-2" />
+                            Download Excel
+                        </Button>
+                    </a>
+
+                    <Link href="/iqf-logsheet">
+                        <Button variant="outline" className="text-slate-600 border-slate-300 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 shadow-sm transition-colors">
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Kembali ke Hari Ini
+                        </Button>
+                    </Link>
+                </div>
             </div>
 
             <div>

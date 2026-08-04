@@ -19,6 +19,9 @@ Route::post('/iqf-logsheet/{iqfLogsheet}/detail', [App\Http\Controllers\IqfLogsh
 Route::put('/iqf-logsheet-detail/{id}', [App\Http\Controllers\IqfLogsheetController::class, 'updateDetail'])->name('iqf-logsheet.updateDetail');
 Route::delete('/iqf-logsheet-detail/{id}', [App\Http\Controllers\IqfLogsheetController::class, 'destroyDetail'])->name('iqf-logsheet.destroyDetail');
 
+// Export Excel Route
+Route::get('/iqf-logsheet/export-excel', [App\Http\Controllers\IqfExportController::class, 'download'])->name('iqf-logsheet.export');
+
 // Kiosk Routes
 Route::get('/iqf-kiosk', [App\Http\Controllers\IqfLogsheetController::class, 'kiosk'])->name('iqf-logsheet.kiosk');
 Route::post('/iqf-kiosk/store', [App\Http\Controllers\IqfLogsheetController::class, 'storeKiosk'])->name('iqf-logsheet.storeKiosk');
