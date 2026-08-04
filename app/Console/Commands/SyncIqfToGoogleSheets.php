@@ -11,6 +11,8 @@ use Google\Client;
 use Google\Service\Sheets;
 use Google\Service\Sheets\ValueRange;
 use Google\Service\Sheets\BatchUpdateValuesRequest;
+use Google\Service\Sheets\Request;
+use Google\Service\Sheets\BatchUpdateSpreadsheetRequest;
 
 #[Signature('sync:google-sheets {--reset : Reset sync state dan paksa hitung ulang semua sel} {--force-recalc=* : Paksa hitung ulang untuk kombinasi tertentu (format: date|jenis|machine|shift)}')]
 #[Description('Sync data IQF dari MySQL langsung ke sheet Report IQF Dimsum')]
@@ -211,8 +213,17 @@ class SyncIqfToGoogleSheets extends Command
 
         // 7. Baca sheet report untuk membangun row lookup
         $sheetName = self::REPORT_SHEET;
+        $sheetId = null;
 
         try {
+            $spreadsheet = $service->spreadsheets->get($spreadsheetId);
+            foreach ($spreadsheet->getSheets() as $sheet) {
+                if ($sheet->getProperties()->getTitle() === $sheetName) {
+                    $sheetId = $sheet->getProperties()->getSheetId();
+                    break;
+                }
+            }
+
             $readRange = "'{$sheetName}'!A:F";
             $response  = $service->spreadsheets_values->get($spreadsheetId, $readRange);
             $sheetRows = $response->getValues() ?? [];
@@ -266,7 +277,9 @@ class SyncIqfToGoogleSheets extends Command
         if (!empty($datesToAdd)) {
             $newRows = [];
             foreach ($datesToAdd as $date) {
-                $tglFormatted = date('d-M', strtotime($date)); // "28-Jul"
+                $ts = strtotime($date);
+                $bulanIndo = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                $tglFormatted = date('d', $ts) . ' ' . $bulanIndo[(int)date('n', $ts)] . ' ' . date('Y', $ts);
 
                 // Urutan: Shift → Jenis → Mesin
                 foreach (self::SHIFT_ORDER as $shift) {
@@ -339,8 +352,6 @@ class SyncIqfToGoogleSheets extends Command
                     foreach (self::SHIFT_ORDER as $addedShift) {
                         foreach (self::JENIS_ORDER as $addedJenis) {
                             foreach (self::MACHINE_ORDER as $addedMachine) {
-                                $addedKey = $this->normalizeDate(date('d-M', strtotime($addedDate)))
-                                    ?? $addedDate;
                                 $addedKey = "{$addedDate}|{$addedJenis}|{$addedMachine}|{$addedShift}";
                                 $addedRow = $rowLookup[$addedKey] ?? null;
                                 if (!$addedRow) continue;
@@ -429,6 +440,55 @@ class SyncIqfToGoogleSheets extends Command
             $this->info('Tidak ada sel yang perlu diupdate.');
         }
 
+        // 11.5 Warnai baris berdasarkan Shift
+        if ($sheetId !== null) {
+            $formatRequests = [];
+            foreach ($affectedCombinations as $combo) {
+                $key = "{$combo['date']}|{$combo['jenis']}|{$combo['machine']}|{$combo['shift']}";
+                $rowNumber = $rowLookup[$key] ?? null;
+                if ($rowNumber) {
+                    $color = ['red' => 1.0, 'green' => 1.0, 'blue' => 1.0]; // default white
+                    if ($combo['shift'] === 1) {
+                        $color = ['red' => 0.85, 'green' => 0.92, 'blue' => 0.83]; // Ijo
+                    } elseif ($combo['shift'] === 2) {
+                        $color = ['red' => 1.0, 'green' => 0.95, 'blue' => 0.80]; // Kuning
+                    } elseif ($combo['shift'] === 3) {
+                        $color = ['red' => 0.98, 'green' => 0.90, 'blue' => 0.80]; // Orange
+                    }
+                    
+                    $formatRequests[] = new Request([
+                        'repeatCell' => [
+                            'range' => [
+                                'sheetId' => $sheetId,
+                                'startRowIndex' => $rowNumber - 1,
+                                'endRowIndex' => $rowNumber,
+                                'startColumnIndex' => 0,
+                                'endColumnIndex' => 31 // Sampai kolom AE
+                            ],
+                            'cell' => [
+                                'userEnteredFormat' => [
+                                    'backgroundColor' => $color
+                                ]
+                            ],
+                            'fields' => 'userEnteredFormat.backgroundColor'
+                        ]
+                    ]);
+                }
+            }
+
+            if (!empty($formatRequests)) {
+                try {
+                    $batchFormatBody = new BatchUpdateSpreadsheetRequest([
+                        'requests' => $formatRequests
+                    ]);
+                    $service->spreadsheets->batchUpdate($spreadsheetId, $batchFormatBody);
+                    $this->info('Berhasil mewarnai ' . count($formatRequests) . ' baris berdasarkan shift.');
+                } catch (\Exception $e) {
+                    $this->warn('Gagal mewarnai baris: ' . $e->getMessage());
+                }
+            }
+        }
+
         // 12. Simpan last_synced_id
         DB::table('sync_states')->updateOrInsert(
             ['entity' => 'iqf_logsheets'],
@@ -446,8 +506,13 @@ class SyncIqfToGoogleSheets extends Command
     {
         if (!$tgl) return null;
 
-        foreach (['d-M-Y', 'd-M', 'Y-m-d', 'd/m/Y'] as $fmt) {
-            $dt = \DateTime::createFromFormat($fmt, $tgl);
+        // Terjemahkan bulan Indonesia ke Inggris agar bisa diparsing
+        $bulanIndo = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        $bulanInggris = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        $tglStr = str_ireplace($bulanIndo, $bulanInggris, $tgl);
+
+        foreach (['d F Y', 'd-M-Y', 'd-M', 'Y-m-d', 'd/m/Y'] as $fmt) {
+            $dt = \DateTime::createFromFormat($fmt, $tglStr);
             if ($dt) {
                 if ($fmt === 'd-M') {
                     $dt->setDate((int) date('Y'), (int) $dt->format('n'), (int) $dt->format('j'));
@@ -456,7 +521,7 @@ class SyncIqfToGoogleSheets extends Command
             }
         }
 
-        $ts = @strtotime($tgl);
+        $ts = @strtotime($tglStr);
         return $ts !== false ? date('Y-m-d', $ts) : null;
     }
 
