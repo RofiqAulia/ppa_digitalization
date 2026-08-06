@@ -57,7 +57,7 @@ export default function Edit({ iqfLogsheet }) {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="shift">Shift</Label>
+                            <Label htmlFor="shift">Pilih Shift</Label>
                             <Select value={data.shift} onValueChange={v => setData('shift', v)} required>
                                 <SelectTrigger><SelectValue placeholder="Pilih Shift" /></SelectTrigger>
                                 <SelectContent>
@@ -70,7 +70,7 @@ export default function Edit({ iqfLogsheet }) {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="product_type">Jenis Produk</Label>
+                            <Label htmlFor="product_type">Pilih Jenis Produk</Label>
                             <Select value={data.product_type} onValueChange={v => setData('product_type', v)} required>
                                 <SelectTrigger><SelectValue placeholder="Pilih Produk" /></SelectTrigger>
                                 <SelectContent>
@@ -84,7 +84,7 @@ export default function Edit({ iqfLogsheet }) {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="machine">Mesin IQF</Label>
+                            <Label htmlFor="machine">Pilih IQF</Label>
                             <Select value={data.machine} onValueChange={v => setData('machine', v)} required>
                                 <SelectTrigger><SelectValue placeholder="Pilih Mesin" /></SelectTrigger>
                                 <SelectContent>
