@@ -185,7 +185,7 @@
             </svg>
         </div>
         <h1>Permintaan Reset Password</h1>
-        <p>Sistem Digitalisasi Produksi — PT. Pesta Pora Abadi</p>
+        <p>Sistem Digitalisasi Produksi — PT. Pesta Pora Abadi, CK2</p>
     </div>
 
     <!-- BODY -->
@@ -194,7 +194,7 @@
 
         <p>
             Kami menerima permintaan untuk mereset password akun Anda di sistem
-            <strong>Digitalisasi Produksi Divisi IQF</strong>.
+            <strong>Digitalisasi Produksi Divisi Produksi</strong>.
         </p>
         <p>
             Klik tombol di bawah ini untuk membuat password baru Anda. Jika Anda tidak merasa
@@ -216,7 +216,7 @@
             Jika Anda tidak mengajukan permintaan reset password, tidak diperlukan tindakan lebih lanjut.
         </p>
 
-        <p>Salam hangat,<br /><strong>PPA CK 2</strong></p>
+        <p>Salam hangat,<br /><strong>Tim Produksi PPA CK 2</strong></p>
 
         <hr class="divider" />
 
