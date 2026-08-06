@@ -18,7 +18,14 @@ createInertiaApp({
         ),
     setup({ el, App, props }) {
         const root = createRoot(el);
-        window.route = (name, params, absolute, config = Ziggy) => route(name, params, absolute, config);
+        
+        const customZiggy = {
+            ...Ziggy,
+            url: window.location.origin,
+            port: window.location.port ? window.location.port : null
+        };
+        
+        window.route = (name, params, absolute, config = customZiggy) => route(name, params, absolute, config);
         root.render(<App {...props} />);
     },
     progress: {
