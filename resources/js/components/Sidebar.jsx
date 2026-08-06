@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard, FileText, Menu, X, ChevronLeft, ChevronRight, ChevronDown,
-    Layers, ClipboardList, Factory, Snowflake, Package, MonitorSmartphone, History, Users
+    Layers, ClipboardList, Factory, Snowflake, Package, History, Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,24 +10,13 @@ import { cn } from '@/lib/utils';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 const navigation = [
-    { name: '1. Batching',  href: '#batching',          icon: Layers,       disabled: true },
-    { name: '2. Prepare',   href: '/prepare-produksi',  icon: ClipboardList, disabled: true },
-    { name: '3. Promixing', href: '#promixing',          icon: Factory,      disabled: true },
-    {
-        name: '4. IQF',
-        icon: Snowflake,
-        children: [
-            { name: 'Dashboard',    href: '/iqf-logsheet/dashboard', icon: LayoutDashboard },
-            { name: 'IQF Logsheet', href: '/iqf-logsheet',         icon: FileText },
-            { name: 'IQF Kiosk',    href: '/iqf-kiosk',            icon: MonitorSmartphone },
-            { name: 'History IQF',  href: '/iqf-logsheet/history', icon: History },
-        ]
-    },
+    { name: 'IQF', isTitle: true },
+    { name: 'Dashboard',       href: '/iqf-logsheet/dashboard', icon: LayoutDashboard },
+    { name: 'Logsheet Harian', href: '/iqf-logsheet',           icon: FileText },
+    { name: 'History',         href: '/iqf-logsheet/history',   icon: History },
 
-    { name: '5. Packaging', href: '#packaging',         icon: Package,      disabled: true },
-
-    // Admin Tools
-    { name: 'Admin',        href: '/admin/users',        icon: Users },
+    { name: 'Manajemen User', isTitle: true },
+    { name: 'Add User',        href: '/admin/users',            icon: Users },
 ];
 
 function NavItem({ item, isCollapsed, setIsCollapsed, url }) {
@@ -48,6 +37,16 @@ function NavItem({ item, isCollapsed, setIsCollapsed, url }) {
             setIsOpen(!isOpen);
         }
     };
+
+    // Render section title
+    if (item.isTitle) {
+        if (isCollapsed) return <div className="my-4 border-t border-slate-200 w-6 mx-auto"></div>;
+        return (
+            <div className="px-4 py-2 mt-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                {item.name}
+            </div>
+        );
+    }
 
     // Disabled item — non-clickable, muted
     if (item.disabled) {
