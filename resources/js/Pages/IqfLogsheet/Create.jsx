@@ -30,7 +30,7 @@ export default function Create() {
             <Head title="Buat Logsheet IQF Baru" />
             
             <div className="flex items-center gap-4 mb-6">
-                <Link href="/iqf-logsheet">
+                <Link href="/logsheet-iqf">
                     <Button variant="ghost" size="icon">
                         <ArrowLeft className="h-5 w-5" />
                     </Button>

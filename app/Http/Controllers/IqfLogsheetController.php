@@ -162,7 +162,7 @@ class IqfLogsheetController extends Controller
 
         IqfLogsheet::create($request->all());
 
-        return redirect()->route('iqf-logsheet.index')->with('success', 'Logsheet berhasil dibuat.');
+        return redirect()->route('logsheet-iqf.index')->with('success', 'Logsheet berhasil dibuat.');
     }
 
     public function show(IqfLogsheet $iqfLogsheet)
@@ -354,7 +354,7 @@ class IqfLogsheetController extends Controller
     public function edit(IqfLogsheet $iqfLogsheet)
     {
         if (!$iqfLogsheet->canBeEdited()) {
-            return redirect()->route('iqf-logsheet.index')->with('error', 'Data ini tidak bisa diedit karena sudah lebih dari 24 jam sejak diinputkan.');
+            return redirect()->route('logsheet-iqf.index')->with('error', 'Data ini tidak bisa diedit karena sudah lebih dari 24 jam sejak diinputkan.');
         }
 
         return Inertia::render('IqfLogsheet/Edit', ['iqfLogsheet' => $iqfLogsheet]);
@@ -393,7 +393,7 @@ class IqfLogsheetController extends Controller
         }
         $this->dispatchSyncBackground($options);
 
-        return redirect()->route('iqf-logsheet.index')->with('success', 'Logsheet berhasil diupdate.');
+        return redirect()->route('logsheet-iqf.index')->with('success', 'Logsheet berhasil diupdate.');
     }
 
     public function storeUnplannedStop(Request $request)

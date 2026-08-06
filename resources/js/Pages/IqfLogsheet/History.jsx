@@ -35,7 +35,7 @@ export default function History({ logsheets }) {
                         </Button>
                     </a>
 
-                    <Link href="/iqf-logsheet">
+                    <Link href="/logsheet-iqf">
                         <Button variant="outline" className="text-slate-600 border-slate-300 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 shadow-sm transition-colors">
                             <ArrowLeft className="w-4 h-4 mr-2" />
                             Kembali ke Hari Ini

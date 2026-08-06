@@ -30,7 +30,7 @@ export default function Edit({ iqfLogsheet }) {
             <Head title="Edit Header Logsheet IQF" />
             
             <div className="flex items-center gap-4 mb-6">
-                <Link href="/iqf-logsheet">
+                <Link href="/logsheet-iqf">
                     <Button variant="ghost" size="icon">
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
@@ -138,7 +138,7 @@ export default function Edit({ iqfLogsheet }) {
                 </Card>
 
                 <div className="flex justify-end gap-3 mb-10">
-                    <Link href="/iqf-logsheet">
+                    <Link href="/logsheet-iqf">
                         <Button variant="outline" type="button">Batal</Button>
                     </Link>
                     <Button type="submit" disabled={processing} className="bg-indigo-600 hover:bg-indigo-700">
