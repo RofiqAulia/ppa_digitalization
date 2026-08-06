@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard, FileText, Menu, X, ChevronLeft, ChevronRight, ChevronDown,
-    Layers, ClipboardList, Factory, Snowflake, Package, History, Users
+    Layers, ClipboardList, Factory, Snowflake, Package, History, Users, LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -17,6 +17,7 @@ const navigation = [
 
     { name: 'Manajemen User', isTitle: true },
     { name: 'Add User',        href: '/admin/users',            icon: Users },
+    { name: 'Log out',         href: '/logout',                 icon: LogOut, method: 'post' },
 ];
 
 function NavItem({ item, isCollapsed, setIsCollapsed, url }) {
@@ -109,7 +110,7 @@ function NavItem({ item, isCollapsed, setIsCollapsed, url }) {
     }
 
     return (
-        <Link href={item.href}>
+        <Link href={item.href} method={item.method || 'get'} as={item.method ? 'button' : 'a'} className={item.method ? 'w-full block' : ''}>
             <div className={cn(
                 "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors cursor-pointer",
                 isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
