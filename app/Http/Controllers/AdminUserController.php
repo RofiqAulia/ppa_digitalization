@@ -34,6 +34,26 @@ class AdminUserController extends Controller
         return back()->with('success', 'Admin berhasil ditambahkan!');
     }
 
+    public function update(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'name'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'password' => ['nullable', Password::min(8)],
+        ]);
+
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+
+        if (!empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        $user->save();
+
+        return back()->with('success', 'Data admin berhasil diperbarui!');
+    }
+
     public function destroy(User $user)
     {
         // Prevent deleting yourself

@@ -11,13 +11,11 @@ import {
     DropdownMenuShortcut,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 
 export function UserNav() {
-    // We would normally get user from Inertia props
-    // const { auth } = usePage().props;
-    // const user = auth.user;
-    const user = { name: 'Admin User', email: 'admin@example.com' };
+    const { auth } = usePage().props;
+    const user = auth?.user || { name: 'Admin', email: '' };
 
     return (
         <DropdownMenu>
@@ -39,8 +37,18 @@ export function UserNav() {
                     </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                    Log out
+                <DropdownMenuGroup>
+                    <DropdownMenuItem asChild>
+                        <Link href="/admin/users" className="w-full cursor-pointer">
+                            Edit Profile
+                        </Link>
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link href={route('logout')} method="post" as="button" className="w-full cursor-pointer text-left">
+                        Log out
+                    </Link>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
