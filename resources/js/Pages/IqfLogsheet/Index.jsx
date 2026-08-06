@@ -20,11 +20,11 @@ export default function Index({ logsheets }) {
                             History Data
                         </Button>
                     </Link>
-                    <a href="/iqf-kiosk" target="_blank">
+                    {/* <a href="/iqf-kiosk" target="_blank">
                         <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
                             Terminal Operator
                         </Button>
-                    </a>
+                    </a> */}
                 </div>
             </div>
 
