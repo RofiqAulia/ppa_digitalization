@@ -52,7 +52,7 @@ export default function Index({ headers }) {
                                         <TableCell>Shift {header.shift}</TableCell>
                                         <TableCell>{header.spv_name}</TableCell>
                                         <TableCell>
-                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${header.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'}`}>
+                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${header.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                                                 {header.status === 'completed' ? 'Selesai' : 'Planned'}
                                             </span>
                                         </TableCell>
