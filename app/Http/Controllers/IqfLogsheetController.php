@@ -73,6 +73,21 @@ class IqfLogsheetController extends Controller
         return Inertia::render('IqfLogsheet/Index', ['logsheets' => $logsheets]);
     }
 
+    public function operatorLogsheet(Request $request)
+    {
+        extract($this->getCurrentShiftAndDate());
+        $productionDate = $date;
+
+        $logsheets = IqfLogsheet::with('details')
+                        ->where('date', '>=', $productionDate)
+                        ->orderBy('date', 'desc')
+                        ->orderBy('shift', 'desc')
+                        ->orderBy('machine', 'asc')
+                        ->get();
+
+        return Inertia::render('Operator/Logsheet', ['logsheets' => $logsheets]);
+    }
+
     public function tableOnly(Request $request)
     {
         $logsheets = IqfLogsheet::with('details')

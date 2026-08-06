@@ -18,18 +18,12 @@ export default function OperatorLayout({ children }) {
 
                     {/* Center: Navigation (Desktop) */}
                     <nav className="hidden md:flex items-center gap-8 bg-slate-50/50 px-8 py-2.5 rounded-full border border-slate-100 shadow-inner">
-                        <Link href="/iqf-logsheet/dashboard" className="text-[13px] font-black text-slate-500 hover:text-pink-500 uppercase tracking-widest transition-all hover:scale-105">
-                            Dashboard
-                        </Link>
-                        <Link href="/logsheet-iqf" className="text-[13px] font-black text-slate-500 hover:text-pink-500 uppercase tracking-widest transition-all hover:scale-105">
+                        <Link href="/logsheet-operator" className="text-[13px] font-black text-slate-500 hover:text-pink-500 uppercase tracking-widest transition-all hover:scale-105">
                             Logsheet
                         </Link>
                         <Link href="/" className="text-[13px] font-black text-pink-500 uppercase tracking-widest transition-all hover:scale-105 relative">
                             Terminal
                             <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-pink-500 rounded-full"></span>
-                        </Link>
-                        <Link href="/iqf-logsheet/history" className="text-[13px] font-black text-slate-500 hover:text-pink-500 uppercase tracking-widest transition-all hover:scale-105">
-                            History
                         </Link>
                     </nav>
 
@@ -65,10 +59,8 @@ export default function OperatorLayout({ children }) {
                 {/* Mobile Navigation Dropdown */}
                 {isMobileMenuOpen && (
                     <div className="md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-slate-100 shadow-xl py-4 px-6 flex flex-col gap-4 animate-in slide-in-from-top-2">
-                        <Link href="/iqf-logsheet/dashboard" className="text-sm font-black text-slate-600 uppercase tracking-widest border-b border-slate-50 pb-2">Dashboard</Link>
-                        <Link href="/logsheet-iqf" className="text-sm font-black text-slate-600 uppercase tracking-widest border-b border-slate-50 pb-2">Logsheet</Link>
+                        <Link href="/logsheet-operator" className="text-sm font-black text-slate-600 uppercase tracking-widest border-b border-slate-50 pb-2">Logsheet</Link>
                         <Link href="/" className="text-sm font-black text-pink-500 uppercase tracking-widest border-b border-slate-50 pb-2">Terminal</Link>
-                        <Link href="/iqf-logsheet/history" className="text-sm font-black text-slate-600 uppercase tracking-widest border-b border-slate-50 pb-2">History</Link>
                         
                         <a href="/login" className="mt-2 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-cyan-300 text-slate-900 text-sm font-black uppercase tracking-widest shadow-sm">
                             Login Admin

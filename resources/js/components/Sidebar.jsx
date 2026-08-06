@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard, FileText, Menu, X, ChevronLeft, ChevronRight, ChevronDown,
-    Layers, ClipboardList, Factory, Snowflake, Package, MonitorSmartphone, History
+    Layers, ClipboardList, Factory, Snowflake, Package, MonitorSmartphone, History, Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -25,6 +25,9 @@ const navigation = [
     },
 
     { name: '5. Packaging', href: '#packaging',         icon: Package,      disabled: true },
+
+    // Admin Tools
+    { name: 'Admin',        href: '/admin/users',        icon: Users },
 ];
 
 function NavItem({ item, isCollapsed, setIsCollapsed, url }) {

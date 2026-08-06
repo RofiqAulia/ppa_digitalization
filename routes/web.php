@@ -22,7 +22,10 @@ Route::post('/iqf-kiosk/store', [\App\Http\Controllers\IqfLogsheetController::cl
 Route::post('/iqf-kiosk/unplanned-stop', [\App\Http\Controllers\IqfLogsheetController::class, 'storeUnplannedStop'])->name('iqf-logsheet.storeUnplannedStop');
 Route::get('/iqf-kiosk/stats', [\App\Http\Controllers\IqfLogsheetController::class, 'dashboardStats'])->name('iqf-logsheet.stats');
 
-// Operator can see logsheet today
+// Operator logsheet (today only, no admin layout)
+Route::get('/logsheet-operator', [\App\Http\Controllers\IqfLogsheetController::class, 'operatorLogsheet'])->name('operator.logsheet');
+
+// Operator can see logsheet today (admin view - kept for compatibility)
 Route::get('/logsheet-iqf', [\App\Http\Controllers\IqfLogsheetController::class, 'index'])->name('logsheet-iqf.index');
 
 
@@ -60,6 +63,11 @@ Route::middleware('auth')->group(function () {
 
     // Export Excel Route
     Route::get('/iqf-logsheet/export-excel', [\App\Http\Controllers\IqfExportController::class, 'download'])->name('iqf-logsheet.export');
+
+    // Admin User Management
+    Route::get('/admin/users', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::post('/admin/users', [\App\Http\Controllers\AdminUserController::class, 'store'])->name('admin.users.store');
+    Route::delete('/admin/users/{user}', [\App\Http\Controllers\AdminUserController::class, 'destroy'])->name('admin.users.destroy');
 });
 
 require __DIR__.'/auth.php';
