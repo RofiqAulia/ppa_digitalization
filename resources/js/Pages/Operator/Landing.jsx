@@ -164,12 +164,12 @@ export default function Landing() {
             <div className="relative z-10 flex flex-col items-center pt-8 pb-16 px-4">
                 
                 {/* Title and Dropdowns */}
-                <div className="text-center mb-8">
-                    <h2 className="text-xl font-black text-slate-900 uppercase tracking-widest mb-1">Pilihan Dimsum</h2>
-                    <p className="text-sm font-semibold text-slate-700">Pilih jenis produk dan mesin sebelum memulai pencatatan.</p>
+                <div className="text-center mb-10">
+                    <h2 className="text-3xl font-black text-slate-900 uppercase tracking-[0.2em] mb-3 drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] [-webkit-text-stroke:1px_white]">Pilihan Dimsum</h2>
+                    <p className="text-base font-black text-slate-800 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] [-webkit-text-stroke:0.5px_white]">Pilih jenis produk dan mesin sebelum memulai pencatatan.</p>
                 </div>
 
-                <div className="flex bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden mb-12 max-w-md w-full border border-white/60 p-1">
+                <div className="flex bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden mb-12 max-w-md w-full border-2 border-pink-500/50 p-1">
                     <div className="flex-1">
                         <select 
                             value={product} 
@@ -197,47 +197,54 @@ export default function Landing() {
                 </div>
 
                 {/* Main Inputs Card Row */}
-                <div className={`grid gap-6 w-full max-w-4xl mb-8 ${isPackItem ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-3'}`}>
+                <div className="grid gap-2 md:gap-6 w-full max-w-5xl mb-6 md:mb-12 grid-cols-3">
                     {/* No. Batch */}
-                    <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] border border-white/50 shadow-2xl p-8 flex flex-col items-center transform transition-all hover:-translate-y-1 hover:shadow-pink-500/10">
-                        <label className="text-slate-400 font-black uppercase text-xs mb-6 tracking-[0.2em]">No. Batch</label>
+                    <div className="bg-white/95 backdrop-blur-md rounded-2xl md:rounded-[2.5rem] border-2 border-pink-400 shadow-xl shadow-pink-500/20 p-3 md:p-8 flex flex-col items-center transform transition-all hover:-translate-y-1 md:hover:-translate-y-2 hover:shadow-2xl hover:shadow-pink-500/40 relative overflow-hidden group">
+                        <label className="text-slate-500 font-black uppercase text-[9px] md:text-xs mb-2 md:mb-6 tracking-widest md:tracking-[0.2em] flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center text-wrap leading-tight">
+                            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-pink-500 animate-pulse"></span>
+                            No. Batch
+                        </label>
                         <input
                             type="number"
                             value={batchNumber}
                             onChange={e => setBatchNumber(e.target.value)}
-                            className="w-full text-center text-5xl font-black text-slate-800 border-none bg-transparent focus:ring-0 p-2 placeholder-slate-200 outline-none"
+                            className="w-full text-center text-3xl md:text-6xl font-black text-pink-600 border-none bg-transparent focus:ring-0 p-1 md:p-2 placeholder-pink-200 outline-none"
                             placeholder="0"
                         />
                     </div>
 
                     {/* No. Rak */}
-                    {!isPackItem && (
-                    <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] border border-white/50 shadow-2xl p-8 flex flex-col items-center transform transition-all hover:-translate-y-1 hover:shadow-cyan-500/10">
-                        <label className="text-slate-400 font-black uppercase text-xs mb-6 tracking-[0.2em]">No. Rak</label>
+                    <div className={`bg-white/95 backdrop-blur-md rounded-2xl md:rounded-[2.5rem] border-2 border-cyan-400 shadow-xl shadow-cyan-500/20 p-3 md:p-8 flex flex-col items-center transform transition-all relative overflow-hidden group ${isPackItem ? 'opacity-50 pointer-events-none grayscale' : 'hover:-translate-y-1 md:hover:-translate-y-2 hover:shadow-2xl hover:shadow-cyan-500/40'}`}>
+                        <label className="text-slate-500 font-black uppercase text-[9px] md:text-xs mb-2 md:mb-6 tracking-widest md:tracking-[0.2em] flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center text-wrap leading-tight">
+                            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                            No. Rak
+                        </label>
                         <input
                             type="number"
-                            value={rak}
+                            value={isPackItem ? '' : rak}
                             onChange={e => setRak(e.target.value)}
-                            className="w-full text-center text-5xl font-black text-slate-800 border-none bg-transparent focus:ring-0 p-2 placeholder-slate-200 outline-none"
-                            placeholder="0"
+                            disabled={isPackItem}
+                            className="w-full text-center text-3xl md:text-6xl font-black text-cyan-600 border-none bg-transparent focus:ring-0 p-1 md:p-2 placeholder-cyan-200 outline-none"
+                            placeholder={isPackItem ? "-" : "0"}
                         />
-                        {lastRak !== '' && (
-                            <p className="text-center text-[10px] font-black mt-3 text-pink-500 tracking-wider">MIN: {lastRak} &uarr;</p>
+                        {!isPackItem && lastRak !== '' && (
+                            <p className="text-center text-[7px] md:text-[11px] font-black mt-2 md:mt-4 text-pink-500 tracking-widest bg-pink-50 px-1.5 md:px-3 py-1 rounded-full text-wrap leading-tight">MIN: {lastRak} &uarr;</p>
                         )}
                     </div>
-                    )}
 
                     {/* Jumlah Loyang */}
-                    <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] border border-white/50 shadow-2xl p-8 flex flex-col items-center transform transition-all hover:-translate-y-1 hover:shadow-pink-500/10">
-                        <label className="text-slate-400 font-black uppercase text-xs mb-6 tracking-[0.2em]">
-                            Jumlah {isPackItem ? 'Keranjang' : 'Loyang'}
+                    <div className="bg-white/95 backdrop-blur-md rounded-2xl md:rounded-[2.5rem] border-2 border-pink-400 shadow-xl shadow-pink-500/20 p-3 md:p-8 flex flex-col items-center transform transition-all hover:-translate-y-1 md:hover:-translate-y-2 hover:shadow-2xl hover:shadow-pink-500/40 relative overflow-hidden group">
+                        <label className="text-slate-500 font-black uppercase text-[9px] md:text-xs mb-2 md:mb-6 tracking-widest md:tracking-[0.2em] flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center leading-tight">
+                            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-pink-500 animate-pulse"></span>
+                            Jml <span className="hidden md:inline"> {isPackItem ? 'Keranjang' : 'Loyang'}</span>
+                            <span className="md:hidden"> {isPackItem ? 'Pack' : 'Loyng'}</span>
                         </label>
                         <input
                             type="number"
                             value={trayCount}
                             onChange={e => setTrayCount(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && submitData()}
-                            className="w-full text-center text-5xl font-black text-slate-800 border-none bg-transparent focus:ring-0 p-2 placeholder-slate-200 outline-none"
+                            className="w-full text-center text-3xl md:text-6xl font-black text-pink-600 border-none bg-transparent focus:ring-0 p-1 md:p-2 placeholder-pink-200 outline-none"
                             placeholder="0"
                         />
                     </div>
@@ -247,30 +254,28 @@ export default function Landing() {
                 <button 
                     onClick={submitData} 
                     disabled={loading || !trayCount || trayCount <= 0}
-                    className="bg-white/90 backdrop-blur-md border-2 border-pink-500 text-pink-500 font-black text-sm py-4 px-12 rounded-full uppercase tracking-[0.2em] hover:bg-pink-500 hover:text-white transition-all shadow-xl hover:shadow-pink-500/30 disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-pink-500"
+                    className="w-full md:w-auto bg-white/90 backdrop-blur-md border-2 border-pink-500 text-pink-500 font-black text-sm py-4 px-12 rounded-full uppercase tracking-[0.2em] hover:bg-pink-500 hover:text-white transition-all shadow-xl hover:shadow-pink-500/30 disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-pink-500"
                 >
                     {loading ? 'Mencatat...' : 'Lanjutkan Pencatatan'}
                 </button>
             </div>
 
-            {/* Divider and Lintasan Kendala (Positioned at bottom) */}
-            <div className="relative z-10 w-full bg-white border-t border-rose-200 py-6 px-4">
-                <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-center gap-6">
-                    <p className="text-slate-500 font-black text-sm uppercase tracking-widest">
-                        Klik Disini<br/>*Jika Terjadi Kendala!
-                    </p>
-                    <button 
-                        onClick={() => router.visit('/kendala')}
-                        className="bg-rose-600 text-white font-black text-sm py-3 px-8 rounded-full uppercase tracking-widest flex items-center gap-2 hover:bg-rose-700 shadow-md transition-colors"
-                    >
-                        Lintasan Kendala <span className="bg-amber-300 text-amber-900 rounded-sm w-4 h-4 flex items-center justify-center text-[10px] transform rotate-45">!</span>
-                    </button>
-                </div>
+            {/* Floating Action Button for Kendala */}
+            <div className="fixed bottom-6 right-6 z-50 flex items-center gap-4 group cursor-pointer" onClick={() => router.visit('/kendala')}>
+                <p className="text-slate-700 bg-white/90 backdrop-blur px-4 py-2 rounded-xl shadow-lg font-black text-xs uppercase tracking-widest text-right opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 group-hover:translate-x-0">
+                    Klik Disini<br/><span className="text-pink-500">*Jika Terjadi Kendala!</span>
+                </p>
+                <button 
+                    className="bg-[#E51C77] text-white font-black text-sm py-4 px-8 rounded-full uppercase tracking-[0.2em] flex items-center gap-3 hover:bg-pink-600 shadow-xl shadow-pink-500/40 hover:shadow-pink-500/60 hover:-translate-y-1 transition-all"
+                >
+                    Lintasan Kendala 
+                    <span className="bg-amber-400 text-amber-900 rounded-sm w-5 h-5 flex items-center justify-center text-[12px] transform rotate-45 shadow-inner shadow-amber-600/50">!</span>
+                </button>
             </div>
 
             {/* Toast Notification */}
             {toast.show && (
-                <div className="fixed bottom-10 left-0 right-0 flex justify-center z-50 animate-in slide-in-from-bottom-10">
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex justify-center z-[60] animate-in slide-in-from-bottom-10">
                     <div className={`px-6 py-4 rounded-2xl shadow-xl border-2 flex items-center gap-4 bg-white ${toast.type === 'success' ? 'border-emerald-200 text-emerald-800' : 'border-rose-200 text-rose-800'}`}>
                         <div className={`p-2 rounded-xl ${toast.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'} text-white font-black text-sm`}>
                             {toast.type === 'success' ? '✓' : '✕'}

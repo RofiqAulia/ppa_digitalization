@@ -26,10 +26,21 @@ export default function Kendala() {
     const machine = typeof window !== 'undefined' ? localStorage.getItem('iqf_machine') : null;
     const batchNumber = typeof window !== 'undefined' ? localStorage.getItem(`iqf_lastBatch_${machine}_${product}`) : null;
 
+    const getTodayWIB = () => {
+        const now = new Date();
+        const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+        return wib.toISOString().slice(0, 10); // YYYY-MM-DD
+    };
+
     useEffect(() => {
         try {
             const saved = JSON.parse(localStorage.getItem('iqf_kendalaLog') || '[]');
-            if (Array.isArray(saved)) setKendalaLog(saved);
+            if (Array.isArray(saved)) {
+                const today = getTodayWIB();
+                // Only display today's entries, but keep all in localStorage
+                const todayLog = saved.filter(e => e.date === today);
+                setKendalaLog(todayLog);
+            }
         } catch (_) {}
     }, []);
 
@@ -45,8 +56,9 @@ export default function Kendala() {
     };
 
     const nowHHMM = () => {
-        const d = new Date();
-        return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        const now = new Date();
+        const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+        return `${String(wib.getHours()).padStart(2,'0')}:${String(wib.getMinutes()).padStart(2,'0')}`;
     };
 
     const submitKendala = async (label) => {
@@ -61,10 +73,18 @@ export default function Kendala() {
         setFlashingKendala(label);
         setTimeout(() => setFlashingKendala(null), 700);
         
-        const newEntry = { time, label };
-        const newLog = [...kendalaLog, newEntry];
-        setKendalaLog(newLog);
-        localStorage.setItem('iqf_kendalaLog', JSON.stringify(newLog));
+        const today = getTodayWIB();
+        const newEntry = { time, label, date: today };
+        // Load all existing entries (including past days) and append new one
+        let allEntries = [];
+        try {
+            allEntries = JSON.parse(localStorage.getItem('iqf_kendalaLog') || '[]');
+        } catch (_) {}
+        const allUpdated = [...allEntries, newEntry];
+        localStorage.setItem('iqf_kendalaLog', JSON.stringify(allUpdated));
+        // Only show today's in state
+        const todayLog = allUpdated.filter(e => e.date === today);
+        setKendalaLog(todayLog);
         
         try {
             await axios.post('/iqf-kiosk/unplanned-stop', {
@@ -134,7 +154,7 @@ export default function Kendala() {
                     {/* Log display */}
                     {kendalaLog.length > 0 && (
                         <div className="mt-16 w-full max-w-md mx-auto bg-pink-50/80 backdrop-blur-md rounded-3xl border border-pink-100 p-6 shadow-xl">
-                            <p className="text-[10px] text-pink-400 font-black uppercase tracking-[0.2em] mb-4 text-center">📋 Log Kendala Shift Ini</p>
+                            <p className="text-[10px] text-pink-400 font-black uppercase tracking-[0.2em] mb-4 text-center">📋 Log Kendala Hari Ini</p>
                             <div className="flex flex-col gap-2 max-h-40 overflow-y-auto">
                                 {[...kendalaLog].reverse().map((k, i) => (
                                     <div key={i} className="flex items-center gap-3 text-xs text-pink-700 justify-center">

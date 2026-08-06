@@ -4,8 +4,10 @@ import './bootstrap';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
+import { route } from 'ziggy-js';
+import { Ziggy } from './ziggy.js';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'PPA Group';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -16,7 +18,7 @@ createInertiaApp({
         ),
     setup({ el, App, props }) {
         const root = createRoot(el);
-
+        window.route = (name, params, absolute, config = Ziggy) => route(name, params, absolute, config);
         root.render(<App {...props} />);
     },
     progress: {

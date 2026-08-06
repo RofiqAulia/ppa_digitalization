@@ -1,0 +1,1 @@
+import{j as r,H as o}from"./app-D_EiH-bY.js";import{A as t}from"./AppLayout-C6MrpxSZ.js";import a from"./IqfDashboard-C1RswSJ0.js";import"./button-7DX1UnfY.js";import"./createLucideIcon-Aejx5GCw.js";import"./DialogRoot-DGra0com.js";import"./chevron-right-CEfVQcqL.js";function u(){return r.jsxs(t,{children:[r.jsx(o,{title:"Dashboard IQF"}),r.jsx(a,{})]})}export{u as default};
