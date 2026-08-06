@@ -6,7 +6,7 @@ import { ThemeToggle } from './ThemeToggle';
 
 export function TopNav({ isSidebarOpen, setSidebarOpen }) {
     return (
-        <header className="flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6 shadow-sm z-10">
+        <header className="flex h-16 items-center gap-4 border-b bg-white dark:bg-slate-900 bg-card px-4 md:px-6 shadow-sm z-10">
             <Button
                 variant="ghost"
                 size="icon"
