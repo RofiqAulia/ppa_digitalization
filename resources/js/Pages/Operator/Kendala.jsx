@@ -118,10 +118,10 @@ export default function Kendala() {
                                     <p className="text-sm font-bold text-slate-600 uppercase tracking-widest text-center">{k.label}</p>
                                     <button
                                         onClick={() => handleKendala(k.label)}
-                                        className={`w-full aspect-video flex flex-col items-center justify-center rounded-[2rem] border-4 transition-all duration-300 select-none active:scale-95 ${
+                                        className={`w-full aspect-video flex flex-col items-center justify-center rounded-[2.5rem] border-4 transition-all duration-300 select-none active:scale-95 ${
                                             isFlashing
-                                                ? 'bg-emerald-50 border-emerald-400 text-emerald-700 scale-95 shadow-inner'
-                                                : 'bg-white border-rose-400 text-rose-500 hover:bg-rose-50 hover:shadow-lg hover:-translate-y-1'
+                                                ? 'bg-cyan-50 border-cyan-400 text-cyan-700 scale-95 shadow-inner'
+                                                : 'bg-white/90 backdrop-blur-md border-pink-400 text-pink-500 hover:bg-pink-50 hover:shadow-2xl hover:shadow-pink-500/20 hover:-translate-y-1'
                                         }`}
                                     >
                                         <span className="text-5xl md:text-6xl">{k.icon}</span>
@@ -133,14 +133,14 @@ export default function Kendala() {
                     
                     {/* Log display */}
                     {kendalaLog.length > 0 && (
-                        <div className="mt-16 w-full max-w-md mx-auto bg-rose-50/50 rounded-2xl border border-rose-100 p-4">
-                            <p className="text-[10px] text-rose-400 font-bold uppercase tracking-widest mb-2 text-center">📋 Log Kendala Shift Ini</p>
-                            <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
+                        <div className="mt-16 w-full max-w-md mx-auto bg-pink-50/80 backdrop-blur-md rounded-3xl border border-pink-100 p-6 shadow-xl">
+                            <p className="text-[10px] text-pink-400 font-black uppercase tracking-[0.2em] mb-4 text-center">📋 Log Kendala Shift Ini</p>
+                            <div className="flex flex-col gap-2 max-h-40 overflow-y-auto">
                                 {[...kendalaLog].reverse().map((k, i) => (
-                                    <div key={i} className="flex items-center gap-2 text-xs text-rose-700 justify-center">
-                                        <span className="font-mono font-bold text-rose-500 shrink-0">{k.time}</span>
-                                        <span className="text-slate-400">—</span>
-                                        <span className="font-semibold">{k.label}</span>
+                                    <div key={i} className="flex items-center gap-3 text-xs text-pink-700 justify-center">
+                                        <span className="font-mono font-black text-pink-500 shrink-0 bg-white px-2 py-1 rounded-md shadow-sm">{k.time}</span>
+                                        <span className="text-pink-300">—</span>
+                                        <span className="font-bold">{k.label}</span>
                                     </div>
                                 ))}
                             </div>
@@ -151,10 +151,10 @@ export default function Kendala() {
 
             {/* Custom Input Modal */}
             {showCustomInput && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" onClick={() => { setShowCustomInput(false); setCustomKendala(''); }}>
-                    <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-6" onClick={() => { setShowCustomInput(false); setCustomKendala(''); }}>
+                    <div className="bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-10 w-full max-w-sm animate-in fade-in zoom-in-95 duration-200 border border-white" onClick={e => e.stopPropagation()}>
                         <h3 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-1">📝 Kendala Lain-lain</h3>
-                        <p className="text-xs text-slate-400 font-semibold mb-5">Ketik deskripsi kendala spesifik</p>
+                        <p className="text-xs text-slate-400 font-semibold mb-6">Ketik deskripsi kendala spesifik</p>
                         <textarea
                             ref={customInputRef}
                             value={customKendala}
@@ -162,11 +162,11 @@ export default function Kendala() {
                             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSubmitCustom()}
                             placeholder="Contoh: Rantai putus bagian depan..."
                             rows={3}
-                            className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 outline-none resize-none transition-all"
+                            className="w-full border-2 border-slate-200 rounded-2xl px-5 py-4 text-sm font-semibold text-slate-700 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none resize-none transition-all"
                         />
-                        <div className="flex gap-3 mt-4">
-                            <button onClick={() => { setShowCustomInput(false); setCustomKendala(''); }} className="flex-1 border-2 border-slate-200 text-slate-500 py-3 rounded-xl font-bold text-sm hover:bg-slate-50 transition-colors">Batal</button>
-                            <button onClick={handleSubmitCustom} disabled={!customKendala.trim() || submitingKendala} className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${!customKendala.trim() || submitingKendala ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-rose-500 hover:bg-rose-600 text-white shadow-md'}`}>
+                        <div className="flex gap-3 mt-6">
+                            <button onClick={() => { setShowCustomInput(false); setCustomKendala(''); }} className="flex-1 border-2 border-slate-200 text-slate-500 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-colors">Batal</button>
+                            <button onClick={handleSubmitCustom} disabled={!customKendala.trim() || submitingKendala} className={`flex-1 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${!customKendala.trim() || submitingKendala ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-pink-500 hover:bg-pink-600 text-white shadow-lg hover:shadow-pink-500/30'}`}>
                                 {submitingKendala ? 'Mencatat...' : '✓ Catat'}
                             </button>
                         </div>
@@ -177,8 +177,8 @@ export default function Kendala() {
             {/* Toast Notification */}
             {toast.show && (
                 <div className="fixed bottom-10 left-0 right-0 flex justify-center z-50 animate-in slide-in-from-bottom-10">
-                    <div className={`px-6 py-4 rounded-2xl shadow-xl border-2 flex items-center gap-4 bg-white ${toast.type === 'success' ? 'border-emerald-200 text-emerald-800' : 'border-rose-200 text-rose-800'}`}>
-                        <div className={`p-2 rounded-xl ${toast.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'} text-white font-black text-sm`}>
+                    <div className={`px-6 py-4 rounded-2xl shadow-xl border-2 flex items-center gap-4 bg-white/95 backdrop-blur-md ${toast.type === 'success' ? 'border-cyan-200 text-cyan-800' : 'border-pink-200 text-pink-800'}`}>
+                        <div className={`p-2 rounded-xl ${toast.type === 'success' ? 'bg-cyan-500' : 'bg-pink-500'} text-white font-black text-sm`}>
                             {toast.type === 'success' ? '✓' : '✕'}
                         </div>
                         <div>

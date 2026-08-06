@@ -169,13 +169,13 @@ export default function Landing() {
                     <p className="text-sm font-semibold text-slate-700">Pilih jenis produk dan mesin sebelum memulai pencatatan.</p>
                 </div>
 
-                <div className="flex bg-white/80 backdrop-blur-md rounded-xl shadow-md overflow-hidden mb-12 max-w-md w-full border border-white/50">
-                    <div className="flex-1 border-r border-slate-200">
+                <div className="flex bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden mb-12 max-w-md w-full border border-white/60 p-1">
+                    <div className="flex-1">
                         <select 
                             value={product} 
                             onChange={e => setProduct(e.target.value)}
-                            className="w-full bg-rose-500 text-white font-bold text-sm uppercase px-4 py-4 appearance-none outline-none text-center cursor-pointer hover:bg-rose-600 transition-colors"
-                            style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right .7em top 50%', backgroundSize: '.65em auto' }}
+                            className="w-full bg-pink-500 text-white font-black text-sm uppercase px-4 py-4 rounded-[1.8rem] appearance-none outline-none text-center cursor-pointer hover:bg-pink-600 transition-all shadow-md"
+                            style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1em top 50%', backgroundSize: '.65em auto' }}
                         >
                             {products.map(p => (
                                 <option key={p} value={p}>{p.replace('_', ' ')}</option>
@@ -186,7 +186,8 @@ export default function Landing() {
                         <select 
                             value={machine} 
                             onChange={e => setMachine(e.target.value)}
-                            className="w-full bg-cyan-200 text-slate-800 font-bold text-sm uppercase px-4 py-4 appearance-none outline-none text-center cursor-pointer hover:bg-cyan-300 transition-colors"
+                            className="w-full bg-transparent text-slate-700 font-black text-sm uppercase px-4 py-4 appearance-none outline-none text-center cursor-pointer hover:bg-slate-50 transition-all rounded-[1.8rem]"
+                            style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23475569%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1em top 50%', backgroundSize: '.65em auto' }}
                         >
                             {machines.map(m => (
                                 <option key={m} value={m}>{m}</option>
@@ -196,39 +197,39 @@ export default function Landing() {
                 </div>
 
                 {/* Main Inputs Card Row */}
-                <div className={`grid gap-6 w-full max-w-4xl mb-8 ${isPackItem ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                <div className={`grid gap-6 w-full max-w-4xl mb-8 ${isPackItem ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-3'}`}>
                     {/* No. Batch */}
-                    <div className="bg-white rounded-[2rem] border border-rose-100 shadow-xl p-8 flex flex-col items-center">
-                        <label className="text-slate-500 font-bold uppercase text-sm mb-6 tracking-widest">No. Batch</label>
+                    <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] border border-white/50 shadow-2xl p-8 flex flex-col items-center transform transition-all hover:-translate-y-1 hover:shadow-pink-500/10">
+                        <label className="text-slate-400 font-black uppercase text-xs mb-6 tracking-[0.2em]">No. Batch</label>
                         <input
                             type="number"
                             value={batchNumber}
                             onChange={e => setBatchNumber(e.target.value)}
-                            className="w-full text-center text-4xl font-black text-slate-800 border-none rounded-xl focus:ring-0 p-2 placeholder-slate-200 outline-none"
+                            className="w-full text-center text-5xl font-black text-slate-800 border-none bg-transparent focus:ring-0 p-2 placeholder-slate-200 outline-none"
                             placeholder="0"
                         />
                     </div>
 
                     {/* No. Rak */}
                     {!isPackItem && (
-                    <div className="bg-white rounded-[2rem] border border-rose-100 shadow-xl p-8 flex flex-col items-center">
-                        <label className="text-slate-500 font-bold uppercase text-sm mb-6 tracking-widest">No. Rak</label>
+                    <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] border border-white/50 shadow-2xl p-8 flex flex-col items-center transform transition-all hover:-translate-y-1 hover:shadow-cyan-500/10">
+                        <label className="text-slate-400 font-black uppercase text-xs mb-6 tracking-[0.2em]">No. Rak</label>
                         <input
                             type="number"
                             value={rak}
                             onChange={e => setRak(e.target.value)}
-                            className="w-full text-center text-4xl font-black text-slate-800 border-none rounded-xl focus:ring-0 p-2 placeholder-slate-200 outline-none"
+                            className="w-full text-center text-5xl font-black text-slate-800 border-none bg-transparent focus:ring-0 p-2 placeholder-slate-200 outline-none"
                             placeholder="0"
                         />
                         {lastRak !== '' && (
-                            <p className="text-center text-xs font-bold mt-2 text-rose-500">Min: {lastRak} ↑</p>
+                            <p className="text-center text-[10px] font-black mt-3 text-pink-500 tracking-wider">MIN: {lastRak} &uarr;</p>
                         )}
                     </div>
                     )}
 
                     {/* Jumlah Loyang */}
-                    <div className="bg-white rounded-[2rem] border border-rose-100 shadow-xl p-8 flex flex-col items-center">
-                        <label className="text-slate-500 font-bold uppercase text-sm mb-6 tracking-widest">
+                    <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] border border-white/50 shadow-2xl p-8 flex flex-col items-center transform transition-all hover:-translate-y-1 hover:shadow-pink-500/10">
+                        <label className="text-slate-400 font-black uppercase text-xs mb-6 tracking-[0.2em]">
                             Jumlah {isPackItem ? 'Keranjang' : 'Loyang'}
                         </label>
                         <input
@@ -236,7 +237,7 @@ export default function Landing() {
                             value={trayCount}
                             onChange={e => setTrayCount(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && submitData()}
-                            className="w-full text-center text-4xl font-black text-slate-800 border-none rounded-xl focus:ring-0 p-2 placeholder-slate-200 outline-none"
+                            className="w-full text-center text-5xl font-black text-slate-800 border-none bg-transparent focus:ring-0 p-2 placeholder-slate-200 outline-none"
                             placeholder="0"
                         />
                     </div>
@@ -246,7 +247,7 @@ export default function Landing() {
                 <button 
                     onClick={submitData} 
                     disabled={loading || !trayCount || trayCount <= 0}
-                    className="bg-white border-2 border-rose-500 text-rose-600 font-black text-lg py-4 px-12 rounded-full uppercase tracking-widest hover:bg-rose-50 transition-colors shadow-lg disabled:opacity-50"
+                    className="bg-white/90 backdrop-blur-md border-2 border-pink-500 text-pink-500 font-black text-sm py-4 px-12 rounded-full uppercase tracking-[0.2em] hover:bg-pink-500 hover:text-white transition-all shadow-xl hover:shadow-pink-500/30 disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-pink-500"
                 >
                     {loading ? 'Mencatat...' : 'Lanjutkan Pencatatan'}
                 </button>
