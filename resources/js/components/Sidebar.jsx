@@ -12,7 +12,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 const navigation = [
     { name: 'IQF', isTitle: true },
     { name: 'Dashboard',       href: '/iqf-logsheet/dashboard', icon: LayoutDashboard },
-    { name: 'Logsheet Harian', href: '/iqf-logsheet',           icon: FileText },
+    { name: 'Logsheet Harian', href: '/logsheet-iqf',           icon: FileText },
     { name: 'History',         href: '/iqf-logsheet/history',   icon: History },
 
     { name: 'Manajemen User', isTitle: true },
@@ -126,7 +126,7 @@ function NavItem({ item, isCollapsed, setIsCollapsed, url }) {
 function SidebarContent({ isCollapsed, setIsCollapsed }) {
     const { url } = usePage();
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-slate-900 bg-card border-r shadow-sm">
+        <div className="flex flex-col h-full bg-card border-r shadow-sm">
             <div className={cn("flex items-center h-16 border-b px-4", isCollapsed ? "justify-center" : "justify-start")}>
                 <div className="flex items-center gap-2 font-bold tracking-tight text-primary">
                     <div className="flex items-center shrink-0 gap-1.5">
