@@ -173,11 +173,10 @@
     <div class="header">
         <div class="logo-row">
             <div class="logo-badge">
-                <img src="{{ asset('images/LogoMieGacoan.png') }}" alt="Logo Gacoan" />
+                <img src="{{ asset('images/ppa.jpg') }}" alt="Logo PPA" />
             </div>
-            <div class="brand-title">
-                <span>Sistem Digitalisasi</span>
-                Divisi Produksi
+            <div class="logo-badge">
+                <img src="{{ asset('images/LogoMieGacoan.png') }}" alt="Logo Gacoan" />
             </div>
         </div>
         <div class="header-icon">
@@ -217,7 +216,7 @@
             Jika Anda tidak mengajukan permintaan reset password, tidak diperlukan tindakan lebih lanjut.
         </p>
 
-        <p>Salam hangat,<br /><strong>Tim Digitalisasi Produksi — Gacoan</strong></p>
+        <p>Salam hangat,<br /><strong>PPA CK 2</strong></p>
 
         <hr class="divider" />
 
@@ -229,7 +228,7 @@
 
     <!-- FOOTER -->
     <div class="footer">
-        <p class="brand">PT. Pesta Pora Abadi — Mie Gacoan</p>
+        <p class="brand">PT. Pesta Pora Abadi — CK 2, Singosari Malang</p>
         <p>Email ini dikirim secara otomatis oleh sistem. Mohon jangan membalas email ini.<br />
         &copy; {{ date('Y') }} Digitalisasi Divisi Produksi. Hak cipta dilindungi.</p>
     </div>
