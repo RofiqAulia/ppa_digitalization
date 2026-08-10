@@ -33,11 +33,13 @@ const calcDurationMinutes = (stopMin, nextMin) => {
 };
 
 // Parse durasi tiap unplanned stop entry
-const calcStopDurations = (unplannedStopText, details) => {
+// `allMachineDetails` = semua details dari semua logsheet di mesin yang sama
+const calcStopDurations = (unplannedStopText, allMachineDetails) => {
     if (!unplannedStopText || unplannedStopText === '-') return [];
 
     const stops = unplannedStopText.split(',').map(s => s.trim()).filter(Boolean);
-    const sortedDetails = [...(details || [])]
+    // Sort seluruh detail di mesin ini berdasarkan created_at
+    const sortedDetails = [...(allMachineDetails || [])]
         .filter(d => d.created_at && d.time)
         .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
@@ -47,24 +49,20 @@ const calcStopDurations = (unplannedStopText, details) => {
 
         const stopMin = parseInt(timeMatch[1]) * 60 + parseInt(timeMatch[2]);
         
-        // Cari detail pertama yang DIBUAT (created_at) setelah waktu kendala
+        // Cari detail PERTAMA dari mesin yang sama yang diinput SETELAH waktu kendala
         const nextDetail = sortedDetails.find(d => {
             const date = new Date(d.created_at);
-            // Convert to Asia/Jakarta to compare with stopMin
             const wibTime = new Intl.DateTimeFormat('en-GB', {
                 timeZone: 'Asia/Jakarta',
                 hour: '2-digit', minute: '2-digit', hour12: false
             }).format(date);
             const [h, m] = wibTime.split(':');
             const dmCreated = parseInt(h) * 60 + parseInt(m);
-            
-            // Toleransi cross-midnight
             const diff = dmCreated >= stopMin ? dmCreated - stopMin : dmCreated + 1440 - stopMin;
-            // Detail harus dibuat SETELAH (atau sama dengan) kendala dicatat
             return diff >= 0 && diff < 720; 
         });
 
-        // Hitung durasi menggunakan waktu logikal (d.time) yang bisa diedit
+        // Hitung durasi dari waktu logikal operator (d.time), bukan created_at
         const duration = nextDetail
             ? calcDurationMinutes(stopMin, timeToMinutes(nextDetail.time))
             : null;
@@ -264,6 +262,15 @@ export default function OperatorLogsheet({ logsheets }) {
     }, [logsheets, filterJenis, filterShift, filterMesin]);
 
     const rows = useMemo(() => {
+        // Bangun peta semua detail per mesin dari SELURUH logsheet (unfiltered)
+        // sehingga perhitungan durasi kendala bisa lintas logsheet dalam mesin yang sama
+        const detailsByMachine = {};
+        (logsheets || []).forEach(ls => {
+            if (!ls.machine) return;
+            if (!detailsByMachine[ls.machine]) detailsByMachine[ls.machine] = [];
+            (ls.details || []).forEach(d => detailsByMachine[ls.machine].push(d));
+        });
+
         return filteredData.map(ls => {
             const hourData = {};
             let pic = '-';
@@ -282,8 +289,9 @@ export default function OperatorLogsheet({ logsheets }) {
 
             const totalAchieve = ls.details?.reduce((sum, d) => sum + (parseInt(d.tray_count) || 0), 0) ?? 0;
 
-            // Hitung durasi untuk tiap unplanned stop
-            const stopDurations = calcStopDurations(ls.unplanned_stop, ls.details);
+            // Hitung durasi kendala menggunakan semua detail di mesin yang sama
+            const allMachineDetails = detailsByMachine[ls.machine] || ls.details || [];
+            const stopDurations = calcStopDurations(ls.unplanned_stop, allMachineDetails);
 
             // Sort detail by time untuk tampil di expand
             const sortedDetails = [...(ls.details || [])].sort((a, b) => (a.time || '').localeCompare(b.time || ''));
@@ -300,7 +308,7 @@ export default function OperatorLogsheet({ logsheets }) {
                 details: sortedDetails,
             };
         });
-    }, [filteredData]);
+    }, [filteredData, logsheets]);
 
     const uniqueProducts = [...new Set((logsheets || []).map(l => l.product_type))];
     const uniqueShifts   = [...new Set((logsheets || []).map(l => l.shift))];

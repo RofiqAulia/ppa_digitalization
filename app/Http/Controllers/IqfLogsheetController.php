@@ -57,15 +57,43 @@ class IqfLogsheetController extends Controller
             ->where('unplanned_stop', '!=', '-')
             ->get();
 
+        // Pre-load ALL details for this date grouped by machine
+        // so we can find the "next input" across different product logsheets on the same machine
+        $allLogsheetsByMachine = IqfLogsheet::with('details')
+            ->where('date', $queryDate)
+            ->get()
+            ->groupBy('machine');
+
+        // Build a flat sorted list of details per machine
+        $detailsByMachine = [];
+        foreach ($allLogsheetsByMachine as $machine => $logsheets) {
+            $allDetails = collect();
+            foreach ($logsheets as $ls) {
+                foreach ($ls->details as $d) {
+                    if ($d->created_at && $d->time) {
+                        $allDetails->push($d);
+                    }
+                }
+            }
+            $detailsByMachine[$machine] = $allDetails->sortBy('created_at')->values();
+        }
+
         foreach ($stopsQuery as $ls) {
             $stops = array_filter(array_map('trim', explode(',', $ls->unplanned_stop)));
-            $sortedDetails = $ls->details->filter(fn($d) => $d->created_at && $d->time)
-                                         ->sortBy('created_at')->values();
+
+            // Use all details for this machine (across all logsheets on same date)
+            $machineSortedDetails = $detailsByMachine[$ls->machine] ?? collect();
+
+            // Also keep same-logsheet details as fallback for PIC when stop has no resolution
+            $sameLogsheetDetails = $ls->details->filter(fn($d) => $d->created_at && $d->time)
+                                                ->sortBy('created_at')->values();
 
             foreach ($stops as $stopText) {
                 if (preg_match('/^(\d{1,2}):(\d{2})/', $stopText, $matches)) {
                     $stopMin = (int)$matches[1] * 60 + (int)$matches[2];
-                    $nextDetail = $sortedDetails->first(function($d) use ($stopMin) {
+
+                    // Find the first detail on THIS MACHINE (any logsheet) entered AFTER the stop time
+                    $nextDetail = $machineSortedDetails->first(function($d) use ($stopMin) {
                         $wibTime = $d->created_at->setTimezone('Asia/Jakarta')->format('H:i');
                         [$h, $m] = explode(':', $wibTime);
                         $dmCreated = (int)$h * 60 + (int)$m;
@@ -75,6 +103,7 @@ class IqfLogsheetController extends Controller
 
                     $duration = null;
                     if ($nextDetail) {
+                        // Use the `time` field (operator-entered time) for duration calculation
                         [$th, $tm] = explode(':', substr($nextDetail->time, 0, 5));
                         $nextMin = (int)$th * 60 + (int)$tm;
                         $diffMin = $nextMin >= $stopMin ? $nextMin - $stopMin : $nextMin + 1440 - $stopMin;
@@ -86,24 +115,16 @@ class IqfLogsheetController extends Controller
                     $pic = 'Unknown';
                     if ($nextDetail && $nextDetail->pic) {
                         $pic = $nextDetail->pic;
-                    } else if ($sortedDetails->count() > 0) {
-                        $pic = $sortedDetails->last()->pic;
+                    } else if ($sameLogsheetDetails->count() > 0) {
+                        $pic = $sameLogsheetDetails->last()->pic;
                     }
 
-                    // Only include stops within the time filter
-                    // We check if stopMin is within fromTime and toTime
-                    $fromParts = explode(':', $fromTime);
-                    $toParts = explode(':', $toTime);
-                    $fMin = (int)$fromParts[0] * 60 + (int)$fromParts[1];
-                    $tMin = (int)$toParts[0] * 60 + (int)$toParts[1];
-                    // handle cross midnight for shift 3 if needed, but for simplicity, just include it
-                    
                     $unplannedStopsData[] = [
-                        'shift' => $ls->shift,
-                        'machine' => $ls->machine,
-                        'pic' => $pic,
-                        'text' => $stopText,
-                        'duration' => $duration
+                        'shift'    => $ls->shift,
+                        'machine'  => $ls->machine,
+                        'pic'      => $pic,
+                        'text'     => $stopText,
+                        'duration' => $duration,
                     ];
                 }
             }

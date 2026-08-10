@@ -188,10 +188,11 @@ export default function DataTable({ logsheets }) {
         return diff;
     };
 
-    const parseUnplannedStop = (stopText, details) => {
+    // `allMachineDetails` = semua detail dari semua logsheet pada mesin yang sama
+    const parseUnplannedStop = (stopText, allMachineDetails) => {
         if (!stopText || stopText === '-') return '-';
         const stops = stopText.split(',').map(s => s.trim()).filter(Boolean);
-        const sortedDetails = [...(details || [])]
+        const sortedDetails = [...(allMachineDetails || [])]
             .filter(d => d.created_at && d.time)
             .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
@@ -223,10 +224,21 @@ export default function DataTable({ logsheets }) {
 
     const flatData = useMemo(() => {
         if (!logsheets || logsheets.length === 0) return [];
+
+        // Bangun peta detail per mesin dari SELURUH logsheet agar durasi kendala
+        // bisa dihitung lintas logsheet dalam satu mesin yang sama
+        const detailsByMachine = {};
+        logsheets.forEach(ls => {
+            if (!ls.machine) return;
+            if (!detailsByMachine[ls.machine]) detailsByMachine[ls.machine] = [];
+            (ls.details || []).forEach(d => detailsByMachine[ls.machine].push(d));
+        });
+
         const data = [];
         logsheets.forEach(ls => {
             if (ls.details && ls.details.length > 0) {
                 const lastIdx = ls.details.length - 1;
+                const allMachineDetails = detailsByMachine[ls.machine] || ls.details;
                 ls.details.forEach((d, idx) => {
                     data.push({
                         id:             d.id,
@@ -242,7 +254,7 @@ export default function DataTable({ logsheets }) {
                         rak:            d.rak || 1,
                         tray_count:     d.tray_count || 0,
                         // Hanya baris terakhir per logsheet yang tampil unplanned_stop
-                        unplanned_stop: idx === lastIdx ? parseUnplannedStop(ls.unplanned_stop, ls.details) : '-',
+                        unplanned_stop: idx === lastIdx ? parseUnplannedStop(ls.unplanned_stop, allMachineDetails) : '-',
                     });
                 });
             }
