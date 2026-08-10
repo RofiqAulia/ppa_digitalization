@@ -563,9 +563,13 @@ class IqfLogsheetController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if ($user) {
+        if ($user && $user->role === 'operator') {
             session(['operator_name' => $user->name]);
             return redirect()->route('operator.landing');
+        }
+
+        if ($user && $user->role === 'admin') {
+            return back()->withErrors(['email' => 'Akun ini adalah akun Admin Panel. Silakan login melalui /login.']);
         }
 
         return back()->withErrors(['email' => 'Email tidak ditemukan di sistem.']);

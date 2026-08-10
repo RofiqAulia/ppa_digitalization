@@ -3,12 +3,6 @@ import { Head, useForm, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Edit2, Trash2, Monitor, ShieldCheck, Info, Copy, Check } from 'lucide-react';
 
-const ADMIN_EMAILS = ['admin@example.com', 'mrofiqaulia@gmail.com'];
-
-function isAdminAccount(email) {
-    return ADMIN_EMAILS.includes(email?.toLowerCase()) || email?.endsWith('@gmail.com');
-}
-
 function CopyButton({ text }) {
     const [copied, setCopied] = useState(false);
     const handleCopy = (e) => {
@@ -31,26 +25,28 @@ function CopyButton({ text }) {
 
 export default function AdminUsersIndex({ users }) {
     const { auth, flash } = usePage().props;
-    const [showForm, setShowForm] = useState(false);
+    const [showForm, setShowForm]     = useState(false);
     const [editingUser, setEditingUser] = useState(null);
-    const [activeTab, setActiveTab] = useState('all');
+    const [activeTab, setActiveTab]   = useState('all');
 
     const { data, setData, post, put, processing, errors, reset, clearErrors } = useForm({
         name: '',
         email: '',
         password: '',
+        role: 'operator',
     });
 
     const openAddForm = () => {
         clearErrors();
         reset();
+        setData('role', 'operator');
         setEditingUser(null);
         setShowForm(true);
     };
 
     const openEditForm = (user) => {
         clearErrors();
-        setData({ name: user.name, email: user.email, password: '' });
+        setData({ name: user.name, email: user.email, password: '', role: user.role || 'operator' });
         setEditingUser(user);
         setShowForm(true);
     };
@@ -77,9 +73,9 @@ export default function AdminUsersIndex({ users }) {
         }
     };
 
-    const adminUsers    = users.filter(u => isAdminAccount(u.email));
-    const operatorUsers = users.filter(u => !isAdminAccount(u.email));
-    const displayUsers  = activeTab === 'admin' ? adminUsers
+    const adminUsers    = users.filter(u => u.role === 'admin');
+    const operatorUsers = users.filter(u => u.role === 'operator');
+    const displayUsers  = activeTab === 'admin'    ? adminUsers
                         : activeTab === 'operator' ? operatorUsers
                         : users;
 
@@ -93,12 +89,12 @@ export default function AdminUsersIndex({ users }) {
         <AppLayout>
             <Head title="Manajemen Akun" />
 
-            {/* ── PAGE HEADER ──────────────────────────── */}
+            {/* ── PAGE HEADER ─────────────────────────── */}
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight text-slate-900">Manajemen Akun</h2>
                     <p className="text-muted-foreground text-sm font-medium mt-0.5">
-                        Kelola akun untuk login Admin Panel & Terminal Operator.
+                        Kelola akun untuk login Admin Panel &amp; Terminal Operator.
                     </p>
                 </div>
                 <button
@@ -109,7 +105,7 @@ export default function AdminUsersIndex({ users }) {
                 </button>
             </div>
 
-            {/* ── INFO BOX (Testing Guide) ─────────────── */}
+            {/* ── INFO BOX ─────────────────────────────── */}
             <div className="mb-6 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-2xl p-4">
                 <div className="flex items-start gap-3">
                     <div className="mt-0.5 w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center shrink-0">
@@ -117,7 +113,7 @@ export default function AdminUsersIndex({ users }) {
                     </div>
                     <div>
                         <p className="font-black text-indigo-800 text-sm uppercase tracking-widest mb-2">
-                            Panduan Akun Testing
+                            Panduan Login
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                             <div className="bg-white/70 rounded-xl p-3 border border-indigo-100">
@@ -125,18 +121,14 @@ export default function AdminUsersIndex({ users }) {
                                     <ShieldCheck className="w-4 h-4 text-indigo-500" />
                                     <span className="font-bold text-indigo-700">Login Admin Panel</span>
                                 </div>
-                                <p className="text-xs text-slate-500 mb-1">URL: <code className="bg-slate-100 px-1 rounded">/login</code></p>
+                                <p className="text-xs text-slate-500 mb-1">URL: <code className="bg-slate-100 px-1 rounded">/login</code> (email + password)</p>
                                 <div className="space-y-1 font-mono text-xs">
-                                    <div className="flex items-center gap-1">
-                                        <span className="text-slate-600">admin@example.com</span>
-                                        <CopyButton text="admin@example.com" />
-                                        <span className="text-slate-400">/ password</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <span className="text-slate-600">mrofiqaulia@gmail.com</span>
-                                        <CopyButton text="mrofiqaulia@gmail.com" />
-                                        <span className="text-slate-400">/ password123</span>
-                                    </div>
+                                    {adminUsers.slice(0, 3).map(u => (
+                                        <div key={u.email} className="flex items-center gap-1">
+                                            <span className="text-slate-600">{u.email}</span>
+                                            <CopyButton text={u.email} />
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                             <div className="bg-white/70 rounded-xl p-3 border border-indigo-100">
@@ -162,7 +154,7 @@ export default function AdminUsersIndex({ users }) {
                 </div>
             </div>
 
-            {/* ── FLASH MESSAGES ───────────────────────── */}
+            {/* ── FLASH MESSAGES ────────────────────────── */}
             {flash?.success && (
                 <div className="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold px-5 py-3 rounded-2xl text-sm">
                     ✓ {flash.success}
@@ -174,13 +166,14 @@ export default function AdminUsersIndex({ users }) {
                 </div>
             )}
 
-            {/* ── ADD/EDIT FORM ─────────────────────────── */}
+            {/* ── ADD/EDIT FORM ──────────────────────────── */}
             {showForm && (
                 <div className="mb-8 bg-white border-2 border-pink-100 rounded-3xl p-6 shadow-xl shadow-pink-500/10">
                     <h3 className="text-base font-black text-slate-800 uppercase tracking-widest mb-4">
                         {editingUser ? 'Edit Akun' : 'Tambah Akun Baru'}
                     </h3>
-                    <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Nama */}
                         <div>
                             <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5">Nama Lengkap</label>
                             <input
@@ -192,6 +185,8 @@ export default function AdminUsersIndex({ users }) {
                             />
                             {errors.name && <p className="text-rose-500 text-xs font-bold mt-1">{errors.name}</p>}
                         </div>
+
+                        {/* Email */}
                         <div>
                             <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5">Email</label>
                             <input
@@ -203,6 +198,8 @@ export default function AdminUsersIndex({ users }) {
                             />
                             {errors.email && <p className="text-rose-500 text-xs font-bold mt-1">{errors.email}</p>}
                         </div>
+
+                        {/* Password */}
                         <div>
                             <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5">
                                 Password {editingUser && <span className="text-slate-400 font-normal lowercase">(Kosongkan jika tidak diubah)</span>}
@@ -216,7 +213,51 @@ export default function AdminUsersIndex({ users }) {
                             />
                             {errors.password && <p className="text-rose-500 text-xs font-bold mt-1">{errors.password}</p>}
                         </div>
-                        <div className="md:col-span-3 flex justify-end gap-3">
+
+                        {/* Role / Tipe Akun */}
+                        <div>
+                            <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5">Tipe Akun</label>
+                            <div className="flex gap-3 mt-1">
+                                <label className={`flex-1 flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${data.role === 'operator' ? 'border-pink-400 bg-pink-50' : 'border-slate-200 hover:border-slate-300'}`}>
+                                    <input
+                                        type="radio"
+                                        name="role"
+                                        value="operator"
+                                        checked={data.role === 'operator'}
+                                        onChange={() => setData('role', 'operator')}
+                                        className="accent-pink-500"
+                                    />
+                                    <div>
+                                        <div className="flex items-center gap-1.5">
+                                            <Monitor className="w-3.5 h-3.5 text-pink-500" />
+                                            <span className="font-black text-sm text-slate-700">Operator</span>
+                                        </div>
+                                        <p className="text-[10px] text-slate-400 mt-0.5">Login terminal dengan email saja</p>
+                                    </div>
+                                </label>
+                                <label className={`flex-1 flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${data.role === 'admin' ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'}`}>
+                                    <input
+                                        type="radio"
+                                        name="role"
+                                        value="admin"
+                                        checked={data.role === 'admin'}
+                                        onChange={() => setData('role', 'admin')}
+                                        className="accent-indigo-500"
+                                    />
+                                    <div>
+                                        <div className="flex items-center gap-1.5">
+                                            <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+                                            <span className="font-black text-sm text-slate-700">Admin Panel</span>
+                                        </div>
+                                        <p className="text-[10px] text-slate-400 mt-0.5">Login admin dengan email + password</p>
+                                    </div>
+                                </label>
+                            </div>
+                            {errors.role && <p className="text-rose-500 text-xs font-bold mt-1">{errors.role}</p>}
+                        </div>
+
+                        {/* Buttons */}
+                        <div className="md:col-span-2 flex justify-end gap-3 pt-2">
                             <button type="button" onClick={closeForm} className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest px-8 py-3 rounded-full transition-all">
                                 Batal
                             </button>
@@ -228,7 +269,7 @@ export default function AdminUsersIndex({ users }) {
                 </div>
             )}
 
-            {/* ── TABS ─────────────────────────────────── */}
+            {/* ── TABS ──────────────────────────────────── */}
             <div className="flex gap-1 mb-4 bg-slate-100 p-1 rounded-2xl w-fit">
                 {tabs.map(tab => (
                     <button
@@ -250,7 +291,7 @@ export default function AdminUsersIndex({ users }) {
                 ))}
             </div>
 
-            {/* ── USERS TABLE ──────────────────────────── */}
+            {/* ── USERS TABLE ───────────────────────────── */}
             <div className="bg-white border-2 border-slate-100 rounded-3xl overflow-hidden shadow-lg">
                 <table className="w-full text-sm">
                     <thead>
@@ -264,7 +305,7 @@ export default function AdminUsersIndex({ users }) {
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                         {displayUsers.map((user) => {
-                            const isAdmin = isAdminAccount(user.email);
+                            const isAdmin = user.role === 'admin';
                             return (
                                 <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
                                     <td className="px-6 py-4">
