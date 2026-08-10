@@ -89,7 +89,7 @@ export default function IqfDashboard() {
     const fetchStats = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await axios.get('/iqf-kiosk/stats', { params: { from_time: fromTime, to_time: toTime } });
+            const res = await axios.get('/dashboard/stats', { params: { from_time: fromTime, to_time: toTime } });
             setStats(res.data);
         } catch (e) {
             console.error(e);

@@ -50,6 +50,9 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('IqfLogsheet/Dashboard');
     })->name('dashboard');
 
+    // Dashboard stats API (admin-accessible version of /iqf-kiosk/stats)
+    Route::get('/dashboard/stats', [\App\Http\Controllers\IqfLogsheetController::class, 'dashboardStats'])->name('dashboard.stats');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
