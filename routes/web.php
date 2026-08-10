@@ -65,7 +65,7 @@ Route::middleware('auth')->group(function () {
 
     // Refrezing Dashboard
     Route::get('/refrezing/dashboard', function () {
-        return Inertia\Inertia::render('RefrezingLogsheet/Dashboard');
+        return Inertia::render('RefrezingLogsheet/Dashboard');
     })->name('refrezing.dashboard');
 
     // Refrezing Dashboard stats API
