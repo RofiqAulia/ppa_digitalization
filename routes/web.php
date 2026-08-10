@@ -27,6 +27,11 @@ Route::middleware(\App\Http\Middleware\OperatorAuth::class)->group(function () {
     Route::post('/iqf-kiosk/unplanned-stop', [\App\Http\Controllers\IqfLogsheetController::class, 'storeUnplannedStop'])->name('iqf-logsheet.storeUnplannedStop');
     Route::get('/iqf-kiosk/stats', [\App\Http\Controllers\IqfLogsheetController::class, 'dashboardStats'])->name('iqf-logsheet.stats');
 
+    // Refrezing API Routes
+    Route::get('/refrezing-kiosk', [\App\Http\Controllers\RefrezingController::class, 'kiosk'])->name('refrezing.kiosk');
+    Route::post('/refrezing-kiosk/store', [\App\Http\Controllers\RefrezingController::class, 'storeKiosk'])->name('refrezing.storeKiosk');
+    Route::post('/refrezing-kiosk/unplanned-stop', [\App\Http\Controllers\RefrezingController::class, 'storeUnplannedStop'])->name('refrezing.storeUnplannedStop');
+
     // Operator logsheet (today only, no admin layout)
     Route::get('/logsheet-operator', [\App\Http\Controllers\IqfLogsheetController::class, 'operatorLogsheet'])->name('operator.logsheet');
 

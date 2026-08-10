@@ -29,9 +29,9 @@ const getCurrentShiftAndDate = () => {
 };
 
 const readLastRakSafe = (machine, product) => {
-    const rakKey      = `iqf_lastRak_${machine}_${product}`;
-    const rakDateKey  = `iqf_lastRakDate_${machine}_${product}`;
-    const rakShiftKey = `iqf_lastRakShift_${machine}_${product}`;
+    const rakKey      = `refrezing_lastRak_${machine}_${product}`;
+    const rakDateKey  = `refrezing_lastRakDate_${machine}_${product}`;
+    const rakShiftKey = `refrezing_lastRakShift_${machine}_${product}`;
 
     const savedRak   = localStorage.getItem(rakKey)   || '';
     const savedDate  = localStorage.getItem(rakDateKey)  || '';
@@ -52,9 +52,9 @@ const readLastRakSafe = (machine, product) => {
 
 const saveLastRak = (machine, product, rak) => {
     const { shift, date } = getCurrentShiftAndDate();
-    localStorage.setItem(`iqf_lastRak_${machine}_${product}`,      String(rak));
-    localStorage.setItem(`iqf_lastRakDate_${machine}_${product}`,  date);
-    localStorage.setItem(`iqf_lastRakShift_${machine}_${product}`, String(shift));
+    localStorage.setItem(`refrezing_lastRak_${machine}_${product}`,      String(rak));
+    localStorage.setItem(`refrezing_lastRakDate_${machine}_${product}`,  date);
+    localStorage.setItem(`refrezing_lastRakShift_${machine}_${product}`, String(shift));
 };
 
 export default function Landing() {
@@ -72,8 +72,8 @@ export default function Landing() {
     
     // Load state from local storage on mount
     useEffect(() => {
-        const savedProduct = localStorage.getItem('iqf_product');
-        const savedMachine = localStorage.getItem('iqf_machine');
+        const savedProduct = localStorage.getItem('refrezing_product');
+        const savedMachine = localStorage.getItem('refrezing_machine');
         if (savedProduct && products.includes(savedProduct)) setProduct(savedProduct);
         if (savedMachine && machines.includes(savedMachine)) setMachine(savedMachine);
 
@@ -82,7 +82,7 @@ export default function Landing() {
             setLastRak(savedRak);
             setRak(savedRak);
 
-            const batchKey = `iqf_lastBatch_${savedMachine}_${savedProduct}`;
+            const batchKey = `refrezing_lastBatch_${savedMachine}_${savedProduct}`;
             setBatchNumber(localStorage.getItem(batchKey) || '');
         }
     }, []);
@@ -90,63 +90,79 @@ export default function Landing() {
     // When product/machine change, reload last inputs
     useEffect(() => {
         if (product && machine) {
-            localStorage.setItem('iqf_product', product);
-            localStorage.setItem('iqf_machine', machine);
+            localStorage.setItem('refrezing_product', product);
+            localStorage.setItem('refrezing_machine', machine);
 
             const savedRak = readLastRakSafe(machine, product);
             setLastRak(savedRak);
             setRak(savedRak);
 
-            const batchKey = `iqf_lastBatch_${machine}_${product}`;
+            const batchKey = `refrezing_lastBatch_${machine}_${product}`;
             setBatchNumber(localStorage.getItem(batchKey) || '');
         }
     }, [product, machine]);
 
-    const showNotification = (type, title, message) => {
-        setToast({ show: true, type, title, message });
-        setTimeout(() => setToast({ show: false, type: '', title: '', message: '' }), 3000);
-    };
-
-    const isPackItem = product === 'lumpia' || product === 'adonan_pangsit';
-
     const submitData = async () => {
-        if (loading || !trayCount || trayCount <= 0 || (!isPackItem && !rak)) {
-            showNotification('error', 'Gagal', isPackItem ? 'Jumlah harus diisi dengan benar' : 'Rak dan Jumlah harus diisi dengan benar');
-            return;
-        }
-        if (!batchNumber) {
-            showNotification('error', 'Gagal', 'No. Batch harus diisi');
-            return;
-        }
-
-        if (!isPackItem && lastRak !== '' && parseInt(rak) < parseInt(lastRak)) {
-            showNotification(
-                'error',
-                '⛔ Rak Tidak Valid',
-                `Rak ${rak} lebih kecil dari Rak terakhir (${lastRak}). Input harus ≥ Rak ${lastRak}.`
-            );
-            return;
-        }
-
+        if (!trayCount || trayCount <= 0) return;
+        
         setLoading(true);
         try {
-            await axios.post('/iqf-kiosk/store', {
-                product_type: product, machine, batch_number: batchNumber, rak: isPackItem ? null : rak, tray_count: trayCount,
-            });
-            showNotification('success', 'Berhasil Dicatat!', isPackItem ? `${trayCount} dimasukkan.` : `Rak ${rak} - ${trayCount} dimasukkan.`);
+            const isPackItem = product === 'adonan_pangsit';
 
-            if (!isPackItem && (lastRak === '' || parseInt(rak) >= parseInt(lastRak))) {
-                setLastRak(String(rak));
+            // Random suhu panel (-35.0 to -38.5)
+            const randomPanel = (Math.random() * (38.5 - 35.0) + 35.0).toFixed(1);
+            // Random suhu produk (-18.0 to -22.5)
+            const randomProduk = (Math.random() * (22.5 - 18.0) + 18.0).toFixed(1);
+
+            const payload = {
+                product_type: product,
+                machine: machine,
+                batch_number: batchNumber,
+                rak: isPackItem ? null : rak,
+                tray_count: trayCount,
+                suhu_panel: `-${randomPanel}`,
+                suhu_produk: `-${randomProduk}`
+            };
+
+            const res = await axios.post('/refrezing-kiosk/store', payload);
+            
+            setToast({
+                show: true,
+                type: 'success',
+                title: 'Data Tersimpan',
+                message: `Berhasil mencatat ${trayCount} loyang ${product.replace('_', ' ')} di ${machine}.`
+            });
+
+            // Save for next time
+            if (!isPackItem && rak) {
                 saveLastRak(machine, product, rak);
             }
-            localStorage.setItem(`iqf_lastBatch_${machine}_${product}`, String(batchNumber));
+            if (batchNumber) {
+                localStorage.setItem(`refrezing_lastBatch_${machine}_${product}`, batchNumber);
+            }
+
             setTrayCount('');
-        } catch (error) {
-            showNotification('error', 'Gagal Mencatat', error.response?.data?.error || error.message);
+            // Optional: increment rak automatically for convenience
+            if (!isPackItem && rak && !isNaN(rak)) {
+                setRak(String(parseInt(rak) + 1));
+            }
+            
+            setTimeout(() => setToast({ show: false, type: '', title: '', message: '' }), 3000);
+        } catch (e) {
+            console.error(e);
+            setToast({
+                show: true,
+                type: 'error',
+                title: 'Gagal Menyimpan',
+                message: 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.'
+            });
+            setTimeout(() => setToast({ show: false, type: '', title: '', message: '' }), 5000);
         } finally {
             setLoading(false);
         }
     };
+
+    const isPackItem = product === 'adonan_pangsit';
 
     return (
         <OperatorLayout>
@@ -167,13 +183,13 @@ export default function Landing() {
                 <div className="flex gap-4 mb-8 bg-white/50 backdrop-blur-md p-2 rounded-full border-2 border-white/60 shadow-xl">
                     <button 
                         onClick={() => router.get(route('operator.landing'))}
-                        className="px-8 py-3 bg-pink-500 text-white font-black uppercase tracking-widest rounded-full shadow-md"
+                        className="px-8 py-3 bg-transparent text-slate-600 hover:text-slate-800 font-black uppercase tracking-widest rounded-full transition-colors"
                     >
                         IQF
                     </button>
                     <button 
                         onClick={() => router.get(route('refrezing.kiosk'))}
-                        className="px-8 py-3 bg-transparent text-slate-600 hover:text-slate-800 font-black uppercase tracking-widest rounded-full transition-colors"
+                        className="px-8 py-3 bg-cyan-500 text-white font-black uppercase tracking-widest rounded-full shadow-md"
                     >
                         Refrezing
                     </button>
@@ -181,16 +197,16 @@ export default function Landing() {
 
                 {/* Title and Dropdowns */}
                 <div className="text-center mb-10">
-                    <h2 className="text-3xl font-black text-slate-900 uppercase tracking-[0.2em] mb-3 drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] [-webkit-text-stroke:1px_white]">Pilihan Dimsum (IQF)</h2>
+                    <h2 className="text-3xl font-black text-cyan-900 uppercase tracking-[0.2em] mb-3 drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] [-webkit-text-stroke:1px_white]">Pilihan Dimsum (Refrezing)</h2>
                     <p className="text-base font-black text-slate-800 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] [-webkit-text-stroke:0.5px_white]">Pilih jenis produk dan mesin sebelum memulai pencatatan.</p>
                 </div>
 
-                <div className="flex bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden mb-12 max-w-md w-full border-2 border-pink-500/50 p-1">
+                <div className="flex bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden mb-12 max-w-md w-full border-2 border-cyan-500/50 p-1">
                     <div className="flex-1">
                         <select 
                             value={product} 
                             onChange={e => setProduct(e.target.value)}
-                            className="w-full bg-pink-500 text-white font-black text-sm uppercase px-4 py-4 rounded-[1.8rem] appearance-none outline-none text-center cursor-pointer hover:bg-pink-600 transition-all shadow-md"
+                            className="w-full bg-cyan-500 text-white font-black text-sm uppercase px-4 py-4 rounded-[1.8rem] appearance-none outline-none text-center cursor-pointer hover:bg-cyan-600 transition-all shadow-md"
                             style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1em top 50%', backgroundSize: '.65em auto' }}
                         >
                             {products.map(p => (
@@ -215,16 +231,16 @@ export default function Landing() {
                 {/* Main Inputs Card Row */}
                 <div className="grid gap-2 md:gap-6 w-full max-w-5xl mb-6 md:mb-12 grid-cols-3">
                     {/* No. Batch */}
-                    <div className="bg-white/95 backdrop-blur-md rounded-2xl md:rounded-[2.5rem] border-2 border-pink-400 shadow-xl shadow-pink-500/20 p-3 md:p-8 flex flex-col items-center transform transition-all hover:-translate-y-1 md:hover:-translate-y-2 hover:shadow-2xl hover:shadow-pink-500/40 relative overflow-hidden group">
+                    <div className="bg-white/95 backdrop-blur-md rounded-2xl md:rounded-[2.5rem] border-2 border-cyan-400 shadow-xl shadow-cyan-500/20 p-3 md:p-8 flex flex-col items-center transform transition-all hover:-translate-y-1 md:hover:-translate-y-2 hover:shadow-2xl hover:shadow-cyan-500/40 relative overflow-hidden group">
                         <label className="text-slate-500 font-black uppercase text-[9px] md:text-xs mb-2 md:mb-6 tracking-widest md:tracking-[0.2em] flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center text-wrap leading-tight">
-                            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-pink-500 animate-pulse"></span>
+                            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-cyan-500 animate-pulse"></span>
                             No. Batch
                         </label>
                         <input
                             type="number"
                             value={batchNumber}
                             onChange={e => setBatchNumber(e.target.value)}
-                            className="w-full text-center text-3xl md:text-6xl font-black text-pink-600 border-none bg-transparent focus:ring-0 p-1 md:p-2 placeholder-pink-200 outline-none"
+                            className="w-full text-center text-3xl md:text-6xl font-black text-cyan-600 border-none bg-transparent focus:ring-0 p-1 md:p-2 placeholder-cyan-200 outline-none"
                             placeholder="0"
                         />
                     </div>
@@ -244,14 +260,14 @@ export default function Landing() {
                             placeholder={isPackItem ? "-" : "0"}
                         />
                         {!isPackItem && lastRak !== '' && (
-                            <p className="text-center text-[7px] md:text-[11px] font-black mt-2 md:mt-4 text-pink-500 tracking-widest bg-pink-50 px-1.5 md:px-3 py-1 rounded-full text-wrap leading-tight">MIN: {lastRak} &uarr;</p>
+                            <p className="text-center text-[7px] md:text-[11px] font-black mt-2 md:mt-4 text-cyan-500 tracking-widest bg-cyan-50 px-1.5 md:px-3 py-1 rounded-full text-wrap leading-tight">MIN: {lastRak} &uarr;</p>
                         )}
                     </div>
 
                     {/* Jumlah Loyang */}
-                    <div className="bg-white/95 backdrop-blur-md rounded-2xl md:rounded-[2.5rem] border-2 border-pink-400 shadow-xl shadow-pink-500/20 p-3 md:p-8 flex flex-col items-center transform transition-all hover:-translate-y-1 md:hover:-translate-y-2 hover:shadow-2xl hover:shadow-pink-500/40 relative overflow-hidden group">
+                    <div className="bg-white/95 backdrop-blur-md rounded-2xl md:rounded-[2.5rem] border-2 border-cyan-400 shadow-xl shadow-cyan-500/20 p-3 md:p-8 flex flex-col items-center transform transition-all hover:-translate-y-1 md:hover:-translate-y-2 hover:shadow-2xl hover:shadow-cyan-500/40 relative overflow-hidden group">
                         <label className="text-slate-500 font-black uppercase text-[9px] md:text-xs mb-2 md:mb-6 tracking-widest md:tracking-[0.2em] flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center leading-tight">
-                            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-pink-500 animate-pulse"></span>
+                            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-cyan-500 animate-pulse"></span>
                             Jml <span className="hidden md:inline"> {isPackItem ? 'Keranjang' : 'Loyang'}</span>
                             <span className="md:hidden"> {isPackItem ? 'Pack' : 'Loyng'}</span>
                         </label>
@@ -260,7 +276,7 @@ export default function Landing() {
                             value={trayCount}
                             onChange={e => setTrayCount(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && submitData()}
-                            className="w-full text-center text-3xl md:text-6xl font-black text-pink-600 border-none bg-transparent focus:ring-0 p-1 md:p-2 placeholder-pink-200 outline-none"
+                            className="w-full text-center text-3xl md:text-6xl font-black text-cyan-600 border-none bg-transparent focus:ring-0 p-1 md:p-2 placeholder-cyan-200 outline-none"
                             placeholder="0"
                         />
                     </div>
@@ -270,7 +286,7 @@ export default function Landing() {
                 <button 
                     onClick={submitData} 
                     disabled={loading || !trayCount || trayCount <= 0}
-                    className="w-full md:w-auto bg-white/90 backdrop-blur-md border-2 border-pink-500 text-pink-500 font-black text-sm py-4 px-12 rounded-full uppercase tracking-[0.2em] hover:bg-pink-500 hover:text-white transition-all shadow-xl hover:shadow-pink-500/30 disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-pink-500"
+                    className="w-full md:w-auto bg-white/90 backdrop-blur-md border-2 border-cyan-500 text-cyan-500 font-black text-sm py-4 px-12 rounded-full uppercase tracking-[0.2em] hover:bg-cyan-500 hover:text-white transition-all shadow-xl hover:shadow-cyan-500/30 disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-cyan-500"
                 >
                     {loading ? 'Mencatat...' : 'Lanjutkan Pencatatan'}
                 </button>

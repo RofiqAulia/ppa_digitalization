@@ -91,7 +91,11 @@ class SyncIqfToGoogleSheets extends Command
 
         $syncState    = DB::table('sync_states')->where('entity', 'iqf_logsheets')->first();
         $lastSyncedId = $syncState ? (int) $syncState->last_synced_id : 0;
-        $this->info("Last synced ID: {$lastSyncedId}");
+        $this->info("Last synced IQF ID: {$lastSyncedId}");
+
+        $refrezingState    = DB::table('sync_states')->where('entity', 'refrezing_logsheets')->first();
+        $lastRefrezingSyncedId = $refrezingState ? (int) $refrezingState->last_synced_id : 0;
+        $this->info("Last synced Refrezing ID: {$lastRefrezingSyncedId}");
 
         // 4. Ambil data BARU dari MySQL (incremental)
         try {
@@ -103,6 +107,15 @@ class SyncIqfToGoogleSheets extends Command
                 ->orderBy('d.id', 'asc')
                 ->limit(500)
                 ->get();
+
+            $newRefrezingRecords = DB::connection('mysql_readonly')
+                ->table('refrezing_logsheet_details as d')
+                ->join('refrezing_logsheets as h', 'd.refrezing_logsheet_id', '=', 'h.id')
+                ->select('d.id', 'h.date', 'h.shift', 'h.product_type', 'h.machine', 'd.tray_count')
+                ->where('d.id', '>', $lastRefrezingSyncedId)
+                ->orderBy('d.id', 'asc')
+                ->limit(500)
+                ->get();
         } catch (\Exception $e) {
             $this->error('Gagal query database: ' . $e->getMessage());
             Log::error('SyncIqf - DB Error: ' . $e->getMessage());
@@ -111,16 +124,17 @@ class SyncIqfToGoogleSheets extends Command
 
         $forceRecalcs = $this->option('force-recalc') ?? [];
 
-        if ($newRecords->isEmpty() && empty($forceRecalcs) && !$this->option('reset')) {
+        if ($newRecords->isEmpty() && $newRefrezingRecords->isEmpty() && empty($forceRecalcs) && !$this->option('reset')) {
             $this->info('Tidak ada data baru. Selesai.');
             return 0;
         }
 
-        $this->info("Ditemukan {$newRecords->count()} record baru.");
+        $this->info("Ditemukan {$newRecords->count()} record IQF baru dan {$newRefrezingRecords->count()} record Refrezing baru.");
 
         // 5. Kumpulkan kombinasi (date, jenis, machineNum, shift) yang terpengaruh
         $affectedCombinations = [];
         $highestId = $lastSyncedId;
+        $highestRefrezingId = $lastRefrezingSyncedId;
 
         // Tambahkan dari parameter force-recalc
         foreach ($forceRecalcs as $fr) {
@@ -164,9 +178,32 @@ class SyncIqfToGoogleSheets extends Command
             }
         }
 
+        foreach ($newRefrezingRecords as $record) {
+            $date       = $record->date;
+            $jenis      = strtoupper($record->product_type);
+            if ($jenis === 'ADONAN_PANGSIT') {
+                $jenis = 'ADONAN';
+            }
+            $machineNum = (int) filter_var(trim($record->machine), FILTER_SANITIZE_NUMBER_INT);
+            $shift      = (int) $record->shift;
+
+            $key = "{$date}|{$jenis}|{$machineNum}|{$shift}";
+            $affectedCombinations[$key] = [
+                'date'    => $date,
+                'jenis'   => $jenis,
+                'machine' => $machineNum,
+                'shift'   => $shift,
+            ];
+
+            if ($record->id > $highestRefrezingId) {
+                $highestRefrezingId = $record->id;
+            }
+        }
+
         // 6. Untuk setiap kombinasi, hitung TOTAL PENUH dari MySQL (bukan hanya incremental)
         //    Ini mencegah double-count jika sync berjalan lebih dari sekali
         $fullAggregated = []; // [date][jenis][machine][shift][hour] => total
+        $refrezingAggregated = []; // [date][jenis][machine][shift] => total
 
         foreach ($affectedCombinations as $combo) {
             // Inisialisasi semua jam dengan string kosong (agar jika data dihapus, sel akan ikut terhapus di Sheets)
@@ -208,6 +245,28 @@ class SyncIqfToGoogleSheets extends Command
                 }
             } catch (\Exception $e) {
                 $this->warn("Gagal agregasi untuk {$combo['date']}/{$combo['jenis']}/IQF{$combo['machine']}/Shift{$combo['shift']}: " . $e->getMessage());
+            }
+
+            // Agregasi Refrezing
+            try {
+                $refrezingTotal = DB::connection('mysql_readonly')
+                    ->table('refrezing_logsheet_details as d')
+                    ->join('refrezing_logsheets as h', 'd.refrezing_logsheet_id', '=', 'h.id')
+                    ->where('h.date', $combo['date'])
+                    ->where(function($q) use ($combo) {
+                        if ($combo['jenis'] === 'ADONAN') {
+                            $q->whereRaw("UPPER(h.product_type) IN ('ADONAN', 'ADONAN_PANGSIT')");
+                        } else {
+                            $q->whereRaw("UPPER(h.product_type) = ?", [$combo['jenis']]);
+                        }
+                    })
+                    ->where('h.machine', 'LIKE', '%' . $combo['machine'])
+                    ->where('h.shift', $combo['shift'])
+                    ->sum('d.tray_count');
+                
+                $refrezingAggregated[$combo['date']][$combo['jenis']][$combo['machine']][$combo['shift']] = (int) $refrezingTotal;
+            } catch (\Exception $e) {
+                $this->warn("Gagal agregasi Refrezing: " . $e->getMessage());
             }
         }
 
@@ -417,6 +476,16 @@ class SyncIqfToGoogleSheets extends Command
                             'range'  => "'{$sheetName}'!{$aeCol}{$rowNumber}",
                             'values' => [["=SUM(G{$rowNumber}:AD{$rowNumber})"]],
                         ]);
+
+                        // Tulis total Refrezing di kolom AF (index 31)
+                        $refTotal = $refrezingAggregated[$date][$jenis][$machineNum][$shift] ?? '';
+                        if ($refTotal !== '') {
+                            $afCol = $this->indexToColumn(31); // AF
+                            $batchData[] = new ValueRange([
+                                'range'  => "'{$sheetName}'!{$afCol}{$rowNumber}",
+                                'values' => [[$refTotal ?: 0]],
+                            ]);
+                        }
                     }
                 }
             }
@@ -504,12 +573,19 @@ class SyncIqfToGoogleSheets extends Command
             }
         }
 
-        // 12. Simpan last_synced_id
-        DB::table('sync_states')->updateOrInsert(
-            ['entity' => 'iqf_logsheets'],
-            ['last_synced_id' => $highestId, 'updated_at' => now()]
-        );
-
+        // 12. Simpan last_synced_id kembali ke DB
+        if (!$this->option('force-recalc')) {
+            DB::table('sync_states')->updateOrInsert(
+                ['entity' => 'iqf_logsheets'],
+                ['last_synced_id' => $highestId, 'updated_at' => now()]
+            );
+            
+            DB::table('sync_states')->updateOrInsert(
+                ['entity' => 'refrezing_logsheets'],
+                ['last_synced_id' => $highestRefrezingId, 'updated_at' => now()]
+            );
+        }
+        
         $this->info("Selesai. Last synced ID: {$highestId}");
         return 0;
     }
