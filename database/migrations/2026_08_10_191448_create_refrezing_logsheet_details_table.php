@@ -11,17 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('refrezing_logsheet_details', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('refrezing_logsheet_id')->constrained('refrezing_logsheets')->onDelete('cascade');
-            $table->time('time');
-            $table->string('rak')->nullable();
-            $table->integer('tray_count');
-            $table->string('suhu_panel')->nullable();
-            $table->string('suhu_produk')->nullable();
-            $table->string('pic')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('refrezing_logsheet_details')) {
+            Schema::create('refrezing_logsheet_details', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('refrezing_logsheet_id')->constrained('refrezing_logsheets')->onDelete('cascade');
+                $table->time('time');
+                $table->string('rak')->nullable();
+                $table->integer('tray_count');
+                $table->string('suhu_panel')->nullable();
+                $table->string('suhu_produk')->nullable();
+                $table->string('pic')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

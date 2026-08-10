@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sync_states', function (Blueprint $table) {
-            $table->id();
-            $table->string('entity')->unique(); // e.g., 'iqf_logsheets'
-            $table->unsignedBigInteger('last_synced_id')->default(0);
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('sync_states')) {
+            Schema::create('sync_states', function (Blueprint $table) {
+                $table->id();
+                $table->string('entity')->unique(); // e.g., 'iqf_logsheets'
+                $table->unsignedBigInteger('last_synced_id')->default(0);
+                $table->timestamps();
+            });
+        }
     }
 
     /**

@@ -11,18 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('refrezing_logsheets', function (Blueprint $table) {
-            $table->id();
-            $table->date('date');
-            $table->integer('shift');
-            $table->string('product_type');
-            $table->string('machine');
-            $table->string('batch_number')->nullable();
-            $table->string('unplanned_stop')->nullable();
-            $table->integer('planning_qty')->default(0);
-            $table->string('status')->default('ongoing');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('refrezing_logsheets')) {
+            Schema::create('refrezing_logsheets', function (Blueprint $table) {
+                $table->id();
+                $table->date('date');
+                $table->integer('shift');
+                $table->string('product_type');
+                $table->string('machine');
+                $table->string('batch_number')->nullable();
+                $table->string('unplanned_stop')->nullable();
+                $table->integer('planning_qty')->default(0);
+                $table->string('status')->default('ongoing');
+                $table->timestamps();
+            });
+        }
     }
 
     /**
