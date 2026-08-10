@@ -54,6 +54,19 @@ class RefrezingController extends Controller
         }
     }
 
+    public function operatorLogsheet()
+    {
+        extract($this->getCurrentShiftAndDate());
+
+        $logsheets = \App\Models\RefrezingLogsheet::with('details')
+            ->where('date', $date)
+            ->orderBy('shift')
+            ->orderBy('machine')
+            ->get();
+
+        return Inertia::render('Operator/RefrezingLogsheet', ['logsheets' => $logsheets]);
+    }
+
     public function kiosk()
     {
         return Inertia::render('Operator/RefrezingLanding');

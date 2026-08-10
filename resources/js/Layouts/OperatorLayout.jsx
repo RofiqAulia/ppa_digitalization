@@ -6,8 +6,10 @@ export default function OperatorLayout({ children }) {
     const { url } = usePage();
 
     // Determine active route
-    const isLogsheet = url.startsWith('/logsheet-operator');
-    const isTerminal = url === '/' || url.startsWith('/kendala') || url.startsWith('/operator');
+    const isLogsheet   = url.startsWith('/logsheet-operator');
+    const isTerminalIQF = url === '/' || (url.startsWith('/operator') && !url.startsWith('/operator/refrezing')) || url.startsWith('/kendala');
+    const isTerminalRefrezing = url.startsWith('/refrezing-kiosk');
+    const isLogsheetRefrezing = url.startsWith('/logsheet-refrezing');
 
     return (
         <div className="min-h-screen flex flex-col font-sans bg-slate-50 relative overflow-hidden pt-20">
@@ -22,26 +24,48 @@ export default function OperatorLayout({ children }) {
                     </div>
 
                     {/* Center: Navigation (Desktop) */}
-                    <nav className="hidden md:flex items-center gap-8 bg-slate-50/50 px-8 py-2.5 rounded-full border border-slate-100 shadow-inner">
+                    <nav className="hidden md:flex items-center gap-6 bg-slate-50/50 px-6 py-2.5 rounded-full border border-slate-100 shadow-inner">
                         <Link 
                             href="/logsheet-operator" 
-                            className={`text-[13px] font-black uppercase tracking-widest transition-all hover:scale-105 relative ${isLogsheet ? 'text-pink-500' : 'text-slate-500 hover:text-pink-500'}`}
+                            className={`text-[12px] font-black uppercase tracking-widest transition-all hover:scale-105 relative ${isLogsheet ? 'text-pink-500' : 'text-slate-500 hover:text-pink-500'}`}
                         >
-                            Logsheet
+                            Logsheet IQF
                             {isLogsheet && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-pink-500 rounded-full"></span>}
                         </Link>
+
+                        <div className="h-4 w-px bg-slate-200"></div>
+
                         <Link 
                             href="/" 
-                            className={`text-[13px] font-black uppercase tracking-widest transition-all hover:scale-105 relative ${isTerminal ? 'text-pink-500' : 'text-slate-500 hover:text-pink-500'}`}
+                            className={`text-[12px] font-black uppercase tracking-widest transition-all hover:scale-105 relative ${isTerminalIQF ? 'text-pink-500' : 'text-slate-500 hover:text-pink-500'}`}
                         >
-                            Terminal
-                            {isTerminal && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-pink-500 rounded-full"></span>}
+                            Terminal IQF
+                            {isTerminalIQF && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-pink-500 rounded-full"></span>}
+                        </Link>
+
+                        <div className="h-4 w-px bg-slate-200"></div>
+
+                        <Link 
+                            href="/refrezing-kiosk" 
+                            className={`text-[12px] font-black uppercase tracking-widest transition-all hover:scale-105 relative ${isTerminalRefrezing ? 'text-cyan-500' : 'text-slate-500 hover:text-cyan-500'}`}
+                        >
+                            Terminal Refrezing
+                            {isTerminalRefrezing && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-cyan-500 rounded-full"></span>}
+                        </Link>
+
+                        <div className="h-4 w-px bg-slate-200"></div>
+
+                        <Link 
+                            href="/logsheet-refrezing" 
+                            className={`text-[12px] font-black uppercase tracking-widest transition-all hover:scale-105 relative ${isLogsheetRefrezing ? 'text-cyan-500' : 'text-slate-500 hover:text-cyan-500'}`}
+                        >
+                            Logsheet Refrezing
+                            {isLogsheetRefrezing && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-cyan-500 rounded-full"></span>}
                         </Link>
                     </nav>
 
                     {/* Right: Login Button (Desktop) */}
                     <div className="hidden md:block">
-                        {/* We use an anchor tag <a> instead of <Link> for login just in case it's a completely separate layout boundary or session reset */}
                         <a 
                             href="/login" 
                             className="group flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-cyan-300 to-cyan-400 hover:from-cyan-400 hover:to-cyan-500 text-slate-900 text-xs font-black uppercase tracking-widest shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 active:scale-95"
@@ -70,9 +94,14 @@ export default function OperatorLayout({ children }) {
 
                 {/* Mobile Navigation Dropdown */}
                 {isMobileMenuOpen && (
-                    <div className="md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-slate-100 shadow-xl py-4 px-6 flex flex-col gap-4 animate-in slide-in-from-top-2">
-                        <Link href="/logsheet-operator" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isLogsheet ? 'text-pink-500' : 'text-slate-600'}`}>Logsheet</Link>
-                        <Link href="/" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isTerminal ? 'text-pink-500' : 'text-slate-600'}`}>Terminal</Link>
+                    <div className="md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-slate-100 shadow-xl py-4 px-6 flex flex-col gap-3 animate-in slide-in-from-top-2">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">IQF</p>
+                        <Link href="/logsheet-operator" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isLogsheet ? 'text-pink-500' : 'text-slate-600'}`}>Logsheet IQF</Link>
+                        <Link href="/" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isTerminalIQF ? 'text-pink-500' : 'text-slate-600'}`}>Terminal IQF</Link>
+                        
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mt-1">Refrezing</p>
+                        <Link href="/refrezing-kiosk" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isTerminalRefrezing ? 'text-cyan-500' : 'text-slate-600'}`}>Terminal Refrezing</Link>
+                        <Link href="/logsheet-refrezing" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isLogsheetRefrezing ? 'text-cyan-500' : 'text-slate-600'}`}>Logsheet Refrezing</Link>
                         
                         <a href="/login" className="mt-2 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-cyan-300 text-slate-900 text-sm font-black uppercase tracking-widest shadow-sm">
                             Login Admin

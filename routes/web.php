@@ -34,6 +34,7 @@ Route::middleware(\App\Http\Middleware\OperatorAuth::class)->group(function () {
 
     // Operator logsheet (today only, no admin layout)
     Route::get('/logsheet-operator', [\App\Http\Controllers\IqfLogsheetController::class, 'operatorLogsheet'])->name('operator.logsheet');
+    Route::get('/logsheet-refrezing', [\App\Http\Controllers\RefrezingController::class, 'operatorLogsheet'])->name('refrezing.logsheet');
 
     // Operator edit/delete detail baris (untuk koreksi jumlah & waktu)
     Route::put('/operator/logsheet-detail/{id}', [\App\Http\Controllers\IqfLogsheetController::class, 'operatorUpdateDetail'])->name('operator.detail.update');

@@ -179,22 +179,6 @@ export default function Landing() {
 
             <div className="relative z-10 flex flex-col items-center pt-8 pb-16 px-4">
                 
-                {/* Tab Switcher */}
-                <div className="flex gap-4 mb-8 bg-white/50 backdrop-blur-md p-2 rounded-full border-2 border-white/60 shadow-xl">
-                    <button 
-                        onClick={() => router.get(route('operator.landing'))}
-                        className="px-8 py-3 bg-transparent text-slate-600 hover:text-slate-800 font-black uppercase tracking-widest rounded-full transition-colors"
-                    >
-                        IQF
-                    </button>
-                    <button 
-                        onClick={() => router.get(route('refrezing.kiosk'))}
-                        className="px-8 py-3 bg-cyan-500 text-white font-black uppercase tracking-widest rounded-full shadow-md"
-                    >
-                        Refrezing
-                    </button>
-                </div>
-
                 {/* Title and Dropdowns */}
                 <div className="text-center mb-10">
                     <h2 className="text-3xl font-black text-cyan-900 uppercase tracking-[0.2em] mb-3 drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] [-webkit-text-stroke:1px_white]">Pilihan Dimsum (Refrezing)</h2>
