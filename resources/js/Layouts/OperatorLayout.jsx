@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 
 export default function OperatorLayout({ children }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const { url } = usePage();
+    const { url, props } = usePage();
+    const operatorName = props.operatorName;
 
     // Determine active route
     const isLogsheet   = url.startsWith('/logsheet-operator');
     const isTerminalIQF = url === '/' || (url.startsWith('/operator') && !url.startsWith('/operator/refrezing')) || url.startsWith('/kendala');
     const isTerminalRefrezing = url.startsWith('/refrezing-kiosk');
     const isLogsheetRefrezing = url.startsWith('/logsheet-refrezing');
+
+    const handleLogout = () => {
+        router.post('/operator/logout');
+    };
 
     return (
         <div className="min-h-screen flex flex-col font-sans bg-slate-50 relative overflow-hidden pt-20">
@@ -64,17 +69,41 @@ export default function OperatorLayout({ children }) {
                         </Link>
                     </nav>
 
-                    {/* Right: Login Button (Desktop) */}
-                    <div className="hidden md:block">
-                        <a 
-                            href="/login" 
-                            className="group flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-cyan-300 to-cyan-400 hover:from-cyan-400 hover:to-cyan-500 text-slate-900 text-xs font-black uppercase tracking-widest shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 active:scale-95"
-                        >
-                            Login Admin
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 opacity-70 group-hover:opacity-100 group-hover:translate-x-1 transition-all" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                            </svg>
-                        </a>
+                    {/* Right: Operator Info / Login Button */}
+                    <div className="hidden md:flex items-center gap-3">
+                        {operatorName ? (
+                            <>
+                                {/* Operator Name Badge */}
+                                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-pink-50 border border-pink-200">
+                                    <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center text-white text-[10px] font-black">
+                                        {operatorName.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="text-xs font-black text-pink-700 uppercase tracking-widest max-w-[120px] truncate">
+                                        {operatorName}
+                                    </span>
+                                </div>
+                                {/* Logout Button */}
+                                <button
+                                    onClick={handleLogout}
+                                    className="group flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 text-xs font-black uppercase tracking-widest shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 active:scale-95"
+                                >
+                                    Logout
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 opacity-70 group-hover:opacity-100 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
+                                </button>
+                            </>
+                        ) : (
+                            <a 
+                                href="/operator/login" 
+                                className="group flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white text-xs font-black uppercase tracking-widest shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 active:scale-95"
+                            >
+                                Login Operator
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 opacity-70 group-hover:opacity-100 group-hover:translate-x-1 transition-all" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                                </svg>
+                            </a>
+                        )}
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -96,16 +125,36 @@ export default function OperatorLayout({ children }) {
                 {isMobileMenuOpen && (
                     <div className="md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-slate-100 shadow-xl py-4 px-6 flex flex-col gap-3 animate-in slide-in-from-top-2">
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">IQF</p>
-                        <Link href="/logsheet-operator" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isLogsheet ? 'text-pink-500' : 'text-slate-600'}`}>Logsheet IQF</Link>
-                        <Link href="/" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isTerminalIQF ? 'text-pink-500' : 'text-slate-600'}`}>Terminal IQF</Link>
+                        <Link href="/logsheet-operator" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isLogsheet ? 'text-pink-500' : 'text-slate-600'}`} onClick={() => setIsMobileMenuOpen(false)}>Logsheet IQF</Link>
+                        <Link href="/" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isTerminalIQF ? 'text-pink-500' : 'text-slate-600'}`} onClick={() => setIsMobileMenuOpen(false)}>Terminal IQF</Link>
                         
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mt-1">Refrezing</p>
-                        <Link href="/refrezing-kiosk" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isTerminalRefrezing ? 'text-cyan-500' : 'text-slate-600'}`}>Terminal Refrezing</Link>
-                        <Link href="/logsheet-refrezing" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isLogsheetRefrezing ? 'text-cyan-500' : 'text-slate-600'}`}>Logsheet Refrezing</Link>
+                        <Link href="/refrezing-kiosk" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isTerminalRefrezing ? 'text-cyan-500' : 'text-slate-600'}`} onClick={() => setIsMobileMenuOpen(false)}>Terminal Refrezing</Link>
+                        <Link href="/logsheet-refrezing" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isLogsheetRefrezing ? 'text-cyan-500' : 'text-slate-600'}`} onClick={() => setIsMobileMenuOpen(false)}>Logsheet Refrezing</Link>
                         
-                        <a href="/login" className="mt-2 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-cyan-300 text-slate-900 text-sm font-black uppercase tracking-widest shadow-sm">
-                            Login Admin
-                        </a>
+                        {operatorName ? (
+                            <div className="mt-2 flex flex-col gap-2">
+                                <div className="flex items-center gap-2 px-4 py-2.5 bg-pink-50 rounded-xl border border-pink-200">
+                                    <div className="w-7 h-7 rounded-full bg-pink-500 flex items-center justify-center text-white text-xs font-black">
+                                        {operatorName.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="text-sm font-black text-pink-700">{operatorName}</span>
+                                </div>
+                                <button
+                                    onClick={() => { setIsMobileMenuOpen(false); handleLogout(); }}
+                                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-rose-100 text-rose-700 text-sm font-black uppercase tracking-widest shadow-sm hover:bg-rose-200 transition-colors"
+                                >
+                                    Logout
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
+                                </button>
+                            </div>
+                        ) : (
+                            <a href="/operator/login" className="mt-2 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-pink-400 to-pink-500 text-white text-sm font-black uppercase tracking-widest shadow-sm">
+                                Login Operator
+                            </a>
+                        )}
                     </div>
                 )}
             </header>

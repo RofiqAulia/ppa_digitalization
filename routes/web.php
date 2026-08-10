@@ -39,6 +39,10 @@ Route::middleware(\App\Http\Middleware\OperatorAuth::class)->group(function () {
     // Operator edit/delete detail baris (untuk koreksi jumlah & waktu)
     Route::put('/operator/logsheet-detail/{id}', [\App\Http\Controllers\IqfLogsheetController::class, 'operatorUpdateDetail'])->name('operator.detail.update');
     Route::delete('/operator/logsheet-detail/{id}', [\App\Http\Controllers\IqfLogsheetController::class, 'operatorDestroyDetail'])->name('operator.detail.destroy');
+
+    // Refrezing Operator edit/delete detail
+    Route::put('/operator/refrezing-logsheet-detail/{id}', [\App\Http\Controllers\RefrezingController::class, 'operatorUpdateDetail'])->name('refrezing.operator.detail.update');
+    Route::delete('/operator/refrezing-logsheet-detail/{id}', [\App\Http\Controllers\RefrezingController::class, 'operatorDestroyDetail'])->name('refrezing.operator.detail.destroy');
 });
 
 // Operator can see logsheet today (admin view - kept for compatibility)
@@ -58,6 +62,21 @@ Route::middleware('auth')->group(function () {
 
     // Dashboard stats API (admin-accessible version of /iqf-kiosk/stats)
     Route::get('/dashboard/stats', [\App\Http\Controllers\IqfLogsheetController::class, 'dashboardStats'])->name('dashboard.stats');
+
+    // Refrezing Dashboard
+    Route::get('/refrezing/dashboard', function () {
+        return Inertia\Inertia::render('RefrezingLogsheet/Dashboard');
+    })->name('refrezing.dashboard');
+
+    // Refrezing Dashboard stats API
+    Route::get('/refrezing/dashboard/stats', [\App\Http\Controllers\RefrezingController::class, 'dashboardStats'])->name('refrezing.dashboard.stats');
+    
+    // Refrezing History
+    Route::get('/refrezing/history', [\App\Http\Controllers\RefrezingController::class, 'adminHistory'])->name('refrezing-logsheet.history');
+
+    // Refrezing Edit/Delete Details (Admin)
+    Route::put('/refrezing-logsheet-detail/{id}', [\App\Http\Controllers\RefrezingController::class, 'updateDetail'])->name('refrezing-logsheet.updateDetail');
+    Route::delete('/refrezing-logsheet-detail/{id}', [\App\Http\Controllers\RefrezingController::class, 'destroyDetail'])->name('refrezing-logsheet.destroyDetail');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -85,5 +104,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/admin/users/{user}', [\App\Http\Controllers\AdminUserController::class, 'update'])->name('admin.users.update');
     Route::delete('/admin/users/{user}', [\App\Http\Controllers\AdminUserController::class, 'destroy'])->name('admin.users.destroy');
 });
+
+// Refrezing Admin Routes (Public Index)
+Route::get('/refrezing/logsheet', [\App\Http\Controllers\RefrezingController::class, 'adminIndex'])->name('refrezing-logsheet.index');
 
 require __DIR__.'/auth.php';

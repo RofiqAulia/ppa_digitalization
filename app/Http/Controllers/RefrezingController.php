@@ -54,6 +54,203 @@ class RefrezingController extends Controller
         }
     }
 
+    public function dashboardStats(Request $request)
+    {
+        extract($this->getCurrentShiftAndDate());
+
+        $fromTime = $request->get('from_time', '00:00');
+        $toTime   = $request->get('to_time',   '23:59');
+        $queryDate = $request->get('date', $date);
+
+        $products = ['siomay', 'pentol', 'lumpia', 'adonan_pangsit'];
+        $machines = ['Refrezing 1', 'Refrezing 2', 'Refrezing 3']; // or just get distinct machines from DB
+
+        // Wait, for Refrezing, the machine names could be anything, but we'll adapt later. 
+        // Let's get distinct machines from DB that match the date
+        $machines = \Illuminate\Support\Facades\DB::table('refrezing_logsheets')
+            ->where('date', $queryDate)
+            ->distinct()->pluck('machine')->toArray();
+        if (empty($machines)) $machines = ['Refrezing 1', 'Refrezing 2'];
+
+        $byMachine   = [];
+        $grandTotal  = array_fill_keys($products, 0);
+
+        foreach ($machines as $m) {
+            $byMachine[$m] = array_fill_keys($products, 0);
+        }
+
+        $rows = \Illuminate\Support\Facades\DB::table('refrezing_logsheets as h')
+            ->join('refrezing_logsheet_details as d', 'd.refrezing_logsheet_id', '=', 'h.id')
+            ->select('h.machine', 'h.product_type', \Illuminate\Support\Facades\DB::raw('SUM(d.tray_count) as total'))
+            ->where('h.date', $queryDate)
+            ->where('d.time', '>=', $fromTime . ':00')
+            ->where('d.time', '<=', $toTime . ':59')
+            ->groupBy('h.machine', 'h.product_type')
+            ->get();
+
+        foreach ($rows as $row) {
+            $pt = strtolower($row->product_type);
+            $mc = $row->machine;
+            if (isset($byMachine[$mc][$pt])) {
+                $byMachine[$mc][$pt] = (int) $row->total;
+                $grandTotal[$pt]    += (int) $row->total;
+            } else if (isset($byMachine[$mc]) && !isset($byMachine[$mc][$pt])) {
+                $byMachine[$mc][$pt] = (int) $row->total;
+                $grandTotal[$pt] = ($grandTotal[$pt] ?? 0) + (int) $row->total;
+            }
+        }
+
+        // Get unplanned stops for today
+        $unplannedStops = [];
+        $logsheetsWithStops = RefrezingLogsheet::where('date', $queryDate)
+            ->whereNotNull('unplanned_stop')
+            ->where('unplanned_stop', '!=', '-')
+            ->where('unplanned_stop', '!=', '')
+            ->with('details')
+            ->get();
+
+        foreach ($logsheetsWithStops as $ls) {
+            $stops = array_filter(array_map('trim', explode(',', $ls->unplanned_stop)));
+            $sortedDetails = $ls->details->sortBy('created_at')->values();
+
+            foreach ($stops as $stopText) {
+                $durationStr = 'Belum Selesai';
+                if (preg_match('/^(\d{1,2}):(\d{2})/', $stopText, $matches)) {
+                    $stopMin = (int)$matches[1] * 60 + (int)$matches[2];
+                    $nextDetail = $sortedDetails->first(function ($d) use ($stopMin) {
+                        $dt = new Carbon($d->created_at);
+                        $dt->setTimezone('Asia/Jakarta');
+                        $dm = (int)$dt->format('H') * 60 + (int)$dt->format('i');
+                        $diff = $dm >= $stopMin ? $dm - $stopMin : $dm + 1440 - $stopMin;
+                        return $diff >= 0 && $diff < 720;
+                    });
+                    if ($nextDetail) {
+                        $parts = explode(':', $nextDetail->time);
+                        if (count($parts) >= 2) {
+                            $nextMin = (int)$parts[0] * 60 + (int)$parts[1];
+                            $dur = $nextMin >= $stopMin ? $nextMin - $stopMin : $nextMin + 1440 - $stopMin;
+                            $durationStr = $dur . ' menit';
+                        }
+                    }
+                }
+                
+                $unplannedStops[] = [
+                    'text' => $stopText,
+                    'machine' => $ls->machine,
+                    'shift' => $ls->shift,
+                    'pic' => $ls->details->first()->pic ?? 'Unknown',
+                    'duration' => $durationStr
+                ];
+            }
+        }
+
+        return response()->json([
+            'by_machine' => $byMachine,
+            'grand_total' => $grandTotal,
+            'unplanned_stops' => $unplannedStops,
+        ]);
+    }
+
+    public function adminIndex(Request $request)
+    {
+        extract($this->getCurrentShiftAndDate());
+        $productionDate = $date;
+        
+        $logsheets = RefrezingLogsheet::with('details')
+                        ->where('date', '>=', $productionDate)
+                        ->orderBy('date', 'desc')
+                        ->orderBy('shift', 'desc')
+                        ->orderBy('machine', 'asc')
+                        ->get();
+                        
+        return Inertia::render('RefrezingLogsheet/Index', ['logsheets' => $logsheets]);
+    }
+
+    public function adminHistory(Request $request)
+    {
+        extract($this->getCurrentShiftAndDate());
+        $productionDate = $date;
+        
+        $logsheets = RefrezingLogsheet::with('details')
+                        ->where('date', '<', $productionDate)
+                        ->orderBy('date', 'desc')
+                        ->orderBy('shift', 'desc')
+                        ->orderBy('machine', 'asc')
+                        ->get();
+                        
+        return Inertia::render('RefrezingLogsheet/History', ['logsheets' => $logsheets]);
+    }
+
+    public function updateDetail(Request $request, $id)
+    {
+        $detail = \App\Models\RefrezingLogsheetDetail::findOrFail($id);
+
+        $request->validate([
+            'tray_count' => 'required|integer|min:1',
+            'time'       => 'nullable|string|max:8',
+        ]);
+
+        $timeValue = $detail->time;
+        if ($request->filled('time')) {
+            $t = $request->time;
+            $timeValue = strlen($t) === 5 ? $t . ':00' : $t;
+        }
+
+        $detail->update([
+            'tray_count' => $request->tray_count,
+            'time'       => $timeValue,
+        ]);
+
+        $this->dispatchSyncBackground();
+
+        return redirect()->back()->with('success', 'Data berhasil diubah.');
+    }
+
+    public function destroyDetail($id)
+    {
+        $detail = \App\Models\RefrezingLogsheetDetail::findOrFail($id);
+        $detail->delete();
+
+        $this->dispatchSyncBackground();
+
+        return redirect()->back()->with('success', 'Entri berhasil dihapus.');
+    }
+
+    public function operatorUpdateDetail(Request $request, $id)
+    {
+        $detail = \App\Models\RefrezingLogsheetDetail::findOrFail($id);
+
+        $request->validate([
+            'tray_count' => 'required|integer|min:1',
+            'time'       => 'nullable|string|max:8',
+        ]);
+
+        $timeValue = $detail->time;
+        if ($request->filled('time')) {
+            $t = $request->time;
+            $timeValue = strlen($t) === 5 ? $t . ':00' : $t;
+        }
+
+        $detail->update([
+            'tray_count' => $request->tray_count,
+            'time'       => $timeValue,
+        ]);
+
+        $this->dispatchSyncBackground();
+
+        return redirect()->back()->with('success', 'Data berhasil diubah.');
+    }
+
+    public function operatorDestroyDetail($id)
+    {
+        $detail = \App\Models\RefrezingLogsheetDetail::findOrFail($id);
+        $detail->delete();
+
+        $this->dispatchSyncBackground();
+
+        return redirect()->back()->with('success', 'Entri berhasil dihapus.');
+    }
+
     public function operatorLogsheet()
     {
         extract($this->getCurrentShiftAndDate());

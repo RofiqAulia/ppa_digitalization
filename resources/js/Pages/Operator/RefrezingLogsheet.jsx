@@ -65,6 +65,144 @@ const calcStopDurations = (unplannedStopText, allMachineDetails) => {
     });
 };
 
+/* ─── DetailEditRow component ────────────────────────────── */
+function DetailEditRow({ detail }) {
+    const [editing, setEditing]           = useState(false);
+    const [confirmDel, setConfirmDel]     = useState(false);
+    const [saving, setSaving]             = useState(false);
+    const [deleting, setDeleting]         = useState(false);
+    const [form, setForm]                 = useState({
+        tray_count: detail.tray_count,
+        time: detail.time ? detail.time.substring(0, 5) : '',
+    });
+
+    const handleSave = () => {
+        setSaving(true);
+        router.put(`/operator/refrezing-logsheet-detail/${detail.id}`, form, {
+            preserveScroll: true,
+            only: ['logsheets'],
+            onSuccess: () => { setSaving(false); setEditing(false); },
+            onError:   () => setSaving(false),
+        });
+    };
+
+    const handleDelete = () => {
+        setDeleting(true);
+        router.delete(`/operator/refrezing-logsheet-detail/${detail.id}`, {
+            preserveScroll: true,
+            only: ['logsheets'],
+            onSuccess: () => setDeleting(false),
+            onError:   () => setDeleting(false),
+        });
+    };
+
+    const handleCancel = () => {
+        setForm({ tray_count: detail.tray_count, time: detail.time ? detail.time.substring(0, 5) : '' });
+        setEditing(false);
+        setConfirmDel(false);
+    };
+
+    return (
+        <tr className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors group">
+            {/* Aksi (Kiri) */}
+            <td className="px-3 py-2 text-left w-48">
+                {editing ? (
+                    <div className="flex items-center gap-1.5">
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="flex items-center gap-1 px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors disabled:opacity-50"
+                        >
+                            {saving ? '⏳' : '✓'} {saving ? 'Menyimpan...' : 'Simpan'}
+                        </button>
+                        <button
+                            onClick={handleCancel}
+                            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[10px] font-bold transition-colors"
+                        >
+                            Batal
+                        </button>
+                    </div>
+                ) : confirmDel ? (
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-rose-500 font-bold mr-1">Yakin hapus?</span>
+                        <button
+                            onClick={handleDelete}
+                            disabled={deleting}
+                            className="px-2.5 py-1 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors disabled:opacity-50"
+                        >
+                            {deleting ? '⏳' : '🗑 Hapus'}
+                        </button>
+                        <button
+                            onClick={() => setConfirmDel(false)}
+                            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[10px] font-bold transition-colors"
+                        >
+                            Batal
+                        </button>
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-1 opacity-70 hover:opacity-100 transition-opacity">
+                        <button
+                            onClick={() => setEditing(true)}
+                            className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Edit baris ini"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </button>
+                        <button
+                            onClick={() => setConfirmDel(true)}
+                            className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                            title="Hapus baris ini"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
+            </td>
+
+            {/* Waktu */}
+            <td className="px-3 py-2">
+                {editing ? (
+                    <input
+                        type="time"
+                        value={form.time}
+                        onChange={e => setForm(p => ({ ...p, time: e.target.value }))}
+                        className="border-2 border-cyan-300 rounded-lg px-2 py-1 text-xs font-mono w-24 focus:outline-none focus:ring-2 focus:ring-cyan-200"
+                    />
+                ) : (
+                    <span className="font-mono font-bold text-slate-700 text-xs">
+                        {detail.time ? detail.time.substring(0, 5) : '-'}
+                    </span>
+                )}
+            </td>
+
+            {/* Jumlah Loyang */}
+            <td className="px-3 py-2 text-center">
+                {editing ? (
+                    <input
+                        type="number"
+                        min="1"
+                        value={form.tray_count}
+                        onChange={e => setForm(p => ({ ...p, tray_count: e.target.value }))}
+                        className="border-2 border-cyan-300 rounded-lg px-2 py-1 text-xs font-black w-16 text-center focus:outline-none focus:ring-2 focus:ring-cyan-200"
+                    />
+                ) : (
+                    <span className="font-black text-slate-800 text-sm">{detail.tray_count}</span>
+                )}
+            </td>
+
+            {/* Rak */}
+            <td className="px-3 py-2 text-center text-xs text-slate-500 font-medium">{detail.rak || '-'}</td>
+
+            {/* PIC */}
+            <td className="px-3 py-2 text-xs text-slate-500 max-w-[100px] truncate">{detail.pic || '-'}</td>
+        </tr>
+    );
+}
+
 /* ─── UnplannedStopCell ─────────────────────────────────── */
 function UnplannedStopCell({ stopDurations }) {
     if (!stopDurations || stopDurations.length === 0) {
@@ -310,6 +448,7 @@ export default function RefrezingLogsheet({ logsheets }) {
                                                                     <table className="w-full text-xs">
                                                                         <thead>
                                                                             <tr className="bg-slate-50 border-b border-slate-100">
+                                                                                <th className="px-3 py-2 text-left text-[10px] font-black uppercase tracking-wider text-slate-500 w-48">Aksi</th>
                                                                                 <th className="px-3 py-2 text-left text-[10px] font-black uppercase tracking-wider text-slate-500 w-28">Waktu</th>
                                                                                 <th className="px-3 py-2 text-center text-[10px] font-black uppercase tracking-wider text-slate-500 w-24">Jumlah Loyang</th>
                                                                                 <th className="px-3 py-2 text-center text-[10px] font-black uppercase tracking-wider text-slate-500 w-16">Rak</th>
@@ -318,19 +457,12 @@ export default function RefrezingLogsheet({ logsheets }) {
                                                                         </thead>
                                                                         <tbody>
                                                                             {row.details.map(d => (
-                                                                                <tr key={d.id} className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
-                                                                                    <td className="px-3 py-2 font-mono font-bold text-slate-700 text-xs">
-                                                                                        {d.time ? d.time.substring(0, 5) : '-'}
-                                                                                    </td>
-                                                                                    <td className="px-3 py-2 text-center font-black text-slate-800">{d.tray_count}</td>
-                                                                                    <td className="px-3 py-2 text-center text-xs text-slate-500">{d.rak || '-'}</td>
-                                                                                    <td className="px-3 py-2 text-xs text-slate-500">{d.pic || '-'}</td>
-                                                                                </tr>
+                                                                                <DetailEditRow key={d.id} detail={d} />
                                                                             ))}
                                                                         </tbody>
                                                                         <tfoot>
                                                                             <tr className="bg-cyan-50 border-t-2 border-cyan-200">
-                                                                                <td className="px-3 py-2 text-[10px] font-black text-cyan-600 uppercase">Total</td>
+                                                                                <td colSpan={2} className="px-3 py-2 text-right text-[10px] font-black text-cyan-600 uppercase">Total</td>
                                                                                 <td className="px-3 py-2 text-center font-black text-cyan-700 text-sm">{row.achieve}</td>
                                                                                 <td colSpan={2} />
                                                                             </tr>

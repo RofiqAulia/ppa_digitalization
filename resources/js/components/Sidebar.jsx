@@ -11,13 +11,18 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 const navigation = [
     { name: 'IQF', isTitle: true },
-    { name: 'Dashboard',       href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Logsheet Harian', href: '/logsheet-iqf',           icon: FileText },
-    { name: 'History',         href: '/iqf-logsheet/history',   icon: History },
+    { name: 'Dashboard',       href: '/dashboard',            icon: LayoutDashboard },
+    { name: 'Logsheet Harian', href: '/logsheet-iqf',         icon: FileText },
+    { name: 'History',         href: '/iqf-logsheet/history', icon: History },
+
+    { name: 'Refrezing', isTitle: true },
+    { name: 'Dashboard',       href: '/refrezing/dashboard',  icon: Snowflake },
+    { name: 'Logsheet Harian', href: '/refrezing/logsheet',   icon: ClipboardList },
+    { name: 'History',         href: '/refrezing/history',    icon: History },
 
     { name: 'Manajemen User', isTitle: true },
-    { name: 'Add User',        href: '/admin/users',            icon: Users },
-    { name: 'Log out',         href: '/logout',                 icon: LogOut, method: 'post' },
+    { name: 'Add User',        href: '/admin/users',          icon: Users },
+    { name: 'Log out',         href: '/logout',               icon: LogOut, method: 'post' },
 ];
 
 function NavItem({ item, isCollapsed, setIsCollapsed, url }) {
