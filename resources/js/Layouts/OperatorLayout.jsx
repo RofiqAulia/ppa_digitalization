@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 
 export default function OperatorLayout({ children }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { url } = usePage();
+
+    // Determine active route
+    const isLogsheet = url.startsWith('/logsheet-operator');
+    const isTerminal = url === '/' || url.startsWith('/kendala') || url.startsWith('/operator');
 
     return (
         <div className="min-h-screen flex flex-col font-sans bg-slate-50 relative overflow-hidden pt-20">
@@ -18,12 +23,19 @@ export default function OperatorLayout({ children }) {
 
                     {/* Center: Navigation (Desktop) */}
                     <nav className="hidden md:flex items-center gap-8 bg-slate-50/50 px-8 py-2.5 rounded-full border border-slate-100 shadow-inner">
-                        <Link href="/logsheet-operator" className="text-[13px] font-black text-slate-500 hover:text-pink-500 uppercase tracking-widest transition-all hover:scale-105">
+                        <Link 
+                            href="/logsheet-operator" 
+                            className={`text-[13px] font-black uppercase tracking-widest transition-all hover:scale-105 relative ${isLogsheet ? 'text-pink-500' : 'text-slate-500 hover:text-pink-500'}`}
+                        >
                             Logsheet
+                            {isLogsheet && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-pink-500 rounded-full"></span>}
                         </Link>
-                        <Link href="/" className="text-[13px] font-black text-pink-500 uppercase tracking-widest transition-all hover:scale-105 relative">
+                        <Link 
+                            href="/" 
+                            className={`text-[13px] font-black uppercase tracking-widest transition-all hover:scale-105 relative ${isTerminal ? 'text-pink-500' : 'text-slate-500 hover:text-pink-500'}`}
+                        >
                             Terminal
-                            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-pink-500 rounded-full"></span>
+                            {isTerminal && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-pink-500 rounded-full"></span>}
                         </Link>
                     </nav>
 
@@ -59,8 +71,8 @@ export default function OperatorLayout({ children }) {
                 {/* Mobile Navigation Dropdown */}
                 {isMobileMenuOpen && (
                     <div className="md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-slate-100 shadow-xl py-4 px-6 flex flex-col gap-4 animate-in slide-in-from-top-2">
-                        <Link href="/logsheet-operator" className="text-sm font-black text-slate-600 uppercase tracking-widest border-b border-slate-50 pb-2">Logsheet</Link>
-                        <Link href="/" className="text-sm font-black text-pink-500 uppercase tracking-widest border-b border-slate-50 pb-2">Terminal</Link>
+                        <Link href="/logsheet-operator" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isLogsheet ? 'text-pink-500' : 'text-slate-600'}`}>Logsheet</Link>
+                        <Link href="/" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isTerminal ? 'text-pink-500' : 'text-slate-600'}`}>Terminal</Link>
                         
                         <a href="/login" className="mt-2 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-cyan-300 text-slate-900 text-sm font-black uppercase tracking-widest shadow-sm">
                             Login Admin

@@ -11,7 +11,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 const navigation = [
     { name: 'IQF', isTitle: true },
-    { name: 'Dashboard',       href: '/iqf-logsheet/dashboard', icon: LayoutDashboard },
+    { name: 'Dashboard',       href: '/dashboard', icon: LayoutDashboard },
     { name: 'Logsheet Harian', href: '/logsheet-iqf',           icon: FileText },
     { name: 'History',         href: '/iqf-logsheet/history',   icon: History },
 

@@ -8,24 +8,35 @@ use Inertia\Inertia;
 // ==========================================
 // OPERATOR ROUTES (Public)
 // ==========================================
-Route::get('/', function () {
-    return Inertia::render('Operator/Landing');
-})->name('operator.landing');
+Route::get('/operator/login', [\App\Http\Controllers\IqfLogsheetController::class, 'operatorLogin'])->name('operator.login');
+Route::post('/operator/login', [\App\Http\Controllers\IqfLogsheetController::class, 'operatorAuthenticate'])->name('operator.authenticate');
+Route::post('/operator/logout', [\App\Http\Controllers\IqfLogsheetController::class, 'operatorLogout'])->name('operator.logout');
 
-Route::get('/kendala', function () {
-    return Inertia::render('Operator/Kendala');
-})->name('operator.kendala');
+Route::middleware(\App\Http\Middleware\OperatorAuth::class)->group(function () {
+    Route::get('/', function () {
+        return Inertia::render('Operator/Landing');
+    })->name('operator.landing');
 
-// Kiosk API Routes
-Route::get('/iqf-kiosk', [\App\Http\Controllers\IqfLogsheetController::class, 'kiosk'])->name('iqf-logsheet.kiosk');
-Route::post('/iqf-kiosk/store', [\App\Http\Controllers\IqfLogsheetController::class, 'storeKiosk'])->name('iqf-logsheet.storeKiosk');
-Route::post('/iqf-kiosk/unplanned-stop', [\App\Http\Controllers\IqfLogsheetController::class, 'storeUnplannedStop'])->name('iqf-logsheet.storeUnplannedStop');
-Route::get('/iqf-kiosk/stats', [\App\Http\Controllers\IqfLogsheetController::class, 'dashboardStats'])->name('iqf-logsheet.stats');
+    Route::get('/kendala', function () {
+        return Inertia::render('Operator/Kendala');
+    })->name('operator.kendala');
 
-// Operator logsheet (today only, no admin layout)
-Route::get('/logsheet-operator', [\App\Http\Controllers\IqfLogsheetController::class, 'operatorLogsheet'])->name('operator.logsheet');
+    // Kiosk API Routes
+    Route::get('/iqf-kiosk', [\App\Http\Controllers\IqfLogsheetController::class, 'kiosk'])->name('iqf-logsheet.kiosk');
+    Route::post('/iqf-kiosk/store', [\App\Http\Controllers\IqfLogsheetController::class, 'storeKiosk'])->name('iqf-logsheet.storeKiosk');
+    Route::post('/iqf-kiosk/unplanned-stop', [\App\Http\Controllers\IqfLogsheetController::class, 'storeUnplannedStop'])->name('iqf-logsheet.storeUnplannedStop');
+    Route::get('/iqf-kiosk/stats', [\App\Http\Controllers\IqfLogsheetController::class, 'dashboardStats'])->name('iqf-logsheet.stats');
+
+    // Operator logsheet (today only, no admin layout)
+    Route::get('/logsheet-operator', [\App\Http\Controllers\IqfLogsheetController::class, 'operatorLogsheet'])->name('operator.logsheet');
+
+    // Operator edit/delete detail baris (untuk koreksi jumlah & waktu)
+    Route::put('/operator/logsheet-detail/{id}', [\App\Http\Controllers\IqfLogsheetController::class, 'operatorUpdateDetail'])->name('operator.detail.update');
+    Route::delete('/operator/logsheet-detail/{id}', [\App\Http\Controllers\IqfLogsheetController::class, 'operatorDestroyDetail'])->name('operator.detail.destroy');
+});
 
 // Operator can see logsheet today (admin view - kept for compatibility)
+
 Route::get('/logsheet-iqf', [\App\Http\Controllers\IqfLogsheetController::class, 'index'])->name('logsheet-iqf.index');
 
 
@@ -34,9 +45,9 @@ Route::get('/logsheet-iqf', [\App\Http\Controllers\IqfLogsheetController::class,
 // ==========================================
 Route::middleware('auth')->group(function () {
     
-    // Redirect /dashboard to IQF Dashboard
+    // IQF Dashboard
     Route::get('/dashboard', function () {
-        return redirect()->route('iqf-logsheet.dashboard');
+        return Inertia::render('IqfLogsheet/Dashboard');
     })->name('dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -47,11 +58,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('prepare-produksi', \App\Http\Controllers\PrepareProductionController::class)->except(['destroy']);
     Route::post('/prepare-produksi/{prepareProduksi}/update', [\App\Http\Controllers\PrepareProductionController::class, 'update'])->name('prepare-produksi.update');
     Route::delete('/prepare-produksi/{prepareProduksi}', [\App\Http\Controllers\PrepareProductionController::class, 'destroy'])->name('prepare-produksi.destroy');
-
-    // IQF Logsheet (Admin Only)
-    Route::get('/iqf-logsheet/dashboard', function () {
-        return Inertia::render('IqfLogsheet/Dashboard');
-    })->name('iqf-logsheet.dashboard');
     
     Route::get('/iqf-logsheet/history', [\App\Http\Controllers\IqfLogsheetController::class, 'history'])->name('iqf-logsheet.history');
 

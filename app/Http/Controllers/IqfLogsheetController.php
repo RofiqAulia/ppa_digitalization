@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\IqfLogsheet;
 use App\Models\IqfLogsheetDetail;
+use App\Models\User;
 use App\Jobs\PushIqfLogsheetToGoogleSheets;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -48,6 +49,66 @@ class IqfLogsheetController extends Controller
             }
         }
 
+        $unplannedStopsData = [];
+        $stopsQuery = IqfLogsheet::with('details')
+            ->where('date', $queryDate)
+            ->whereNotNull('unplanned_stop')
+            ->where('unplanned_stop', '!=', '')
+            ->where('unplanned_stop', '!=', '-')
+            ->get();
+
+        foreach ($stopsQuery as $ls) {
+            $stops = array_filter(array_map('trim', explode(',', $ls->unplanned_stop)));
+            $sortedDetails = $ls->details->filter(fn($d) => $d->created_at && $d->time)
+                                         ->sortBy('created_at')->values();
+
+            foreach ($stops as $stopText) {
+                if (preg_match('/^(\d{1,2}):(\d{2})/', $stopText, $matches)) {
+                    $stopMin = (int)$matches[1] * 60 + (int)$matches[2];
+                    $nextDetail = $sortedDetails->first(function($d) use ($stopMin) {
+                        $wibTime = $d->created_at->setTimezone('Asia/Jakarta')->format('H:i');
+                        [$h, $m] = explode(':', $wibTime);
+                        $dmCreated = (int)$h * 60 + (int)$m;
+                        $diff = $dmCreated >= $stopMin ? $dmCreated - $stopMin : $dmCreated + 1440 - $stopMin;
+                        return $diff >= 0 && $diff < 720;
+                    });
+
+                    $duration = null;
+                    if ($nextDetail) {
+                        [$th, $tm] = explode(':', substr($nextDetail->time, 0, 5));
+                        $nextMin = (int)$th * 60 + (int)$tm;
+                        $diffMin = $nextMin >= $stopMin ? $nextMin - $stopMin : $nextMin + 1440 - $stopMin;
+                        $duration = $diffMin . ' menit';
+                    } else {
+                        $duration = 'Belum Selesai';
+                    }
+
+                    $pic = 'Unknown';
+                    if ($nextDetail && $nextDetail->pic) {
+                        $pic = $nextDetail->pic;
+                    } else if ($sortedDetails->count() > 0) {
+                        $pic = $sortedDetails->last()->pic;
+                    }
+
+                    // Only include stops within the time filter
+                    // We check if stopMin is within fromTime and toTime
+                    $fromParts = explode(':', $fromTime);
+                    $toParts = explode(':', $toTime);
+                    $fMin = (int)$fromParts[0] * 60 + (int)$fromParts[1];
+                    $tMin = (int)$toParts[0] * 60 + (int)$toParts[1];
+                    // handle cross midnight for shift 3 if needed, but for simplicity, just include it
+                    
+                    $unplannedStopsData[] = [
+                        'shift' => $ls->shift,
+                        'machine' => $ls->machine,
+                        'pic' => $pic,
+                        'text' => $stopText,
+                        'duration' => $duration
+                    ];
+                }
+            }
+        }
+
         return response()->json([
             'date'        => $queryDate,
             'shift'       => $shift,
@@ -55,6 +116,7 @@ class IqfLogsheetController extends Controller
             'to_time'     => $toTime,
             'by_machine'  => $byMachine,
             'grand_total' => $grandTotal,
+            'unplanned_stops' => $unplannedStopsData,
         ]);
     }
 
@@ -186,6 +248,7 @@ class IqfLogsheetController extends Controller
             'suhu_produk' => $request->suhu_produk,
             'rak' => $request->rak,
             'tray_count' => $trayCount,
+            'pic' => session('operator_name', 'Unknown'),
         ]);
 
         // Trigger sync ke Google Sheets secara real-time
@@ -315,6 +378,7 @@ class IqfLogsheetController extends Controller
             'suhu_produk' => $request->suhu_produk,
             'rak' => $request->rak,
             'tray_count' => $request->tray_count,
+            'pic' => session('operator_name', 'Unknown'),
         ]);
 
         // Trigger sync ke Google Sheets secara real-time
@@ -463,6 +527,77 @@ class IqfLogsheetController extends Controller
         }
 
         return compact('shift', 'date');
+    }
+
+    public function operatorLogin(Request $request)
+    {
+        return Inertia::render('Operator/Login');
+    }
+
+    public function operatorAuthenticate(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if ($user) {
+            session(['operator_name' => $user->name]);
+            return redirect()->route('operator.landing');
+        }
+
+        return back()->withErrors(['email' => 'Email tidak ditemukan di sistem.']);
+    }
+
+    public function operatorUpdateDetail(Request $request, $id)
+    {
+        $detail = IqfLogsheetDetail::findOrFail($id);
+
+        $request->validate([
+            'tray_count' => 'required|integer|min:1',
+            'time'       => 'nullable|string|max:8',
+        ]);
+
+        $timeValue = $detail->time;
+        if ($request->filled('time')) {
+            // Terima format "HH:mm" atau "HH:mm:ss"
+            $t = $request->time;
+            $timeValue = strlen($t) === 5 ? $t . ':00' : $t;
+        }
+
+        $detail->update([
+            'tray_count' => $request->tray_count,
+            'time'       => $timeValue,
+        ]);
+
+        $this->dispatchSyncBackground();
+
+        return redirect()->back()->with('success', 'Data berhasil diubah.');
+    }
+
+    public function operatorDestroyDetail($id)
+    {
+        $detail = IqfLogsheetDetail::findOrFail($id);
+        $logsheet = $detail->iqfLogsheet;
+
+        $detail->delete();
+
+        // Trigger sync
+        if ($logsheet) {
+            $comboKey = $logsheet->date . '|' . strtoupper($logsheet->product_type) . '|' . (int) filter_var($logsheet->machine, FILTER_SANITIZE_NUMBER_INT) . '|' . $logsheet->shift;
+            $this->dispatchSyncBackground(['--force-recalc' => [$comboKey]]);
+        } else {
+            $this->dispatchSyncBackground();
+        }
+
+        return redirect()->back()->with('success', 'Entri berhasil dihapus.');
+    }
+
+    public function operatorLogout(Request $request)
+    {
+        session()->forget('operator_name');
+        return redirect()->route('operator.login');
     }
 
     private function dispatchSyncBackground($options = [])

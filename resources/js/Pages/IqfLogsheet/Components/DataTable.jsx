@@ -175,6 +175,52 @@ export default function DataTable({ logsheets }) {
     };
 
     /* ── Flatten logsheets → flat rows ─────────── */
+    const timeToMinutes = t => {
+        if (!t) return null;
+        const [h, m] = t.split(':');
+        return parseInt(h) * 60 + parseInt(m);
+    };
+
+    const calcDurationMinutes = (start, end) => {
+        if (start === null || end === null) return null;
+        let diff = end - start;
+        if (diff < 0) diff += 1440; // cross midnight
+        return diff;
+    };
+
+    const parseUnplannedStop = (stopText, details) => {
+        if (!stopText || stopText === '-') return '-';
+        const stops = stopText.split(',').map(s => s.trim()).filter(Boolean);
+        const sortedDetails = [...(details || [])]
+            .filter(d => d.created_at && d.time)
+            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+        return stops.map(st => {
+            const timeMatch = st.match(/^(\d{1,2}):(\d{2})/);
+            if (!timeMatch) return st;
+
+            const stopMin = parseInt(timeMatch[1]) * 60 + parseInt(timeMatch[2]);
+            const nextDetail = sortedDetails.find(d => {
+                const date = new Date(d.created_at);
+                const wibTime = new Intl.DateTimeFormat('en-GB', {
+                    timeZone: 'Asia/Jakarta',
+                    hour: '2-digit', minute: '2-digit', hour12: false
+                }).format(date);
+                const [h, m] = wibTime.split(':');
+                const dmCreated = parseInt(h) * 60 + parseInt(m);
+                const diff = dmCreated >= stopMin ? dmCreated - stopMin : dmCreated + 1440 - stopMin;
+                return diff >= 0 && diff < 720;
+            });
+
+            if (nextDetail) {
+                const duration = calcDurationMinutes(stopMin, timeToMinutes(nextDetail.time));
+                return `${st} (⏱ ${duration} menit)`;
+            } else {
+                return `${st} (🔴 Belum Selesai)`;
+            }
+        }).join(', ');
+    };
+
     const flatData = useMemo(() => {
         if (!logsheets || logsheets.length === 0) return [];
         const data = [];
@@ -196,7 +242,7 @@ export default function DataTable({ logsheets }) {
                         rak:            d.rak || 1,
                         tray_count:     d.tray_count || 0,
                         // Hanya baris terakhir per logsheet yang tampil unplanned_stop
-                        unplanned_stop: idx === lastIdx ? (ls.unplanned_stop || '-') : '-',
+                        unplanned_stop: idx === lastIdx ? parseUnplannedStop(ls.unplanned_stop, ls.details) : '-',
                     });
                 });
             }

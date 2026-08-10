@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { RefreshCw, Clock, Activity } from 'lucide-react';
+import { RefreshCw, Clock, Activity, Users } from 'lucide-react';
 
 const PRODUCTS = [
     {
@@ -115,8 +115,8 @@ export default function IqfDashboard() {
     if (stats) {
         let max = 0;
         PRODUCTS.forEach(p => {
-            const iqf1 = stats.by_machine['IQF 1']?.[p.key] ?? 0;
-            const iqf2 = stats.by_machine['IQF 2']?.[p.key] ?? 0;
+            const iqf1 = stats.by_machine?.['IQF 1']?.[p.key] ?? 0;
+            const iqf2 = stats.by_machine?.['IQF 2']?.[p.key] ?? 0;
             if (iqf1 > max) max = iqf1;
             if (iqf2 > max) max = iqf2;
         });
@@ -186,6 +186,88 @@ export default function IqfDashboard() {
                     </button>
                 </div>
             </div>
+            {/* UNPLANNED STOPS SECTION */}
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 md:px-8 md:py-5 border-b border-slate-100 flex items-center gap-3">
+                    <span className="w-8 h-8 rounded-lg bg-rose-100 text-rose-500 flex items-center justify-center text-base">🛑</span>
+                    <h3 className="text-base font-bold text-slate-800">Rekapan Kendala (Unplanned Stop)</h3>
+                    {stats?.unplanned_stops?.length > 0 && (
+                        <span className="ml-auto bg-rose-100 text-rose-700 text-xs font-black px-2.5 py-1 rounded-full">
+                            {stats.unplanned_stops.length} kejadian
+                        </span>
+                    )}
+                </div>
+
+                {(!stats || !stats.unplanned_stops || stats.unplanned_stops.length === 0) ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <span className="text-3xl mb-2">✅</span>
+                        <p className="text-slate-400 font-semibold text-sm">Tidak ada kendala pada periode ini.</p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                                    <th className="px-5 py-3 text-left">#</th>
+                                    <th className="px-5 py-3 text-left">Jenis Kendala</th>
+                                    <th className="px-5 py-3 text-left">Mulai</th>
+                                    <th className="px-5 py-3 text-left">Mesin</th>
+                                    <th className="px-5 py-3 text-left">Shift</th>
+                                    <th className="px-5 py-3 text-left">PIC</th>
+                                    <th className="px-5 py-3 text-left">Durasi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {stats.unplanned_stops.map((stop, idx) => {
+                                    let timeString = "-";
+                                    let descString = stop.text;
+                                    const timeMatch = stop.text.match(/^(\d{1,2}:\d{2})\s*-\s*(.*)/);
+                                    if (timeMatch) {
+                                        timeString = timeMatch[1];
+                                        descString = timeMatch[2];
+                                    }
+                                    const isUnfinished = stop.duration === 'Belum Selesai';
+                                    return (
+                                        <tr key={idx} className="border-t border-slate-100 hover:bg-slate-50 transition-colors">
+                                            <td className="px-5 py-3.5 text-slate-400 font-bold">{idx + 1}</td>
+                                            <td className="px-5 py-3.5">
+                                                <span className="font-semibold text-slate-800">{descString}</span>
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                <span className="flex items-center gap-1.5 font-semibold text-slate-600">
+                                                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                                    {timeString}
+                                                </span>
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                <span className="text-[11px] font-black uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-full">
+                                                    {stop.machine}
+                                                </span>
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                                                    Shift {stop.shift}
+                                                </span>
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                <span className="flex items-center gap-1.5 text-slate-700 font-medium">
+                                                    <Users className="w-3.5 h-3.5 text-slate-400" />
+                                                    {stop.pic}
+                                                </span>
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${isUnfinished ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                    {isUnfinished ? '🔴' : '⏱'} {stop.duration}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
 
             {/* GRAND TOTAL CARDS (4 Squares) */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
@@ -237,8 +319,8 @@ export default function IqfDashboard() {
                 {/* Chart Area */}
                 <div className="max-w-4xl mx-auto space-y-6 md:space-y-4">
                     {PRODUCTS.map(p => {
-                        const val1 = stats?.by_machine['IQF 1']?.[p.key] ?? 0;
-                        const val2 = stats?.by_machine['IQF 2']?.[p.key] ?? 0;
+                        const val1 = stats?.by_machine?.['IQF 1']?.[p.key] ?? 0;
+                        const val2 = stats?.by_machine?.['IQF 2']?.[p.key] ?? 0;
                         
                         const pct1 = Math.max(0, Math.min(100, (val1 / maxMachineVal) * 100));
                         const pct2 = Math.max(0, Math.min(100, (val2 / maxMachineVal) * 100));
@@ -298,6 +380,7 @@ export default function IqfDashboard() {
                     </div>
                 </div>
             </div>
+
         </div>
     );
 }
