@@ -189,15 +189,7 @@ export default function Kiosk() {
             return;
         }
 
-        // Validate: Rak tidak boleh lebih kecil dari Rak terakhir
-        if (!isPackItem && lastRak !== '' && parseInt(rak) < parseInt(lastRak)) {
-            showNotification(
-                'error',
-                '⛔ Rak Tidak Valid',
-                `Rak ${rak} lebih kecil dari Rak terakhir (${lastRak}). Input harus ≥ Rak ${lastRak}.`
-            );
-            return;
-        }
+
 
         setLoading(true);
         try {
@@ -353,19 +345,13 @@ export default function Kiosk() {
                                     <div className="flex flex-col">
                                         <div className="h-12 flex flex-col justify-center">
                                             <label className="block text-slate-500 font-bold uppercase text-xs text-center leading-tight">No. Rak</label>
-                                            {lastRak !== '' && (
-                                                <p className="text-center text-[10px] font-bold mt-0.5 text-amber-600">Min: Rak {lastRak} ↑</p>
-                                            )}
+
                                         </div>
                                         <input
                                             type="number"
                                             value={rak}
                                             onChange={e => setRak(e.target.value)}
-                                            className={`w-full text-center text-5xl font-black rounded-2xl py-5 outline-none border-2 transition-colors ${
-                                                lastRak !== '' && rak !== '' && parseInt(rak) < parseInt(lastRak)
-                                                    ? 'text-rose-600 bg-rose-50 border-rose-400 focus:border-rose-500'
-                                                    : 'text-indigo-600 bg-indigo-50 border-indigo-200 focus:border-indigo-500'
-                                            }`}
+                                            className={`w-full text-center text-5xl font-black rounded-2xl py-5 outline-none border-2 transition-colors text-indigo-600 bg-indigo-50 border-indigo-200 focus:border-indigo-500`}
                                             placeholder="0"
                                         />
                                     </div>

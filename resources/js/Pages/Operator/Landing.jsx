@@ -119,14 +119,7 @@ export default function Landing() {
             return;
         }
 
-        if (!isPackItem && lastRak !== '' && parseInt(rak) < parseInt(lastRak)) {
-            showNotification(
-                'error',
-                '⛔ Rak Tidak Valid',
-                `Rak ${rak} lebih kecil dari Rak terakhir (${lastRak}). Input harus ≥ Rak ${lastRak}.`
-            );
-            return;
-        }
+
 
         setLoading(true);
         try {
@@ -227,9 +220,7 @@ export default function Landing() {
                             className="w-full text-center text-3xl md:text-6xl font-black text-cyan-600 border-none bg-transparent focus:ring-0 p-1 md:p-2 placeholder-cyan-200 outline-none"
                             placeholder={isPackItem ? "-" : "0"}
                         />
-                        {!isPackItem && lastRak !== '' && (
-                            <p className="text-center text-[7px] md:text-[11px] font-black mt-2 md:mt-4 text-pink-500 tracking-widest bg-pink-50 px-1.5 md:px-3 py-1 rounded-full text-wrap leading-tight">MIN: {lastRak} &uarr;</p>
-                        )}
+
                     </div>
 
                     {/* Jumlah Loyang */}

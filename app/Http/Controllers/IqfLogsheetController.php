@@ -372,15 +372,11 @@ class IqfLogsheetController extends Controller
             'shift' => $shift,
             'product_type' => $request->product_type,
             'machine' => $request->machine,
-        ], [
             'batch_number' => $request->batch_number,
+        ], [
             'planning_qty' => 0,
             'status' => 'ongoing'
         ]);
-
-        if ($request->batch_number && $logsheet->batch_number != $request->batch_number) {
-            $logsheet->update(['batch_number' => $request->batch_number]);
-        }
 
         if ($request->has('unplanned_stop') && $request->unplanned_stop !== null) {
             $logsheet->update(['unplanned_stop' => $request->unplanned_stop]);
@@ -496,8 +492,8 @@ class IqfLogsheetController extends Controller
             'shift' => $shift,
             'product_type' => $request->product_type,
             'machine' => $request->machine,
-        ], [
             'batch_number' => $request->batch_number ?? '',
+        ], [
             'planning_qty' => 0,
             'status' => 'ongoing'
         ]);
@@ -580,21 +576,24 @@ class IqfLogsheetController extends Controller
         $detail = IqfLogsheetDetail::findOrFail($id);
 
         $request->validate([
-            'tray_count' => 'required|integer|min:1',
-            'time'       => 'nullable|string|max:8',
+            'tray_count'   => 'required|integer|min:1',
+            'batch_number' => 'nullable|integer|min:1',
+            'rak'          => 'nullable|integer|min:1',
+            'machine'      => 'nullable|string|in:IQF 1,IQF 2',
         ]);
-
-        $timeValue = $detail->time;
-        if ($request->filled('time')) {
-            // Terima format "HH:mm" atau "HH:mm:ss"
-            $t = $request->time;
-            $timeValue = strlen($t) === 5 ? $t . ':00' : $t;
-        }
 
         $detail->update([
             'tray_count' => $request->tray_count,
-            'time'       => $timeValue,
+            'rak'        => $request->filled('rak') ? $request->rak : $detail->rak,
         ]);
+
+        // Update batch_number and/or machine on parent logsheet if provided
+        if ($detail->iqfLogsheet) {
+            $parentUpdates = [];
+            if ($request->filled('batch_number')) $parentUpdates['batch_number'] = $request->batch_number;
+            if ($request->filled('machine'))      $parentUpdates['machine']      = $request->machine;
+            if (!empty($parentUpdates)) $detail->iqfLogsheet->update($parentUpdates);
+        }
 
         $this->dispatchSyncBackground();
 
