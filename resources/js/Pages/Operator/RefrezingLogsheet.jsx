@@ -79,9 +79,17 @@ function DetailEditRow({ detail, index, isLastInBatch, batchTotal, unplannedStop
     if (editing || confirmDel) {
         rowBg = 'bg-slate-100';
     } else if (isAnomaly) {
-        rowBg = 'bg-red-50 hover:bg-red-100 transition-colors';
+        rowBg = 'bg-red-100 hover:bg-red-200 transition-colors'; // Anomali = Merah
     } else {
-        rowBg = 'bg-white hover:bg-slate-50 transition-colors';
+        // Pewarnaan silang berdasarkan ganjil/genap dari Nomor Batch
+        const batchNum = parseInt(detail.batch_number) || 0;
+        if (batchNum % 2 !== 0) {
+            // Batch ganjil: kuning muda
+            rowBg = 'bg-yellow-50 hover:bg-yellow-100 transition-colors'; 
+        } else {
+            // Batch genap: putih
+            rowBg = 'bg-white hover:bg-slate-50 transition-colors';
+        }
     }
 
     return (
@@ -145,7 +153,13 @@ function DetailEditRow({ detail, index, isLastInBatch, batchTotal, unplannedStop
                         <option value="IQF 2">IQF 2</option>
                     </select>
                 ) : (
-                    <span className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 font-bold text-[10px]">
+                    <span className={`inline-block px-2 py-0.5 rounded border font-bold text-[10px] ${
+                        detail.machine === 'IQF 1'
+                            ? 'bg-pink-100 text-pink-700 border-pink-200'
+                            : detail.machine === 'IQF 2'
+                                ? 'bg-blue-100 text-blue-700 border-blue-200'
+                                : 'bg-slate-100 text-slate-600 border-slate-200'
+                    }`}>
                         {detail.machine}
                     </span>
                 )}
