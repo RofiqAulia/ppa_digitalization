@@ -527,17 +527,14 @@ class IqfLogsheetController extends Controller
         $now = Carbon::now('Asia/Jakarta');
         $hour = (int) $now->format('H');
         
-        if ($hour >= 6 && $hour < 14) {
+        if ($hour >= 8 && $hour < 16) {
             $shift = 1;
             $date = $now->format('Y-m-d');
-        } elseif ($hour >= 14 && $hour < 22) {
+        } elseif ($hour >= 16 && $hour <= 23) {
             $shift = 2;
             $date = $now->format('Y-m-d');
-        } elseif ($hour >= 22) {
-            $shift = 3;
-            $date = $now->format('Y-m-d');
         } else {
-            // 00:00 to 05:59 is still Shift 3 of the previous day
+            // 00:00 to 07:59 is Shift 3 of the previous day
             $shift = 3;
             $date = clone $now;
             $date = $date->subDay()->format('Y-m-d');

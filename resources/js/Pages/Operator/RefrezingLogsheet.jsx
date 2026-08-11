@@ -22,8 +22,8 @@ const getCurrentShift = () => {
     const now = new Date();
     const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
     const hour = wib.getHours();
-    if (hour >= 6 && hour < 14) return '1';
-    if (hour >= 14 && hour < 22) return '2';
+    if (hour >= 8 && hour < 16) return '1';
+    if (hour >= 16 && hour <= 23) return '2';
     return '3';
 };
 

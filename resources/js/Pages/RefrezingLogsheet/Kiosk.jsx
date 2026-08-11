@@ -19,17 +19,14 @@ const getCurrentShiftAndDate = () => {
     const hour = wib.getHours();
 
     let shift, date;
-    if (hour >= 6 && hour < 14) {
+    if (hour >= 8 && hour < 16) {
         shift = 1;
         date  = wib.toISOString().slice(0, 10);
-    } else if (hour >= 14 && hour < 22) {
+    } else if (hour >= 16 && hour <= 23) {
         shift = 2;
         date  = wib.toISOString().slice(0, 10);
-    } else if (hour >= 22) {
-        shift = 3;
-        date  = wib.toISOString().slice(0, 10);
     } else {
-        // 00:00–05:59 masih Shift 3 hari sebelumnya
+        // 00:00–07:59 masih Shift 3 hari sebelumnya
         shift = 3;
         const prev = new Date(wib);
         prev.setDate(prev.getDate() - 1);

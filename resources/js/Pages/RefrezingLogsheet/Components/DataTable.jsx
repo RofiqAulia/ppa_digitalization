@@ -861,32 +861,13 @@ export default function DataTable({ logsheets }) {
                                                     </td>
                                                     <td className="no-print hidden sm:table-cell px-3 py-1.5 text-center">
                                                         <div className="flex items-center justify-center gap-1.5">
-                                                            {(() => {
-                                                                const recordDateTime = new Date(`${row.date}T${row.time}`);
-                                                                const isEditable = (new Date() - recordDateTime) / (1000 * 60 * 60) <= 24;
-                                                                
-                                                                if (isEditable) {
-                                                                    return (
-                                                                        <button
-                                                                            className="h-6 w-6 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors flex items-center justify-center"
-                                                                            onClick={() => openEditModal(row)}
-                                                                            title="Edit"
-                                                                        >
-                                                                            <Edit2 className="w-3 h-3" />
-                                                                        </button>
-                                                                    );
-                                                                } else {
-                                                                    return (
-                                                                        <button
-                                                                            className="h-6 w-6 rounded text-slate-200 bg-slate-50 cursor-not-allowed flex items-center justify-center opacity-40"
-                                                                            disabled
-                                                                            title="Data riwayat tidak dapat diubah setelah 24 jam"
-                                                                        >
-                                                                            <Edit2 className="w-3 h-3" />
-                                                                        </button>
-                                                                    );
-                                                                }
-                                                            })()}
+                                                            <button
+                                                                className="h-6 w-6 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors flex items-center justify-center"
+                                                                onClick={() => openEditModal(row)}
+                                                                title="Edit"
+                                                            >
+                                                                <Edit2 className="w-3 h-3" />
+                                                            </button>
                                                             <button
                                                                 className="h-6 w-6 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors flex items-center justify-center"
                                                                 onClick={() => handleDeleteDetail(row.id)}

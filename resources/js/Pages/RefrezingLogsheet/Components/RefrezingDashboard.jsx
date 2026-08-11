@@ -40,11 +40,21 @@ const PRODUCTS = [
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0') + ':00');
 
 const SHIFT_PRESETS = [
-    { label: 'Shift 1', from: '06:00', to: '13:00' },
-    { label: 'Shift 2', from: '14:00', to: '21:00' },
-    { label: 'Shift 3', from: '22:00', to: '05:00' },
+    { label: 'Shift 1', from: '08:00', to: '15:00' },
+    { label: 'Shift 2', from: '16:00', to: '23:00' },
+    { label: 'Shift 3', from: '00:00', to: '07:00' },
     { label: 'Semua',   from: '00:00', to: '23:00' },
 ];
+
+/** Detect which shift preset matches the current WIB time */
+function getCurrentShiftPreset() {
+    const now  = new Date();
+    const wib  = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+    const hour = wib.getHours();
+    if (hour >= 8 && hour < 16) return SHIFT_PRESETS[0];  // Shift 1
+    if (hour >= 16)             return SHIFT_PRESETS[1];  // Shift 2
+    return SHIFT_PRESETS[2];                              // Shift 3 (00–07)
+}
 
 function AnimatedNumber({ value }) {
     const [displayed, setDisplayed] = useState(value);
@@ -80,29 +90,57 @@ function LiveClock() {
 }
 
 export default function IqfDashboard() {
+    const initPreset = getCurrentShiftPreset();
+
     const [stats,        setStats]        = useState(null);
     const [loading,      setLoading]      = useState(true);
-    const [fromTime,     setFromTime]     = useState('00:00');
-    const [toTime,       setToTime]       = useState('23:00');
-    const [activePreset, setActivePreset] = useState('Semua');
+    const [fromTime,     setFromTime]     = useState(initPreset.from);
+    const [toTime,       setToTime]       = useState(initPreset.to);
+    const [activePreset, setActivePreset] = useState(initPreset.label);
 
-    const fetchStats = useCallback(async () => {
+    // Keep a stable ref to the latest fetch params so the interval never goes stale
+    const paramsRef = useRef({ fromTime: initPreset.from, toTime: initPreset.to });
+    useEffect(() => { paramsRef.current = { fromTime, toTime }; }, [fromTime, toTime]);
+
+    const fetchStats = useCallback(async (from, to) => {
+        const f = from ?? paramsRef.current.fromTime;
+        const t = to   ?? paramsRef.current.toTime;
         setLoading(true);
         try {
-            const res = await axios.get('/dashboard/stats', { params: { from_time: fromTime, to_time: toTime } });
+            const res = await axios.get('/refrezing/dashboard/stats', { params: { from_time: f, to_time: t } });
             setStats(res.data);
         } catch (e) {
             console.error(e);
         } finally {
             setLoading(false);
         }
-    }, [fromTime, toTime]);
+    }, []);
 
-    useEffect(() => { fetchStats(); }, [fetchStats]);
+    // Initial fetch
+    useEffect(() => { fetchStats(fromTime, toTime); }, []); // eslint-disable-line
+
+    // Re-fetch whenever filter changes
+    useEffect(() => { fetchStats(fromTime, toTime); }, [fromTime, toTime]); // eslint-disable-line
+
+    // Auto-refresh every 60 s using stable ref — also auto-switches to the live shift at each tick
     useEffect(() => {
-        const interval = setInterval(fetchStats, 60000);
+        const interval = setInterval(() => {
+            const currentPreset = getCurrentShiftPreset();
+            const active = paramsRef.current;
+            const matched = SHIFT_PRESETS.find(
+                p => p.from === active.fromTime && p.to === active.toTime
+            );
+            if (matched && matched.label !== 'Semua') {
+                setFromTime(currentPreset.from);
+                setToTime(currentPreset.to);
+                setActivePreset(currentPreset.label);
+                fetchStats(currentPreset.from, currentPreset.to);
+            } else {
+                fetchStats();
+            }
+        }, 60000);
         return () => clearInterval(interval);
-    }, [fetchStats]);
+    }, []); // eslint-disable-line
 
     const applyPreset = (preset) => {
         setActivePreset(preset.label);
