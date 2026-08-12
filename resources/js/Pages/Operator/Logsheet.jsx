@@ -335,7 +335,7 @@ export default function OperatorLogsheet({ logsheets }) {
             }
             const g = grouped[groupKey];
 
-            if (ls.details) {
+            if (ls.details && ls.details.length > 0) {
                 const parsedStop = parseUnplannedStop(ls, logsheets);
                 ls.details.forEach(d => {
                     const count = parseInt(d.tray_count) || 0;
@@ -353,6 +353,25 @@ export default function OperatorLogsheet({ logsheets }) {
                         unplanned_stop: parsedStop,
                     });
                 });
+            } else if (ls.unplanned_stop && ls.unplanned_stop !== '-') {
+                const parsedStop = parseUnplannedStop(ls, logsheets);
+                g.details.push({
+                    id: -ls.id,
+                    time: ls.created_at ? new Date(ls.created_at).toTimeString().substring(0,5) : '',
+                    tray_count: 0,
+                    rak: '-',
+                    suhu_panel: '-',
+                    suhu_produk: '-',
+                    pic: '-',
+                    parent_id: ls.id,
+                    batch_number: ls.batch_number || '-',
+                    machine: ls.machine,
+                    product_type: ls.product_type,
+                    date: ls.date,
+                    shift: ls.shift,
+                    unplanned_stop: parsedStop,
+                    isKendalaOnly: true,
+                });
             }
         });
 
@@ -367,14 +386,20 @@ export default function OperatorLogsheet({ logsheets }) {
             const batchTracker = {};
             g.details.forEach(d => {
                 const batchKey = `${d.machine}_${d.product_type}_${d.batch_number}`;
-                if (!batchTracker[batchKey]) batchTracker[batchKey] = { count: 0, oldestId: d.id };
+                if (!batchTracker[batchKey]) batchTracker[batchKey] = { count: 0, newestId: d.id, oldestId: d.id };
                 batchTracker[batchKey].count += (parseInt(d.tray_count) || 0);
-                batchTracker[batchKey].oldestId = d.id;
+                batchTracker[batchKey].oldestId = d.id; // since it's sorted descending, last visited is oldest
+                if (batchTracker[batchKey].newestId < d.id) batchTracker[batchKey].newestId = d.id;
             });
             g.details.forEach(d => {
                 const batchKey = `${d.machine}_${d.product_type}_${d.batch_number}`;
                 d.batchTotal = batchTracker[batchKey].count;
-                d.isLastInBatch = (d.id === batchTracker[batchKey].oldestId);
+                if (d.isKendalaOnly) {
+                    d.isLastInBatch = true;
+                } else {
+                    // Tampilkan unplanned stop di baris terbaru (paling atas)
+                    d.isLastInBatch = (d.id === batchTracker[batchKey].newestId);
+                }
             });
 
             // ── Anomaly Detection: rak harus naik urut per mesin & produk ──────────

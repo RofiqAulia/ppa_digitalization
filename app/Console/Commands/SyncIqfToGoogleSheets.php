@@ -268,6 +268,33 @@ class SyncIqfToGoogleSheets extends Command
             } catch (\Exception $e) {
                 $this->warn("Gagal agregasi Refrezing: " . $e->getMessage());
             }
+
+            // Ambil data tambahan (SPV, Batch, Refrezing manual, Unplanned Stop)
+            try {
+                $ls = \App\Models\IqfLogsheet::where('date', $combo['date'])
+                    ->where(function($q) use ($combo) {
+                        if ($combo['jenis'] === 'ADONAN') {
+                            $q->whereRaw("UPPER(product_type) IN ('ADONAN', 'ADONAN_PANGSIT')");
+                        } else {
+                            $q->whereRaw("UPPER(product_type) = ?", [$combo['jenis']]);
+                        }
+                    })
+                    ->where('machine', 'LIKE', '%' . $combo['machine'])
+                    ->where('shift', $combo['shift'])
+                    ->orderBy('id', 'desc')
+                    ->first();
+
+                if ($ls) {
+                    $extraDataAggregated[$combo['date']][$combo['jenis']][$combo['machine']][$combo['shift']] = [
+                        'spv' => $ls->spv,
+                        'batch' => $ls->batch_number,
+                        'refrezing' => $ls->refrezing,
+                        'unplanned_stop' => $this->parseUnplannedStop($ls)
+                    ];
+                }
+            } catch (\Exception $e) {
+                $this->warn("Gagal ambil extra data: " . $e->getMessage());
+            }
         }
 
         // 7. Baca sheet report untuk membangun row lookup
@@ -478,13 +505,43 @@ class SyncIqfToGoogleSheets extends Command
                         ]);
 
                         // Tulis total Refrezing di kolom AF (index 31)
-                        $refTotal = $refrezingAggregated[$date][$jenis][$machineNum][$shift] ?? '';
+                        $extra = $extraDataAggregated[$date][$jenis][$machineNum][$shift] ?? null;
+                        
+                        // Prioritaskan manual refrezing dari IqfLogsheet, jika kosong pakai auto dari refrezing_logsheets
+                        $refTotal = $extra && !empty($extra['refrezing']) ? $extra['refrezing'] : ($refrezingAggregated[$date][$jenis][$machineNum][$shift] ?? '');
+                        
                         if ($refTotal !== '') {
                             $afCol = $this->indexToColumn(31); // AF
                             $batchData[] = new ValueRange([
                                 'range'  => "'{$sheetName}'!{$afCol}{$rowNumber}",
                                 'values' => [[$refTotal ?: 0]],
                             ]);
+                        }
+
+                        // Tulis SPV, BATCH, KENDALA
+                        if ($extra) {
+                            if (!empty($extra['spv'])) {
+                                $aCol = $this->indexToColumn(self::COL_SPV);
+                                $batchData[] = new ValueRange([
+                                    'range'  => "'{$sheetName}'!{$aCol}{$rowNumber}",
+                                    'values' => [[$extra['spv']]],
+                                ]);
+                            }
+                            if (!empty($extra['batch'])) {
+                                $batchColIdx = $machineNum === 1 ? self::COL_IQF1 : self::COL_IQF2;
+                                $batchCol = $this->indexToColumn($batchColIdx);
+                                $batchData[] = new ValueRange([
+                                    'range'  => "'{$sheetName}'!{$batchCol}{$rowNumber}",
+                                    'values' => [[$extra['batch']]],
+                                ]);
+                            }
+                            if (!empty($extra['unplanned_stop']) && $extra['unplanned_stop'] !== '-') {
+                                $agCol = $this->indexToColumn(32); // AG
+                                $batchData[] = new ValueRange([
+                                    'range'  => "'{$sheetName}'!{$agCol}{$rowNumber}",
+                                    'values' => [[$extra['unplanned_stop']]],
+                                ]);
+                            }
                         }
                     }
                 }
@@ -628,5 +685,46 @@ class SyncIqfToGoogleSheets extends Command
             $index = (int) ($index / 26) - 1;
         }
         return $col;
+    }
+
+    private function parseUnplannedStop($logsheet)
+    {
+        $stopText = $logsheet->unplanned_stop;
+        if (!$stopText || $stopText === '-') return '-';
+        $stops = array_filter(array_map('trim', explode(',', $stopText)));
+
+        $details = DB::table('iqf_logsheet_details')
+            ->where('iqf_logsheet_id', $logsheet->id)
+            ->whereNotNull('time')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $result = [];
+        foreach ($stops as $st) {
+            if (preg_match('/^(\d{1,2}):(\d{2})/', $st, $matches)) {
+                $stopMin = (int)$matches[1] * 60 + (int)$matches[2];
+                $nextDetail = $details->first(function($d) use ($stopMin) {
+                    $timeParts = explode(':', $d->time);
+                    if (count($timeParts) < 2) return false;
+                    $dmTime = (int)$timeParts[0] * 60 + (int)$timeParts[1];
+                    $diff = $dmTime - $stopMin;
+                    if ($diff < 0) $diff += 1440;
+                    return $diff > 0 && $diff < 720;
+                });
+
+                if ($nextDetail) {
+                    $timeParts = explode(':', $nextDetail->time);
+                    $dmTime = (int)$timeParts[0] * 60 + (int)$timeParts[1];
+                    $duration = $dmTime - $stopMin;
+                    if ($duration < 0) $duration += 1440;
+                    $result[] = "{$st} (⏱ {$duration} mnt)";
+                } else {
+                    $result[] = "{$st} (🔴 Blm Selesai)";
+                }
+            } else {
+                $result[] = $st;
+            }
+        }
+        return implode(', ', $result);
     }
 }
