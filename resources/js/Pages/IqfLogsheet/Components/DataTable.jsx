@@ -824,13 +824,36 @@ export default function DataTable({ logsheets }) {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 text-slate-700">
-                                        {group.rows.map((row, idx) => {
+                                        {(() => {
+                                            // Detect non-sequential rak numbers per machine+product
+                                            // Group rows by product_type and check rak order
+                                            const rakAnomalyIds = new Set();
+                                            const byProduct = {};
+                                            group.rows.forEach(r => {
+                                                if (['lumpia','adonan_pangsit'].includes(r.product_type)) return;
+                                                (byProduct[r.product_type] = byProduct[r.product_type] || []).push(r);
+                                            });
+                                            Object.values(byProduct).forEach(rows => {
+                                                // Sort by time asc to check rak sequence
+                                                const sorted = [...rows].sort((a, b) => a.time.localeCompare(b.time));
+                                                for (let i = 1; i < sorted.length; i++) {
+                                                    const prev = Number(sorted[i - 1].rak);
+                                                    const curr = Number(sorted[i].rak);
+                                                    // Rak should increment by 1 each entry
+                                                    if (curr !== prev + 1) {
+                                                        rakAnomalyIds.add(sorted[i].id);
+                                                    }
+                                                }
+                                            });
+
+                                            return group.rows.map((row, idx) => {
                                             const isLastOfProd = lastIdxMap[row.product_type] === idx;
                                             const rowTotal     = productTotals[row.product_type];
                                             const pt           = row.product_type;
                                             const printClass   = PRODUCT_PRINT_CLASS[pt] || '';
+                                            const isRakAnomaly = rakAnomalyIds.has(row.id);
                                             return (
-                                                <tr key={row.id} className={`transition-colors ${PRODUCT_ROW_BG[pt] || 'hover:bg-slate-50'} ${printClass}`}>
+                                                <tr key={row.id} title={isRakAnomaly ? `⚠️ Rak ${row.rak} tidak urut dari entri sebelumnya` : undefined} className={`transition-colors ${isRakAnomaly ? 'bg-red-50 hover:bg-red-100' : (PRODUCT_ROW_BG[pt] || 'hover:bg-slate-50')} ${printClass}`}>
                                                     <td className="px-3 py-1.5 text-center text-slate-400 font-mono">{idx + 1}</td>
                                                     <td className="px-3 py-1.5 font-medium truncate max-w-[90px]">{row.pic}</td>
                                                     <td className="px-3 py-1.5 truncate max-w-[90px]">
@@ -842,7 +865,17 @@ export default function DataTable({ logsheets }) {
                                                     <td className="px-3 py-1.5 font-mono text-slate-600 hidden sm:table-cell">{row.suhu_panel}</td>
                                                     <td className="px-3 py-1.5 font-mono text-slate-600 hidden sm:table-cell">{row.suhu_produk}</td>
                                                     <td className="px-3 py-1.5 font-mono text-indigo-700 font-bold">{formatTime(row.time)}</td>
-                                                    <td className="px-3 py-1.5 text-center font-bold text-slate-700 hidden md:table-cell">{['lumpia','adonan_pangsit'].includes(pt) ? <span className="text-slate-300">-</span> : row.rak}</td>
+                                                    <td className={`px-3 py-1.5 text-center font-bold hidden md:table-cell ${isRakAnomaly ? 'text-red-600 bg-red-100' : 'text-slate-700'}`}>
+                                                        {['lumpia','adonan_pangsit'].includes(pt)
+                                                            ? <span className="text-slate-300">-</span>
+                                                            : (
+                                                                <span className={`inline-flex items-center gap-1 ${ isRakAnomaly ? 'text-red-600' : ''}`}>
+                                                                    {isRakAnomaly && <span title="Rak tidak urut" className="text-red-500 font-black">!</span>}
+                                                                    {row.rak}
+                                                                </span>
+                                                            )
+                                                        }
+                                                    </td>
                                                     <td className="px-3 py-1.5 text-center">
                                                         <span className="inline-flex px-1.5 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded font-black text-[10px]">
                                                             {row.tray_count}
@@ -880,7 +913,8 @@ export default function DataTable({ logsheets }) {
                                                     </td>
                                                 </tr>
                                             );
-                                        })}
+                                         });
+                                        })()}
                                     </tbody>
                                     <tfoot className="bg-slate-50 border-t-2 border-slate-200">
                                         <tr>

@@ -304,14 +304,9 @@ class IqfLogsheetController extends Controller
                 'unplanned_stop' => $request->unplanned_stop,
             ]);
 
-            // Bulk update PIC for all details with same date, shift, machine
+            // Update PIC hanya untuk detail yang sedang diedit (bukan massal)
             if ($request->has('pic')) {
-                $logsheetIds = IqfLogsheet::where('date', $logsheet->date)
-                                        ->where('shift', $logsheet->shift)
-                                        ->where('machine', $logsheet->machine)
-                                        ->pluck('id');
-                IqfLogsheetDetail::whereIn('iqf_logsheet_id', $logsheetIds)
-                                 ->update(['pic' => $request->pic]);
+                $detail->update(['pic' => $request->pic]);
             }
         }
 
