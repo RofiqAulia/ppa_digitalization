@@ -6,21 +6,25 @@ import axios from 'axios';
 // Helper functions for shift/date
 const getCurrentShiftAndDate = () => {
     const now = new Date();
-    const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
-    const hour = wib.getHours();
+    const wibDateStr = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Jakarta' }).format(now);
+    const wibHour    = parseInt(
+        new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', hour: 'numeric', hour12: false }).format(now),
+        10
+    );
 
     let shift, date;
-    if (hour >= 8 && hour < 16) {
+    if (wibHour >= 8 && wibHour < 16) {
         shift = 1;
-        date  = wib.toISOString().slice(0, 10);
-    } else if (hour >= 16 && hour <= 23) {
+        date  = wibDateStr;
+    } else if (wibHour >= 16) {
         shift = 2;
-        date  = wib.toISOString().slice(0, 10);
+        date  = wibDateStr;
     } else {
+        // 00:00–07:59 → Shift 3, tanggal hari sebelumnya
         shift = 3;
-        const prev = new Date(wib);
-        prev.setDate(prev.getDate() - 1);
-        date = prev.toISOString().slice(0, 10);
+        const [y, m, d] = wibDateStr.split('-').map(Number);
+        const prev = new Date(Date.UTC(y, m - 1, d - 1));
+        date = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Jakarta' }).format(prev);
     }
     return { shift, date };
 };
