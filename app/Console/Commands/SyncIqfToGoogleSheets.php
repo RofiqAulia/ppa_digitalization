@@ -157,6 +157,8 @@ class SyncIqfToGoogleSheets extends Command
         foreach ($newRecords as $record) {
             $date       = $record->date; // "2026-07-28"
             $jenis      = strtoupper($record->product_type); // "SIOMAY"
+            // Normalisasi: hapus suffix status (_T, _W) dan alias
+            $jenis = preg_replace('/_[TW]$/', '', $jenis);
             if ($jenis === 'ADONAN_PANGSIT') {
                 $jenis = 'ADONAN';
             }
@@ -179,6 +181,7 @@ class SyncIqfToGoogleSheets extends Command
         foreach ($newRefrezingRecords as $record) {
             $date       = $record->date;
             $jenis      = strtoupper($record->product_type);
+            $jenis = preg_replace('/_[TW]$/', '', $jenis);
             if ($jenis === 'ADONAN_PANGSIT') {
                 $jenis = 'ADONAN';
             }
@@ -531,13 +534,7 @@ class SyncIqfToGoogleSheets extends Command
                                     'values' => [[$extra['batch']]],
                                 ]);
                             }
-                            if (!empty($extra['unplanned_stop']) && $extra['unplanned_stop'] !== '-') {
-                                $agCol = $this->indexToColumn(32); // AG
-                                $batchData[] = new ValueRange([
-                                    'range'  => "'{$sheetName}'!{$agCol}{$rowNumber}",
-                                    'values' => [[$extra['unplanned_stop']]],
-                                ]);
-                            }
+                            // Kolom AG (kendala) tidak ditulis karena sheet hanya sampai AF (32 kolom)
                         }
                     }
                 }
