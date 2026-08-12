@@ -96,8 +96,13 @@ function DetailEditRow({ detail, index, isLastInBatch, batchTotal, unplannedStop
         <tr className={`border-b border-slate-100 text-[11px] font-semibold text-slate-700 text-center ${rowBg}`}>
             {/* # */}
             <td className="py-2.5 px-2 w-8">
-                <span className={isAnomaly ? 'text-red-500 font-black' : 'text-slate-400'}>{index}</span>
-                {isAnomaly && <span title="Anomali: urutan rak tidak sesuai" className="ml-0.5 text-red-400">!</span>}
+                {isAnomaly ? (
+                    <div className="bg-red-500 text-white font-black w-6 h-6 rounded flex items-center justify-center mx-auto" title="Anomali: urutan rak tidak sesuai">
+                        !
+                    </div>
+                ) : (
+                    <span className="text-slate-400">{index}</span>
+                )}
             </td>
 
             {/* Aksi */}
@@ -188,7 +193,7 @@ function DetailEditRow({ detail, index, isLastInBatch, batchTotal, unplannedStop
             </td>
 
             {/* Rak/Rongga — editable */}
-            <td className="py-2.5 px-2 font-bold">
+            <td className={`py-2.5 px-2 font-bold ${isAnomaly ? 'bg-red-100' : ''}`}>
                 {editing ? (
                     <input
                         type="number"
@@ -198,7 +203,7 @@ function DetailEditRow({ detail, index, isLastInBatch, batchTotal, unplannedStop
                         className="border border-slate-300 rounded px-1.5 py-0.5 text-[11px] font-bold w-14 text-center focus:outline-none focus:ring-1 focus:ring-indigo-400 mx-auto block"
                     />
                 ) : (
-                    detail.rak || '-'
+                    <span className={isAnomaly ? 'text-red-600 font-black text-sm' : ''}>{detail.rak || '-'}</span>
                 )}
             </td>
 
@@ -313,29 +318,29 @@ export default function OperatorLogsheet({ logsheets }) {
                 d.isLastInBatch = (d.id === batchTracker[batchKey].oldestId);
             });
 
-            // ── Anomaly Detection: rak harus naik seiring waktu ──────────
-            // Kelompokkan per product_type saja (karena sudah di dalam grup Shift+Tanggal yg sama),
-            // urutkan ascending waktu, tandai baris yang raknya < rak sebelumnya sebagai anomali.
+            // ── Anomaly Detection: rak harus naik urut per mesin & produk ──────────
             const anomalyGroups = {};
             g.details.forEach(d => {
-                const key = d.product_type;
-                if (!anomalyGroups[key]) anomalyGroups[key] = [];
-                anomalyGroups[key].push(d);
+                const key = d.machine + '_' + d.product_type;
+                if (!['lumpia', 'adonan_pangsit'].includes(d.product_type)) {
+                    if (!anomalyGroups[key]) anomalyGroups[key] = [];
+                    anomalyGroups[key].push(d);
+                }
             });
             Object.values(anomalyGroups).forEach(entries => {
-                // Sort ascending by time to check rak order chronologically
                 const sorted = [...entries].sort((a, b) => {
                     const tA = a.time || '';
                     const tB = b.time || '';
                     if (tA !== tB) return tA.localeCompare(tB);
                     return a.id - b.id;
                 });
-                let prevRak = -Infinity;
-                sorted.forEach(d => {
-                    const curRak = parseInt(d.rak) || 0;
-                    d.isAnomaly = curRak > 0 && curRak < prevRak;
-                    if (curRak > 0) prevRak = curRak;
-                });
+                for (let i = 1; i < sorted.length; i++) {
+                    const prevRak = parseInt(sorted[i - 1].rak) || 0;
+                    const curRak = parseInt(sorted[i].rak) || 0;
+                    if (curRak !== prevRak + 1) {
+                        sorted[i].isAnomaly = true;
+                    }
+                }
             });
         });
 
