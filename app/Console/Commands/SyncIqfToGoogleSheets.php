@@ -99,8 +99,7 @@ class SyncIqfToGoogleSheets extends Command
 
         // 4. Ambil data BARU dari MySQL (incremental)
         try {
-            $newRecords = DB
-                ->table('iqf_logsheet_details as d')
+            $newRecords = DB::table('iqf_logsheet_details as d')
                 ->join('iqf_logsheets as h', 'd.iqf_logsheet_id', '=', 'h.id')
                 ->select('d.id', 'h.date', 'h.shift', 'h.product_type', 'h.machine', 'd.time', 'd.tray_count')
                 ->where('d.id', '>', $lastSyncedId)
@@ -108,8 +107,7 @@ class SyncIqfToGoogleSheets extends Command
                 ->limit(500)
                 ->get();
 
-            $newRefrezingRecords = DB
-                ->table('refrezing_logsheet_details as d')
+            $newRefrezingRecords = DB::table('refrezing_logsheet_details as d')
                 ->join('refrezing_logsheets as h', 'd.refrezing_logsheet_id', '=', 'h.id')
                 ->select('d.id', 'h.date', 'h.shift', 'h.product_type', 'h.machine', 'd.tray_count')
                 ->where('d.id', '>', $lastRefrezingSyncedId)
@@ -212,8 +210,7 @@ class SyncIqfToGoogleSheets extends Command
             }
 
             try {
-                $rows = DB
-                    ->table('iqf_logsheet_details as d')
+                $rows = DB::table('iqf_logsheet_details as d')
                     ->join('iqf_logsheets as h', 'd.iqf_logsheet_id', '=', 'h.id')
                     ->select('d.time', DB::raw('SUM(d.tray_count) as total'))
                     ->where('h.date', $combo['date'])
@@ -249,8 +246,7 @@ class SyncIqfToGoogleSheets extends Command
 
             // Agregasi Refrezing
             try {
-                $refrezingTotal = DB
-                    ->table('refrezing_logsheet_details as d')
+                $refrezingTotal = DB::table('refrezing_logsheet_details as d')
                     ->join('refrezing_logsheets as h', 'd.refrezing_logsheet_id', '=', 'h.id')
                     ->where('h.date', $combo['date'])
                     ->where(function($q) use ($combo) {
