@@ -53,6 +53,65 @@ export default function DataTable({ logsheets }) {
         }
     }, []);
 
+    // Helper for Unplanned Stop
+    const timeToMinutes = t => {
+        if (!t) return null;
+        const [h, m] = t.split(':');
+        return parseInt(h) * 60 + parseInt(m);
+    };
+
+    const calcDurationMinutes = (start, end) => {
+        if (start === null || end === null) return null;
+        let diff = end - start;
+        if (diff < 0) diff += 1440; // cross midnight
+        return diff;
+    };
+
+    const parseUnplannedStop = (ls, logsheets) => {
+        const stopText = ls.unplanned_stop;
+        if (!stopText || stopText === '-') return '-';
+        const stops = stopText.split(',').map(s => s.trim()).filter(Boolean);
+
+        const machineLogsheets = (logsheets || [])
+            .filter(l => l.machine === ls.machine)
+            .sort((a, b) => {
+                if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+                return a.shift - b.shift;
+            });
+
+        const idx = machineLogsheets.findIndex(l => l.id === ls.id);
+        let relevantDetails = [];
+        if (idx !== -1) {
+            for (let i = idx; i < machineLogsheets.length; i++) {
+                relevantDetails.push(...(machineLogsheets[i].details || []));
+            }
+        }
+
+        const sortedDetails = relevantDetails
+            .filter(d => d.created_at && d.time)
+            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+        return stops.map(st => {
+            const timeMatch = st.match(/^(\d{1,2}):(\d{2})/);
+            if (!timeMatch) return st;
+
+            const stopMin = parseInt(timeMatch[1]) * 60 + parseInt(timeMatch[2]);
+            const nextDetail = sortedDetails.find(d => {
+                const dmTime = timeToMinutes(d.time);
+                if (dmTime === null) return false;
+                const diff = calcDurationMinutes(stopMin, dmTime);
+                return diff > 0 && diff < 720;
+            });
+
+            if (nextDetail) {
+                const duration = calcDurationMinutes(stopMin, timeToMinutes(nextDetail.time));
+                return `${st} (⏱ ${duration} mnt)`;
+            } else {
+                return `${st} (🔴 Blm Selesai)`;
+            }
+        }).join(', ');
+    };
+
     const filteredLogsheets = useMemo(() => {
         return (logsheets || []).filter(ls => {
             if (filterDateFrom && ls.date < filterDateFrom) return false;
@@ -76,10 +135,14 @@ export default function DataTable({ logsheets }) {
                 achieve += Number(d.tray_count) || 0;
             });
             
+            
+            const parsedStop = parseUnplannedStop(ls, logsheets);
+
             return {
                 ...ls,
                 hourly,
-                achieve
+                achieve,
+                parsedStop
             };
         });
     }, [logsheets, filterDateFrom, filterDateTo, filterShift, filterMachine, filterProduct]);
@@ -135,7 +198,7 @@ export default function DataTable({ logsheets }) {
 
         const wb = XLSX.utils.book_new();
         const wsData = [
-            ['SPV', 'TGL', 'JENIS DIMSUM', 'SHIFT', 'BATCH', ...HOURS, 'Achieve', 'REFREZING']
+            ['SPV', 'TGL', 'JENIS DIMSUM', 'SHIFT', 'BATCH', ...HOURS, 'Achieve', 'REFREZING', 'KENDALA (DURASI)']
         ];
 
         filteredLogsheets.forEach(ls => {
@@ -147,7 +210,8 @@ export default function DataTable({ logsheets }) {
                 ls.batch_number || '',
                 ...HOURS.map(h => ls.hourly[h] || ''),
                 ls.achieve,
-                ls.refrezing || ''
+                ls.refrezing || '',
+                ls.parsedStop || '-'
             ];
             wsData.push(row);
         });
@@ -237,12 +301,13 @@ export default function DataTable({ logsheets }) {
                             <th className="p-2 border-r border-slate-300 text-center w-32">JENIS DIMSUM</th>
                             <th className="p-2 border-r border-slate-300 text-center w-12">SH</th>
                             <th className="p-2 border-r border-slate-300 text-center w-16">BATCH</th>
-                            <th className="p-2 border-r border-slate-300 text-center no-print w-12">AKSI</th>
+                            <th className="p-2 border-r border-slate-300 text-center w-12">AKSI</th>
                             {HOURS.map(h => (
                                 <th key={h} className="p-1 border-r border-slate-300 text-center whitespace-nowrap w-10 text-[9px]">{h}</th>
                             ))}
                             <th className="p-2 border-r border-slate-300 text-center bg-indigo-100 w-16">Achieve</th>
-                            <th className="p-2 text-center w-32">REFREZING</th>
+                            <th className="p-2 border-r border-slate-300 text-center w-24">REFREZING</th>
+                            <th className="p-2 text-center w-40">KENDALA (DURASI)</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
@@ -262,7 +327,8 @@ export default function DataTable({ logsheets }) {
                                     <td key={h} className="p-1 border-r border-slate-200 text-center text-slate-800 font-medium">{ls.hourly[h] || ''}</td>
                                 ))}
                                 <td className="p-2 border-r border-slate-200 text-center font-black bg-indigo-50/50 text-indigo-700 text-[11px]">{ls.achieve}</td>
-                                <td className="p-2 text-center text-slate-700 font-medium">{ls.refrezing || '-'}</td>
+                                <td className="p-2 border-r border-slate-200 text-center text-slate-700 font-medium">{ls.refrezing || '-'}</td>
+                                <td className="p-2 text-center text-red-600 font-medium">{ls.parsedStop !== '-' ? ls.parsedStop : '-'}</td>
                             </tr>
                         )) : (
                             <tr>
