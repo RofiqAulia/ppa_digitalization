@@ -188,11 +188,27 @@ export default function DataTable({ logsheets }) {
         return diff;
     };
 
-    // `allMachineDetails` = semua detail dari semua logsheet pada mesin yang sama
-    const parseUnplannedStop = (stopText, allMachineDetails) => {
+    const parseUnplannedStop = (ls, logsheets) => {
+        const stopText = ls.unplanned_stop;
         if (!stopText || stopText === '-') return '-';
         const stops = stopText.split(',').map(s => s.trim()).filter(Boolean);
-        const sortedDetails = [...(allMachineDetails || [])]
+
+        const machineLogsheets = logsheets
+            .filter(l => l.machine === ls.machine)
+            .sort((a, b) => {
+                if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+                return a.shift - b.shift;
+            });
+
+        const idx = machineLogsheets.findIndex(l => l.id === ls.id);
+        let relevantDetails = [];
+        if (idx !== -1) {
+            for (let i = idx; i < machineLogsheets.length; i++) {
+                relevantDetails.push(...(machineLogsheets[i].details || []));
+            }
+        }
+
+        const sortedDetails = relevantDetails
             .filter(d => d.created_at && d.time)
             .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
@@ -202,15 +218,10 @@ export default function DataTable({ logsheets }) {
 
             const stopMin = parseInt(timeMatch[1]) * 60 + parseInt(timeMatch[2]);
             const nextDetail = sortedDetails.find(d => {
-                const date = new Date(d.created_at);
-                const wibTime = new Intl.DateTimeFormat('en-GB', {
-                    timeZone: 'Asia/Jakarta',
-                    hour: '2-digit', minute: '2-digit', hour12: false
-                }).format(date);
-                const [h, m] = wibTime.split(':');
-                const dmCreated = parseInt(h) * 60 + parseInt(m);
-                const diff = dmCreated >= stopMin ? dmCreated - stopMin : dmCreated + 1440 - stopMin;
-                return diff >= 0 && diff < 720;
+                const dmTime = timeToMinutes(d.time);
+                if (dmTime === null) return false;
+                const diff = calcDurationMinutes(stopMin, dmTime);
+                return diff > 0 && diff < 720;
             });
 
             if (nextDetail) {
@@ -225,20 +236,10 @@ export default function DataTable({ logsheets }) {
     const flatData = useMemo(() => {
         if (!logsheets || logsheets.length === 0) return [];
 
-        // Bangun peta detail per mesin dari SELURUH logsheet agar durasi kendala
-        // bisa dihitung lintas logsheet dalam satu mesin yang sama
-        const detailsByMachine = {};
-        logsheets.forEach(ls => {
-            if (!ls.machine) return;
-            if (!detailsByMachine[ls.machine]) detailsByMachine[ls.machine] = [];
-            (ls.details || []).forEach(d => detailsByMachine[ls.machine].push(d));
-        });
-
         const data = [];
         logsheets.forEach(ls => {
             if (ls.details && ls.details.length > 0) {
                 const lastIdx = ls.details.length - 1;
-                const allMachineDetails = detailsByMachine[ls.machine] || ls.details;
                 ls.details.forEach((d, idx) => {
                     data.push({
                         id:             d.id,
@@ -253,8 +254,7 @@ export default function DataTable({ logsheets }) {
                         time:           d.time || '-',
                         rak:            d.rak || 1,
                         tray_count:     d.tray_count || 0,
-                        // Hanya baris terakhir per logsheet yang tampil unplanned_stop
-                        unplanned_stop: idx === lastIdx ? parseUnplannedStop(ls.unplanned_stop, allMachineDetails) : '-',
+                        unplanned_stop: idx === lastIdx ? parseUnplannedStop(ls, logsheets) : '-',
                     });
                 });
             }

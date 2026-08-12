@@ -27,6 +27,64 @@ const getCurrentShift = () => {
     return '3';
 };
 
+const timeToMinutes = t => {
+    if (!t) return null;
+    const [h, m] = t.split(':');
+    return parseInt(h) * 60 + parseInt(m);
+};
+
+const calcDurationMinutes = (start, end) => {
+    if (start === null || end === null) return null;
+    let diff = end - start;
+    if (diff < 0) diff += 1440; // cross midnight
+    return diff;
+};
+
+const parseUnplannedStop = (ls, logsheets) => {
+    const stopText = ls.unplanned_stop;
+    if (!stopText || stopText === '-') return '-';
+    const stops = stopText.split(',').map(s => s.trim()).filter(Boolean);
+
+    const machineLogsheets = logsheets
+        .filter(l => l.machine === ls.machine)
+        .sort((a, b) => {
+            if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+            return a.shift - b.shift;
+        });
+
+    const idx = machineLogsheets.findIndex(l => l.id === ls.id);
+    let relevantDetails = [];
+    if (idx !== -1) {
+        for (let i = idx; i < machineLogsheets.length; i++) {
+            relevantDetails.push(...(machineLogsheets[i].details || []));
+        }
+    }
+
+    const sortedDetails = relevantDetails
+        .filter(d => d.created_at && d.time)
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+    return stops.map(st => {
+        const timeMatch = st.match(/^(\d{1,2}):(\d{2})/);
+        if (!timeMatch) return st;
+
+        const stopMin = parseInt(timeMatch[1]) * 60 + parseInt(timeMatch[2]);
+        const nextDetail = sortedDetails.find(d => {
+            const dmTime = timeToMinutes(d.time);
+            if (dmTime === null) return false;
+            const diff = calcDurationMinutes(stopMin, dmTime);
+            return diff > 0 && diff < 720;
+        });
+
+        if (nextDetail) {
+            const duration = calcDurationMinutes(stopMin, timeToMinutes(nextDetail.time));
+            return `${st} (⏱ ${duration} menit)`;
+        } else {
+            return `${st} (🔴 Belum Selesai)`;
+        }
+    }).join(', ');
+};
+
 /* ─── DetailEditRow component ────────────────────────────── */
 function DetailEditRow({ detail, index, isLastInBatch, batchTotal, unplannedStop, isAnomaly }) {
     const [editing, setEditing]       = useState(false);
@@ -278,6 +336,7 @@ export default function OperatorLogsheet({ logsheets }) {
             const g = grouped[groupKey];
 
             if (ls.details) {
+                const parsedStop = parseUnplannedStop(ls, logsheets);
                 ls.details.forEach(d => {
                     const count = parseInt(d.tray_count) || 0;
                     if (!g.totalsByProduct[ls.product_type]) g.totalsByProduct[ls.product_type] = 0;
@@ -291,7 +350,7 @@ export default function OperatorLogsheet({ logsheets }) {
                         product_type: ls.product_type,
                         date: ls.date,
                         shift: ls.shift,
-                        unplanned_stop: ls.unplanned_stop || '-',
+                        unplanned_stop: parsedStop,
                     });
                 });
             }
