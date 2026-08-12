@@ -273,16 +273,19 @@ export default function DataTable({ logsheets }) {
 
     const sortByProductOrder = data =>
         [...data].sort((a, b) => {
-            const ai = PRODUCT_ORDER.indexOf(a.product_type);
-            const bi = PRODUCT_ORDER.indexOf(b.product_type);
+            const ai = PRODUCT_ORDER.indexOf(getBaseProduct(a.product_type));
+            const bi = PRODUCT_ORDER.indexOf(getBaseProduct(b.product_type));
             return ai !== bi ? ai - bi : 0;
         });
 
     const getLastIdxMap = rows => {
         const m = {};
-        rows.forEach((r, i) => { m[r.product_type] = i; });
+        rows.forEach((r, i) => { m[getBaseProduct(r.product_type)] = i; });
         return m;
     };
+
+    const getBaseProduct = pt => pt ? pt.replace('_T', '') : '';
+    const isTrial = pt => pt ? pt.endsWith('_T') : false;
 
     const formatDate = dateStr => {
         if (!dateStr || dateStr === '-') return '-';
@@ -290,8 +293,12 @@ export default function DataTable({ logsheets }) {
     };
 
     const formatTime = t => (!t || t === '-') ? '-' : t.substring(0, 5);
-    const formatProduct = t => PRODUCT_LABELS[t] || t;
-    const unitLabel = pt => ['lumpia','adonan_pangsit'].includes(pt) ? 'K' : 'L';
+    const formatProduct = pt => {
+        const base = getBaseProduct(pt);
+        const label = PRODUCT_LABELS[base] || base;
+        return isTrial(pt) ? `${label} (T)` : label;
+    };
+    const unitLabel = pt => ['lumpia','adonan_pangsit'].includes(getBaseProduct(pt)) ? 'K' : 'L';
 
     const handleSort = key => {
         setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' }));
@@ -343,10 +350,11 @@ export default function DataTable({ logsheets }) {
                     rows: [], totals: { siomay: 0, pentol: 0, lumpia: 0, adonan: 0 } };
             }
             groups[key].rows.push(row);
-            if (row.product_type === 'siomay')         groups[key].totals.siomay += row.tray_count || 0;
-            if (row.product_type === 'pentol')         groups[key].totals.pentol += row.tray_count || 0;
-            if (row.product_type === 'lumpia')         groups[key].totals.lumpia += row.tray_count || 0;
-            if (row.product_type === 'adonan_pangsit') groups[key].totals.adonan += row.tray_count || 0;
+            const basePt = getBaseProduct(row.product_type);
+            if (basePt === 'siomay')         groups[key].totals.siomay += row.tray_count || 0;
+            if (basePt === 'pentol')         groups[key].totals.pentol += row.tray_count || 0;
+            if (basePt === 'lumpia')         groups[key].totals.lumpia += row.tray_count || 0;
+            if (basePt === 'adonan_pangsit') groups[key].totals.adonan += row.tray_count || 0;
         });
 
         return Object.values(groups)
@@ -469,13 +477,13 @@ export default function DataTable({ logsheets }) {
         groupedData.forEach((group, index) => {
             const EXPORT_ORDER = ['siomay', 'pentol', 'lumpia', 'adonan_pangsit'];
             const sortedRows = [...group.rows].sort((a, b) => {
-                const ai = EXPORT_ORDER.indexOf(a.product_type);
-                const bi = EXPORT_ORDER.indexOf(b.product_type);
+                const ai = EXPORT_ORDER.indexOf(getBaseProduct(a.product_type));
+                const bi = EXPORT_ORDER.indexOf(getBaseProduct(b.product_type));
                 return ai !== bi ? ai - bi : 0;
             });
 
             const lastIdxByProduct = {};
-            sortedRows.forEach((r, i) => { lastIdxByProduct[r.product_type] = i; });
+            sortedRows.forEach((r, i) => { lastIdxByProduct[getBaseProduct(r.product_type)] = i; });
 
             const dataRows = sortedRows.map((row, i) => ({
                 'No': i + 1, 'PIC': row.pic, 'Tanggal': formatDate(row.date),
@@ -502,8 +510,8 @@ export default function DataTable({ logsheets }) {
 
                 sortedRows.forEach((row, i) => {
                     const excelRow = DATA_START + i;
-                    const pt = row.product_type;
-                    const colors = EXCEL_COLORS[pt] || { bg: 'FFFFFF', font: '000000' };
+                    const pt = getBaseProduct(row.product_type);
+                    const colors = EXCEL_COLORS[row.product_type] || { bg: 'FFFFFF', font: '000000' };
                     const isLast = lastIdxByProduct[pt] === i;
                     const borderBottom = isLast
                         ? { style: 'medium', color: { rgb: '888888' } }
@@ -523,7 +531,7 @@ export default function DataTable({ logsheets }) {
 
                     if (isLast) {
                         worksheet[`${COL_TOTAL}${excelRow}`] = {
-                            t: 'n', f: sumifFormula(formatProduct(pt)),
+                            t: 'n', f: sumifFormula(formatProduct(row.product_type)),
                             s: {
                                 fill: { fgColor: { rgb: colors.bg } },
                                 font: { bold: true, color: { rgb: colors.font }, sz: 11 },
@@ -716,7 +724,7 @@ export default function DataTable({ logsheets }) {
                     const isExpanded = expandedGroups.has(group.key);
                     const lastIdxMap = getLastIdxMap(group.rows);
                     const productTotals = { siomay: 0, pentol: 0, lumpia: 0, adonan_pangsit: 0 };
-                    group.rows.forEach(r => { if (productTotals[r.product_type] !== undefined) productTotals[r.product_type] += r.tray_count || 0; });
+                    group.rows.forEach(r => { const bp = getBaseProduct(r.product_type); if (productTotals[bp] !== undefined) productTotals[bp] += r.tray_count || 0; });
 
                     // Unique PICs for print header
                     const uniquePics = [...new Set(group.rows.map(r => r.pic).filter(p => p && p !== '--'))].join(', ') || '-';
@@ -842,9 +850,10 @@ export default function DataTable({ logsheets }) {
                                             });
 
                                             return group.rows.map((row, idx) => {
-                                            const isLastOfProd = lastIdxMap[row.product_type] === idx;
-                                            const rowTotal     = productTotals[row.product_type];
-                                            const pt           = row.product_type;
+                                            const basePt       = getBaseProduct(row.product_type);
+                                            const isLastOfProd = lastIdxMap[basePt] === idx;
+                                            const rowTotal     = productTotals[basePt];
+                                            const pt           = basePt;
                                             const printClass   = PRODUCT_PRINT_CLASS[pt] || '';
                                             const isRakAnomaly = rakAnomalyIds.has(row.id);
                                             return (
@@ -853,7 +862,7 @@ export default function DataTable({ logsheets }) {
                                                     <td className="px-3 py-1.5 font-medium truncate max-w-[90px]">{row.pic}</td>
                                                     <td className="px-3 py-1.5 truncate max-w-[90px]">
                                                         <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold border ${PRODUCT_BADGE[pt]?.bg} ${PRODUCT_BADGE[pt]?.text} ${PRODUCT_BADGE[pt]?.border}`}>
-                                                            {formatProduct(pt)}
+                                                            {formatProduct(row.product_type)}
                                                         </span>
                                                     </td>
                                                     <td className="px-3 py-1.5 font-mono text-slate-600 truncate max-w-[90px]">{row.batch_number}</td>
@@ -1084,10 +1093,10 @@ export default function DataTable({ logsheets }) {
                 if (!pg || typeof document === 'undefined') return null;
 
                 /* ── Pisahkan baris per jenis produk ── */
-                const siomayRows = pg.rows.filter(r => r.product_type === 'siomay');
-                const pentolRows  = pg.rows.filter(r => r.product_type === 'pentol');
-                const lumpiaRows  = pg.rows.filter(r => r.product_type === 'lumpia');
-                const adonanRows  = pg.rows.filter(r => r.product_type === 'adonan_pangsit');
+                const siomayRows = pg.rows.filter(r => getBaseProduct(r.product_type) === 'siomay');
+                const pentolRows  = pg.rows.filter(r => getBaseProduct(r.product_type) === 'pentol');
+                const lumpiaRows  = pg.rows.filter(r => getBaseProduct(r.product_type) === 'lumpia');
+                const adonanRows  = pg.rows.filter(r => getBaseProduct(r.product_type) === 'adonan_pangsit');
 
                 /* Pentol dibagi 2 kolom karena volume terbanyak */
                 const pentolHalf = Math.ceil(pentolRows.length / 2);

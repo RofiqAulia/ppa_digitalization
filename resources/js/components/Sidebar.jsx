@@ -118,10 +118,10 @@ function NavItem({ item, isCollapsed, setIsCollapsed, url }) {
         <Link href={item.href} method={item.method || 'get'} as={item.method ? 'button' : 'a'} className={item.method ? 'w-full block' : ''}>
             <div className={cn(
                 "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors cursor-pointer",
-                isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                isActive ? "bg-pink-50 text-pink-600 shadow-sm font-bold" : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 isCollapsed ? "justify-center" : "gap-3"
             )}>
-                <item.icon className="h-5 w-5 shrink-0" />
+                <item.icon className={cn("h-5 w-5 shrink-0", isActive ? "text-pink-600" : "")} />
                 {!isCollapsed && <span>{item.name}</span>}
             </div>
         </Link>

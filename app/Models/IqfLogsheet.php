@@ -14,6 +14,8 @@ class IqfLogsheet extends Model
         'batch_number',
         'planning_qty',
         'unplanned_stop',
+        'refrezing',
+        'spv',
         'status',
     ];
 

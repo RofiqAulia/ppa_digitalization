@@ -94,6 +94,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/iqf-logsheet/{iqfLogsheet}/detail', [\App\Http\Controllers\IqfLogsheetController::class, 'storeDetail'])->name('iqf-logsheet.storeDetail');
     Route::put('/iqf-logsheet-detail/{id}', [\App\Http\Controllers\IqfLogsheetController::class, 'updateDetail'])->name('iqf-logsheet.updateDetail');
     Route::delete('/iqf-logsheet-detail/{id}', [\App\Http\Controllers\IqfLogsheetController::class, 'destroyDetail'])->name('iqf-logsheet.destroyDetail');
+    Route::put('/iqf-logsheet/{logsheet}/row', [\App\Http\Controllers\IqfLogsheetController::class, 'updateRow'])->name('iqf-logsheet.updateRow');
 
     // Export Excel Route
     Route::get('/iqf-logsheet/export-excel', [\App\Http\Controllers\IqfExportController::class, 'download'])->name('iqf-logsheet.export');

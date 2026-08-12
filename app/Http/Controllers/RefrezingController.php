@@ -87,12 +87,13 @@ class RefrezingController extends Controller
 
         foreach ($rows as $row) {
             $pt = strtolower($row->product_type);
+            $pt = str_replace('_t', '', $pt);
             $mc = $row->machine;
             if (isset($byMachine[$mc][$pt])) {
-                $byMachine[$mc][$pt] = (int) $row->total;
+                $byMachine[$mc][$pt] += (int) $row->total;
                 $grandTotal[$pt]    += (int) $row->total;
             } else if (isset($byMachine[$mc]) && !isset($byMachine[$mc][$pt])) {
-                $byMachine[$mc][$pt] = (int) $row->total;
+                $byMachine[$mc][$pt] += (int) $row->total;
                 $grandTotal[$pt] = ($grandTotal[$pt] ?? 0) + (int) $row->total;
             }
         }

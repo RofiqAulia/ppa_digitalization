@@ -42,9 +42,10 @@ class IqfLogsheetController extends Controller
 
         foreach ($rows as $row) {
             $pt = strtolower($row->product_type);
+            $pt = str_replace('_t', '', $pt);
             $mc = $row->machine;
             if (isset($byMachine[$mc][$pt])) {
-                $byMachine[$mc][$pt] = (int) $row->total;
+                $byMachine[$mc][$pt] += (int) $row->total;
                 $grandTotal[$pt]    += (int) $row->total;
             }
         }
@@ -246,6 +247,40 @@ class IqfLogsheetController extends Controller
         IqfLogsheet::create($request->all());
 
         return redirect()->route('logsheet-iqf.index')->with('success', 'Logsheet berhasil dibuat.');
+    }
+
+    public function updateRow(Request $request, IqfLogsheet $logsheet)
+    {
+        $request->validate([
+            'spv' => 'nullable|string',
+            'batch_number' => 'nullable|integer',
+            'refrezing' => 'nullable|string',
+            'hourly' => 'array',
+        ]);
+
+        $logsheet->update([
+            'spv' => $request->spv,
+            'batch_number' => $request->batch_number,
+            'refrezing' => $request->refrezing,
+        ]);
+
+        if ($request->has('hourly')) {
+            // Delete existing details
+            $logsheet->details()->delete();
+
+            // Insert new hourly details
+            foreach ($request->hourly as $hour => $val) {
+                if (trim($val) !== '') {
+                    $logsheet->details()->create([
+                        'time' => $hour . ':00',
+                        'tray_count' => (int) $val,
+                        'pic' => $request->spv ?: 'Admin', // Default to SPV or Admin
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->back()->with('success', 'Data logsheet berhasil diupdate.');
     }
 
     public function show(IqfLogsheet $iqfLogsheet)

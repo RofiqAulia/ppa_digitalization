@@ -64,6 +64,7 @@ export default function Landing() {
 
     const [product, setProduct] = useState(products[0]);
     const [machine, setMachine] = useState(machines[0]);
+    const [statusDimsum, setStatusDimsum] = useState('Normal');
     const [batchNumber, setBatchNumber] = useState('');
     const [rak, setRak] = useState('');
     const [trayCount, setTrayCount] = useState('');
@@ -124,8 +125,13 @@ export default function Landing() {
 
         setLoading(true);
         try {
+            let finalProduct = product;
+            if (statusDimsum === 'Trial') finalProduct = `${product}_T`;
+            else if (statusDimsum === 'Waste') finalProduct = `${product}_W`;
+            else if (statusDimsum === 'Lainnya') finalProduct = `${product}_L`;
+
             await axios.post('/iqf-kiosk/store', {
-                product_type: product, machine, batch_number: batchNumber, rak: isPackItem ? null : rak, tray_count: trayCount,
+                product_type: finalProduct, machine, batch_number: batchNumber, rak: isPackItem ? null : rak, tray_count: trayCount,
             });
             showNotification('success', 'Berhasil Dicatat!', isPackItem ? `${trayCount} dimasukkan.` : `Rak ${rak} - ${trayCount} dimasukkan.`);
 
@@ -163,12 +169,12 @@ export default function Landing() {
                     <p className="text-base font-black text-slate-800 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] [-webkit-text-stroke:0.5px_white]">Pilih jenis produk dan mesin sebelum memulai pencatatan.</p>
                 </div>
 
-                <div className="flex bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden mb-12 max-w-md w-full border-2 border-pink-500/50 p-1">
+                <div className="flex bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden mb-12 max-w-3xl w-full border-2 border-pink-500/50 p-1 flex-col md:flex-row">
                     <div className="flex-1">
                         <select 
                             value={product} 
                             onChange={e => setProduct(e.target.value)}
-                            className="w-full bg-pink-500 text-white font-black text-sm uppercase px-4 py-4 rounded-[1.8rem] appearance-none outline-none text-center cursor-pointer hover:bg-pink-600 transition-all shadow-md"
+                            className="w-full bg-pink-500 text-white font-black text-sm uppercase px-4 py-4 md:rounded-l-[1.8rem] appearance-none outline-none text-center cursor-pointer hover:bg-pink-600 transition-all shadow-md md:rounded-none rounded-t-[1.8rem]"
                             style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1em top 50%', backgroundSize: '.65em auto' }}
                         >
                             {products.map(p => (
@@ -180,12 +186,25 @@ export default function Landing() {
                         <select 
                             value={machine} 
                             onChange={e => setMachine(e.target.value)}
-                            className="w-full bg-transparent text-slate-700 font-black text-sm uppercase px-4 py-4 appearance-none outline-none text-center cursor-pointer hover:bg-slate-50 transition-all rounded-[1.8rem]"
+                            className="w-full bg-transparent text-slate-700 font-black text-sm uppercase px-4 py-4 appearance-none outline-none text-center cursor-pointer hover:bg-slate-50 transition-all md:border-x-2 md:border-y-0 border-y-2 border-pink-100"
                             style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23475569%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1em top 50%', backgroundSize: '.65em auto' }}
                         >
                             {machines.map(m => (
                                 <option key={m} value={m}>{m}</option>
                             ))}
+                        </select>
+                    </div>
+                    <div className="flex-1 relative">
+                        <select 
+                            value={statusDimsum} 
+                            onChange={e => setStatusDimsum(e.target.value)}
+                            className="w-full bg-pink-500 text-white font-black text-sm uppercase px-4 py-4 md:rounded-r-[1.8rem] appearance-none outline-none text-center cursor-pointer hover:bg-pink-600 transition-all shadow-md md:rounded-none rounded-b-[1.8rem]"
+                            style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1em top 50%', backgroundSize: '.65em auto' }}
+                        >
+                            <option value="Normal">Status: Normal</option>
+                            <option value="Trial">Status: Trial</option>
+                            <option value="Waste">Status: Waste</option>
+                            <option value="Lainnya">Status: Lainnya</option>
                         </select>
                     </div>
                 </div>
