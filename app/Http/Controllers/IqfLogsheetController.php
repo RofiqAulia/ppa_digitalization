@@ -280,6 +280,13 @@ class IqfLogsheetController extends Controller
             }
         }
 
+        // Trigger sync ke Google Sheets secara real-time
+        $jenis = strtoupper($logsheet->product_type);
+        $jenis = preg_replace('/_[TW]$/', '', $jenis);
+        if ($jenis === 'ADONAN_PANGSIT') $jenis = 'ADONAN';
+        $comboKey = $logsheet->date . '|' . $jenis . '|' . (int) filter_var($logsheet->machine, FILTER_SANITIZE_NUMBER_INT) . '|' . $logsheet->shift;
+        $this->dispatchSyncBackground(['--force-recalc' => [$comboKey]]);
+
         return redirect()->back()->with('success', 'Data logsheet berhasil diupdate.');
     }
 
@@ -554,6 +561,13 @@ class IqfLogsheetController extends Controller
                 $logsheet->update(['unplanned_stop' => $newStop]);
             }
         }
+
+        // Trigger sync ke Google Sheets secara real-time
+        $jenis = strtoupper($logsheet->product_type);
+        $jenis = preg_replace('/_[TW]$/', '', $jenis);
+        if ($jenis === 'ADONAN_PANGSIT') $jenis = 'ADONAN';
+        $comboKey = $logsheet->date . '|' . $jenis . '|' . (int) filter_var($logsheet->machine, FILTER_SANITIZE_NUMBER_INT) . '|' . $logsheet->shift;
+        $this->dispatchSyncBackground(['--force-recalc' => [$comboKey]]);
 
         return response()->json(['success' => true]);
     }

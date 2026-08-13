@@ -33,21 +33,12 @@ class RefrezingController extends Controller
 
     private function dispatchSyncBackground($options = [])
     {
-        $cmd = 'app:sync-iqf-to-google-sheets';
-        foreach ($options as $key => $values) {
-            if (is_array($values)) {
-                foreach ($values as $val) {
-                    $cmd .= ' ' . escapeshellarg($key . '=' . $val);
-                }
-            } else {
-                $cmd .= ' ' . escapeshellarg($key . '=' . $values);
-            }
-        }
-
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            pclose(popen('start /B php ' . base_path('artisan') . ' ' . $cmd . ' > NUL 2>&1', 'r'));
-        } else {
-            exec('php ' . base_path('artisan') . ' ' . $cmd . ' > /dev/null 2>&1 &');
+        // Jalankan secara langsung (synchronous) agar tidak terpengaruh oleh 
+        // limitasi LiteSpeed (app()->terminating diblokir) atau fungsi exec() yang dimatikan di Hostinger.
+        try {
+            Artisan::call('sync:google-sheets', $options);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Real-time sync error (Refrezing): ' . $e->getMessage());
         }
     }
 
