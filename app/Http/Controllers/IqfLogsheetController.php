@@ -316,7 +316,9 @@ class IqfLogsheetController extends Controller
         ]);
 
         // Trigger sync ke Google Sheets secara real-time
-        $this->dispatchSyncBackground();
+        $comboKey = $this->getComboKey($iqfLogsheet);
+        $options = $comboKey ? ['--force-recalc' => [$comboKey]] : [];
+        $this->dispatchSyncBackground($options);
 
         return response()->json([
             'success' => 'Data berhasil disimpan.',
@@ -442,7 +444,9 @@ class IqfLogsheetController extends Controller
         ]);
 
         // Trigger sync ke Google Sheets secara real-time
-        $this->dispatchSyncBackground();
+        $comboKey = $this->getComboKey($logsheet);
+        $options = $comboKey ? ['--force-recalc' => [$comboKey]] : [];
+        $this->dispatchSyncBackground($options);
 
         // Calculate total achieve for this logsheet (current product)
         $totalAchieve = $logsheet->details()->sum('tray_count');
@@ -629,6 +633,8 @@ class IqfLogsheetController extends Controller
             'machine'      => 'nullable|string|in:IQF 1,IQF 2',
         ]);
 
+        $oldCombo = $this->getComboKey($detail->iqfLogsheet);
+
         $detail->update([
             'tray_count'   => $request->tray_count,
             'rak'          => $request->filled('rak') ? $request->rak : $detail->rak,
@@ -642,7 +648,16 @@ class IqfLogsheetController extends Controller
             if (!empty($parentUpdates)) $detail->iqfLogsheet->update($parentUpdates);
         }
 
-        $this->dispatchSyncBackground();
+        $detail->refresh();
+        $newCombo = $this->getComboKey($detail->iqfLogsheet);
+
+        $recalcs = array_unique(array_filter([$oldCombo, $newCombo]));
+        $options = [];
+        if (!empty($recalcs)) {
+            $options['--force-recalc'] = array_values($recalcs);
+        }
+
+        $this->dispatchSyncBackground($options);
 
         return redirect()->back()->with('success', 'Data berhasil diubah.');
     }
@@ -651,16 +666,16 @@ class IqfLogsheetController extends Controller
     {
         $detail = IqfLogsheetDetail::findOrFail($id);
         $logsheet = $detail->iqfLogsheet;
+        $comboKey = $this->getComboKey($logsheet);
 
         $detail->delete();
 
         // Trigger sync
-        if ($logsheet) {
-            $comboKey = $logsheet->date . '|' . strtoupper($logsheet->product_type) . '|' . (int) filter_var($logsheet->machine, FILTER_SANITIZE_NUMBER_INT) . '|' . $logsheet->shift;
-            $this->dispatchSyncBackground(['--force-recalc' => [$comboKey]]);
-        } else {
-            $this->dispatchSyncBackground();
+        $options = [];
+        if ($comboKey) {
+            $options['--force-recalc'] = [$comboKey];
         }
+        $this->dispatchSyncBackground($options);
 
         return redirect()->back()->with('success', 'Entri berhasil dihapus.');
     }
@@ -669,6 +684,16 @@ class IqfLogsheetController extends Controller
     {
         session()->forget('operator_name');
         return redirect()->route('operator.login');
+    }
+
+    private function getComboKey($logsheet)
+    {
+        if (!$logsheet) return null;
+        $jenis = strtoupper($logsheet->product_type);
+        $jenis = preg_replace('/_[TW]$/', '', $jenis);
+        if ($jenis === 'ADONAN_PANGSIT') $jenis = 'ADONAN';
+        $machineNum = (int) filter_var($logsheet->machine, FILTER_SANITIZE_NUMBER_INT);
+        return $logsheet->date . '|' . $jenis . '|' . $machineNum . '|' . $logsheet->shift;
     }
 
     private function dispatchSyncBackground($options = [])

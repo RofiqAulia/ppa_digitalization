@@ -31,6 +31,16 @@ class RefrezingController extends Controller
         return compact('shift', 'date');
     }
 
+    private function getComboKey($logsheet)
+    {
+        if (!$logsheet) return null;
+        $jenis = strtoupper($logsheet->product_type);
+        $jenis = preg_replace('/_[TW]$/', '', $jenis);
+        if ($jenis === 'ADONAN_PANGSIT') $jenis = 'ADONAN';
+        $machineNum = (int) filter_var($logsheet->machine, FILTER_SANITIZE_NUMBER_INT);
+        return $logsheet->date . '|' . $jenis . '|' . $machineNum . '|' . $logsheet->shift;
+    }
+
     private function dispatchSyncBackground($options = [])
     {
         // Jalankan secara langsung (synchronous) agar tidak terpengaruh oleh 
@@ -185,12 +195,19 @@ class RefrezingController extends Controller
             $timeValue = strlen($t) === 5 ? $t . ':00' : $t;
         }
 
+        $oldCombo = $this->getComboKey($detail->refrezingLogsheet);
+
         $detail->update([
             'tray_count' => $request->tray_count,
             'time'       => $timeValue,
         ]);
 
-        $this->dispatchSyncBackground();
+        $options = [];
+        if ($oldCombo) {
+            $options['--force-recalc'] = [$oldCombo];
+        }
+
+        $this->dispatchSyncBackground($options);
 
         return redirect()->back()->with('success', 'Data berhasil diubah.');
     }
@@ -198,9 +215,16 @@ class RefrezingController extends Controller
     public function destroyDetail($id)
     {
         $detail = \App\Models\RefrezingLogsheetDetail::findOrFail($id);
+        $comboKey = $this->getComboKey($detail->refrezingLogsheet);
+
         $detail->delete();
 
-        $this->dispatchSyncBackground();
+        $options = [];
+        if ($comboKey) {
+            $options['--force-recalc'] = [$comboKey];
+        }
+
+        $this->dispatchSyncBackground($options);
 
         return redirect()->back()->with('success', 'Entri berhasil dihapus.');
     }
@@ -213,8 +237,10 @@ class RefrezingController extends Controller
             'tray_count'   => 'required|integer|min:1',
             'batch_number' => 'nullable|integer|min:1',
             'rak'          => 'nullable|integer|min:1',
-            'machine'      => 'nullable|string|in:IQF 1,IQF 2',
+            'machine'      => 'nullable|string',
         ]);
+
+        $oldCombo = $this->getComboKey($detail->refrezingLogsheet);
 
         $detail->update([
             'tray_count' => $request->tray_count,
@@ -229,7 +255,16 @@ class RefrezingController extends Controller
             if (!empty($parentUpdates)) $detail->refrezingLogsheet->update($parentUpdates);
         }
 
-        $this->dispatchSyncBackground();
+        $detail->refresh();
+        $newCombo = $this->getComboKey($detail->refrezingLogsheet);
+
+        $recalcs = array_unique(array_filter([$oldCombo, $newCombo]));
+        $options = [];
+        if (!empty($recalcs)) {
+            $options['--force-recalc'] = array_values($recalcs);
+        }
+
+        $this->dispatchSyncBackground($options);
 
         return redirect()->back()->with('success', 'Data berhasil diubah.');
     }
@@ -237,9 +272,16 @@ class RefrezingController extends Controller
     public function operatorDestroyDetail($id)
     {
         $detail = \App\Models\RefrezingLogsheetDetail::findOrFail($id);
+        $comboKey = $this->getComboKey($detail->refrezingLogsheet);
+
         $detail->delete();
 
-        $this->dispatchSyncBackground();
+        $options = [];
+        if ($comboKey) {
+            $options['--force-recalc'] = [$comboKey];
+        }
+
+        $this->dispatchSyncBackground($options);
 
         return redirect()->back()->with('success', 'Entri berhasil dihapus.');
     }
@@ -302,7 +344,9 @@ class RefrezingController extends Controller
         ]);
 
         // Trigger sync ke Google Sheets secara real-time
-        $this->dispatchSyncBackground();
+        $comboKey = $this->getComboKey($logsheet);
+        $options = $comboKey ? ['--force-recalc' => [$comboKey]] : [];
+        $this->dispatchSyncBackground($options);
 
         // Calculate total achieve for this logsheet (current product)
         $totalAchieve = $logsheet->details()->sum('tray_count');
