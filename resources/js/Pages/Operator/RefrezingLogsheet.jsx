@@ -40,7 +40,7 @@ const calcDurationMinutes = (start, end) => {
     return diff;
 };
 
-const parseUnplannedStop = (ls, logsheets) => {
+const parseUnplannedStop = (ls, logsheets, nowMinutes) => {
     const stopText = ls.unplanned_stop;
     if (!stopText || stopText === '-') return '-';
     const stops = stopText.split(',').map(s => s.trim()).filter(Boolean);
@@ -79,6 +79,9 @@ const parseUnplannedStop = (ls, logsheets) => {
         if (nextDetail) {
             const duration = calcDurationMinutes(stopMin, timeToMinutes(nextDetail.time));
             return `${st} (⏱ ${duration} menit)`;
+        } else if (nowMinutes !== undefined && nowMinutes !== null) {
+            const runningDuration = calcDurationMinutes(stopMin, nowMinutes);
+            return `${st} (⏱ ${runningDuration} menit - Belum Selesai)`;
         } else {
             return `${st} (🔴 Belum Selesai)`;
         }
@@ -308,6 +311,20 @@ function DetailEditRow({ detail, index, isLastInBatch, batchTotal, unplannedStop
 /* ─── Main Component ─────────────────────────────────────── */
 export default function RefrezingLogsheet({ logsheets }) {
     const [filterShift, setFilterShift] = useState(getCurrentShift());
+    const [nowMinutes, setNowMinutes] = useState(() => {
+        const now = new Date();
+        const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+        return wib.getHours() * 60 + wib.getMinutes();
+    });
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const now = new Date();
+            const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+            setNowMinutes(wib.getHours() * 60 + wib.getMinutes());
+        }, 10000);
+        return () => clearInterval(interval);
+    }, []);
 
     const uniqueShifts = [...new Set((logsheets || []).map(l => l.shift))];
 
@@ -333,8 +350,8 @@ export default function RefrezingLogsheet({ logsheets }) {
             }
             const g = grouped[groupKey];
 
-            if (ls.details) {
-                const parsedStop = parseUnplannedStop(ls, logsheets);
+            if (ls.details && ls.details.length > 0) {
+                const parsedStop = parseUnplannedStop(ls, logsheets, nowMinutes);
                 ls.details.forEach(d => {
                     const count = parseInt(d.tray_count) || 0;
                     if (!g.totalsByProduct[ls.product_type]) g.totalsByProduct[ls.product_type] = 0;
@@ -351,6 +368,25 @@ export default function RefrezingLogsheet({ logsheets }) {
                         unplanned_stop: parsedStop,
                     });
                 });
+            } else if (ls.unplanned_stop && ls.unplanned_stop !== '-') {
+                const parsedStop = parseUnplannedStop(ls, logsheets, nowMinutes);
+                g.details.push({
+                    id: -ls.id,
+                    time: ls.created_at ? new Date(ls.created_at).toTimeString().substring(0,5) : '',
+                    tray_count: 0,
+                    rak: '-',
+                    suhu_panel: '-',
+                    suhu_produk: '-',
+                    pic: '-',
+                    parent_id: ls.id,
+                    batch_number: ls.batch_number || '-',
+                    machine: ls.machine,
+                    product_type: ls.product_type,
+                    date: ls.date,
+                    shift: ls.shift,
+                    unplanned_stop: parsedStop,
+                    isKendalaOnly: true,
+                });
             }
         });
 
@@ -365,14 +401,19 @@ export default function RefrezingLogsheet({ logsheets }) {
             const batchTracker = {};
             g.details.forEach(d => {
                 const batchKey = `${d.machine}_${d.product_type}_${d.batch_number}`;
-                if (!batchTracker[batchKey]) batchTracker[batchKey] = { count: 0, oldestId: d.id };
+                if (!batchTracker[batchKey]) batchTracker[batchKey] = { count: 0, newestId: d.id, oldestId: d.id };
                 batchTracker[batchKey].count += (parseInt(d.tray_count) || 0);
                 batchTracker[batchKey].oldestId = d.id;
+                if (batchTracker[batchKey].newestId < d.id) batchTracker[batchKey].newestId = d.id;
             });
             g.details.forEach(d => {
                 const batchKey = `${d.machine}_${d.product_type}_${d.batch_number}`;
                 d.batchTotal = batchTracker[batchKey].count;
-                d.isLastInBatch = (d.id === batchTracker[batchKey].oldestId);
+                if (d.isKendalaOnly) {
+                    d.isLastInBatch = true;
+                } else {
+                    d.isLastInBatch = (d.id === batchTracker[batchKey].newestId);
+                }
             });
 
             // ── Anomaly Detection: rak harus naik urut per mesin & produk ──────────

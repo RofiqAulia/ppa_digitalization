@@ -212,6 +212,10 @@ export default function DataTable({ logsheets }) {
             .filter(d => d.created_at && d.time)
             .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
+        const now = new Date();
+        const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+        const nowMinutes = wib.getHours() * 60 + wib.getMinutes();
+
         return stops.map(st => {
             const timeMatch = st.match(/^(\d{1,2}):(\d{2})/);
             if (!timeMatch) return st;
@@ -228,7 +232,8 @@ export default function DataTable({ logsheets }) {
                 const duration = calcDurationMinutes(stopMin, timeToMinutes(nextDetail.time));
                 return `${st} (⏱ ${duration} menit)`;
             } else {
-                return `${st} (🔴 Belum Selesai)`;
+                const runningDuration = calcDurationMinutes(stopMin, nowMinutes);
+                return `${st} (⏱ ${runningDuration} menit - Belum Selesai)`;
             }
         }).join(', ');
     };

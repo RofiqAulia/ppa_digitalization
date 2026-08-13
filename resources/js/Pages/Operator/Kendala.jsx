@@ -22,9 +22,9 @@ export default function Kendala() {
     const customInputRef = useRef(null);
     
     // Retrieve context from localStorage (same as Kiosk)
-    const product = typeof window !== 'undefined' ? localStorage.getItem('iqf_product') : null;
-    const machine = typeof window !== 'undefined' ? localStorage.getItem('iqf_machine') : null;
-    const batchNumber = typeof window !== 'undefined' ? localStorage.getItem(`iqf_lastBatch_${machine}_${product}`) : null;
+    const product = (typeof window !== 'undefined' ? localStorage.getItem('iqf_product') : null) || 'siomay';
+    const machine = (typeof window !== 'undefined' ? localStorage.getItem('iqf_machine') : null) || 'IQF 1';
+    const batchNumber = (typeof window !== 'undefined' ? localStorage.getItem(`iqf_lastBatch_${machine}_${product}`) : null) || '1';
 
     const getTodayWIB = () => {
         const now = new Date();
@@ -62,8 +62,8 @@ export default function Kendala() {
     };
 
     const submitKendala = async (label) => {
-        if (!product || !machine || !batchNumber) {
-            showNotification('error', 'Konteks Hilang', 'Mohon pilih produk, mesin, dan no batch di halaman terminal terlebih dahulu.');
+        if (!product || !machine) {
+            showNotification('error', 'Konteks Hilang', 'Mohon pilih produk dan mesin di halaman terminal terlebih dahulu.');
             return;
         }
 

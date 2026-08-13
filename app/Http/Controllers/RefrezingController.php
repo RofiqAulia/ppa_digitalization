@@ -271,10 +271,29 @@ class RefrezingController extends Controller
 
     public function operatorDestroyDetail($id)
     {
-        $detail = \App\Models\RefrezingLogsheetDetail::findOrFail($id);
+        if ($id < 0) {
+            $logsheet = RefrezingLogsheet::find(abs($id));
+            if ($logsheet) {
+                $logsheet->update(['unplanned_stop' => null]);
+                if ($logsheet->details()->count() === 0) {
+                    $logsheet->delete();
+                }
+            }
+            return redirect()->back()->with('success', 'Kendala berhasil dihapus.');
+        }
+
+        $detail = \App\Models\RefrezingLogsheetDetail::find($id);
+        if (!$detail) {
+            return redirect()->back()->with('error', 'Data tidak ditemukan.');
+        }
         $comboKey = $this->getComboKey($detail->refrezingLogsheet);
 
+        $logsheet = $detail->refrezingLogsheet;
         $detail->delete();
+
+        if ($logsheet && $logsheet->details()->count() === 0 && (empty($logsheet->unplanned_stop) || $logsheet->unplanned_stop === '-')) {
+            $logsheet->delete();
+        }
 
         $options = [];
         if ($comboKey) {
@@ -389,16 +408,24 @@ class RefrezingController extends Controller
 
         extract($this->getCurrentShiftAndDate());
 
-        $logsheet = RefrezingLogsheet::firstOrCreate([
-            'date' => $date,
-            'shift' => $shift,
-            'product_type' => $request->product_type,
-            'machine' => $request->machine,
-            'batch_number' => $request->batch_number ?? '',
-        ], [
-            'planning_qty' => 0,
-            'status' => 'ongoing'
-        ]);
+        $logsheet = RefrezingLogsheet::where('date', $date)
+            ->where('shift', $shift)
+            ->where('product_type', $request->product_type)
+            ->where('machine', $request->machine)
+            ->latest('id')
+            ->first();
+
+        if (!$logsheet) {
+            $logsheet = RefrezingLogsheet::create([
+                'date' => $date,
+                'shift' => $shift,
+                'product_type' => $request->product_type,
+                'machine' => $request->machine,
+                'batch_number' => $request->batch_number ?? 1,
+                'planning_qty' => 0,
+                'status' => 'ongoing'
+            ]);
+        }
 
         $existingStop = $logsheet->unplanned_stop;
         $newStop = $request->unplanned_stop;

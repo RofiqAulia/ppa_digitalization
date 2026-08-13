@@ -40,7 +40,7 @@ const calcDurationMinutes = (start, end) => {
     return diff;
 };
 
-const parseUnplannedStop = (ls, logsheets) => {
+const parseUnplannedStop = (ls, logsheets, nowMinutes) => {
     const stopText = ls.unplanned_stop;
     if (!stopText || stopText === '-') return '-';
     const stops = stopText.split(',').map(s => s.trim()).filter(Boolean);
@@ -79,6 +79,9 @@ const parseUnplannedStop = (ls, logsheets) => {
         if (nextDetail) {
             const duration = calcDurationMinutes(stopMin, timeToMinutes(nextDetail.time));
             return `${st} (⏱ ${duration} menit)`;
+        } else if (nowMinutes !== undefined && nowMinutes !== null) {
+            const runningDuration = calcDurationMinutes(stopMin, nowMinutes);
+            return `${st} (⏱ ${runningDuration} menit - Belum Selesai)`;
         } else {
             return `${st} (🔴 Belum Selesai)`;
         }
@@ -310,6 +313,20 @@ function DetailEditRow({ detail, index, isLastInBatch, batchTotal, unplannedStop
 /* ─── Main Component ─────────────────────────────────────── */
 export default function OperatorLogsheet({ logsheets }) {
     const [filterShift, setFilterShift] = useState(getCurrentShift());
+    const [nowMinutes, setNowMinutes] = useState(() => {
+        const now = new Date();
+        const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+        return wib.getHours() * 60 + wib.getMinutes();
+    });
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const now = new Date();
+            const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+            setNowMinutes(wib.getHours() * 60 + wib.getMinutes());
+        }, 10000);
+        return () => clearInterval(interval);
+    }, []);
 
     const uniqueShifts = [...new Set((logsheets || []).map(l => l.shift))];
 
@@ -336,7 +353,7 @@ export default function OperatorLogsheet({ logsheets }) {
             const g = grouped[groupKey];
 
             if (ls.details && ls.details.length > 0) {
-                const parsedStop = parseUnplannedStop(ls, logsheets);
+                const parsedStop = parseUnplannedStop(ls, logsheets, nowMinutes);
                 ls.details.forEach(d => {
                     const count = parseInt(d.tray_count) || 0;
                     if (!g.totalsByProduct[ls.product_type]) g.totalsByProduct[ls.product_type] = 0;
@@ -354,7 +371,7 @@ export default function OperatorLogsheet({ logsheets }) {
                     });
                 });
             } else if (ls.unplanned_stop && ls.unplanned_stop !== '-') {
-                const parsedStop = parseUnplannedStop(ls, logsheets);
+                const parsedStop = parseUnplannedStop(ls, logsheets, nowMinutes);
                 g.details.push({
                     id: -ls.id,
                     time: ls.created_at ? new Date(ls.created_at).toTimeString().substring(0,5) : '',

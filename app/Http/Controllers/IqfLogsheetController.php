@@ -534,16 +534,24 @@ class IqfLogsheetController extends Controller
 
         extract($this->getCurrentShiftAndDate());
 
-        $logsheet = IqfLogsheet::firstOrCreate([
-            'date' => $date,
-            'shift' => $shift,
-            'product_type' => $request->product_type,
-            'machine' => $request->machine,
-            'batch_number' => $request->batch_number ?? '',
-        ], [
-            'planning_qty' => 0,
-            'status' => 'ongoing'
-        ]);
+        $logsheet = IqfLogsheet::where('date', $date)
+            ->where('shift', $shift)
+            ->where('product_type', $request->product_type)
+            ->where('machine', $request->machine)
+            ->latest('id')
+            ->first();
+
+        if (!$logsheet) {
+            $logsheet = IqfLogsheet::create([
+                'date' => $date,
+                'shift' => $shift,
+                'product_type' => $request->product_type,
+                'machine' => $request->machine,
+                'batch_number' => $request->batch_number ?? 1,
+                'planning_qty' => 0,
+                'status' => 'ongoing'
+            ]);
+        }
 
         $existingStop = $logsheet->unplanned_stop;
         $newStop = $request->unplanned_stop;
@@ -664,11 +672,29 @@ class IqfLogsheetController extends Controller
 
     public function operatorDestroyDetail($id)
     {
-        $detail = IqfLogsheetDetail::findOrFail($id);
+        if ($id < 0) {
+            $logsheet = IqfLogsheet::find(abs($id));
+            if ($logsheet) {
+                $logsheet->update(['unplanned_stop' => null]);
+                if ($logsheet->details()->count() === 0) {
+                    $logsheet->delete();
+                }
+            }
+            return redirect()->back()->with('success', 'Kendala berhasil dihapus.');
+        }
+
+        $detail = IqfLogsheetDetail::find($id);
+        if (!$detail) {
+            return redirect()->back()->with('error', 'Data tidak ditemukan.');
+        }
         $logsheet = $detail->iqfLogsheet;
         $comboKey = $this->getComboKey($logsheet);
 
         $detail->delete();
+
+        if ($logsheet && $logsheet->details()->count() === 0 && (empty($logsheet->unplanned_stop) || $logsheet->unplanned_stop === '-')) {
+            $logsheet->delete();
+        }
 
         // Trigger sync
         $options = [];
