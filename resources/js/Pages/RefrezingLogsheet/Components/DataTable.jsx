@@ -1092,11 +1092,18 @@ export default function DataTable({ logsheets }) {
                 const pg = groupedData.find(g => g.key === printGroupKey);
                 if (!pg || typeof document === 'undefined') return null;
 
-                /* ── Pisahkan baris per jenis produk ── */
-                const siomayRows = pg.rows.filter(r => getBaseProduct(r.product_type) === 'siomay');
-                const pentolRows  = pg.rows.filter(r => getBaseProduct(r.product_type) === 'pentol');
-                const lumpiaRows  = pg.rows.filter(r => getBaseProduct(r.product_type) === 'lumpia');
-                const adonanRows  = pg.rows.filter(r => getBaseProduct(r.product_type) === 'adonan_pangsit');
+                /* ── Pisahkan & urutkan baris per jenis produk (Ascending by Time khusus Cetak PDF/Print) ── */
+                const sortByTimeAsc = rows => [...rows].sort((a, b) => {
+                    const tA = a.time || '';
+                    const tB = b.time || '';
+                    if (tA !== tB) return tA.localeCompare(tB);
+                    return (a.id || 0) - (b.id || 0);
+                });
+
+                const siomayRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'siomay'));
+                const pentolRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'pentol'));
+                const lumpiaRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'lumpia'));
+                const adonanRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'adonan_pangsit'));
 
                 /* Pentol dibagi 2 kolom karena volume terbanyak */
                 const pentolHalf = Math.ceil(pentolRows.length / 2);
