@@ -343,7 +343,7 @@ export default function RefrezingLogsheet({ logsheets }) {
                     g.details.push({
                         ...d,
                         parent_id: ls.id,
-                        batch_number: ls.batch_number || '-',
+                        batch_number: d.batch_number || ls.batch_number || '-',
                         machine: ls.machine,
                         product_type: ls.product_type,
                         date: ls.date,

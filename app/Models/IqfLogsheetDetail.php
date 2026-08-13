@@ -8,6 +8,7 @@ class IqfLogsheetDetail extends Model
 {
     protected $fillable = [
         'iqf_logsheet_id',
+        'batch_number',
         'pic',
         'time',
         'suhu_panel',

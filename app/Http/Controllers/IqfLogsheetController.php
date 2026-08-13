@@ -300,6 +300,7 @@ class IqfLogsheetController extends Controller
 
         $detail = $iqfLogsheet->details()->create([
             'time' => Carbon::now('Asia/Jakarta')->format('H:i:s'),
+            'batch_number' => $request->batch_number ?? $iqfLogsheet->batch_number,
             'suhu_panel' => $request->suhu_panel,
             'suhu_produk' => $request->suhu_produk,
             'rak' => $request->rak,
@@ -321,12 +322,14 @@ class IqfLogsheetController extends Controller
     {
         $detail = IqfLogsheetDetail::findOrFail($id);
         
+        // Update detail row fields including batch_number (per-row)
         $detail->update([
             'time' => $request->time ?? $detail->time,
             'suhu_panel' => $request->suhu_panel,
             'suhu_produk' => $request->suhu_produk,
             'rak' => $request->rak,
             'tray_count' => $request->tray_count,
+            'batch_number' => $request->batch_number,
         ]);
 
         $logsheet = $detail->iqfLogsheet;
@@ -334,10 +337,12 @@ class IqfLogsheetController extends Controller
         if ($logsheet) {
             $comboKey = $logsheet->date . '|' . strtoupper($logsheet->product_type) . '|' . (int) filter_var($logsheet->machine, FILTER_SANITIZE_NUMBER_INT) . '|' . $logsheet->shift;
             
-            $logsheet->update([
-                'batch_number' => $request->batch_number,
-                'unplanned_stop' => $request->unplanned_stop,
-            ]);
+            // Only update unplanned_stop on parent (batch_number is now per-detail)
+            if ($request->has('unplanned_stop')) {
+                $logsheet->update([
+                    'unplanned_stop' => $request->unplanned_stop,
+                ]);
+            }
 
             // Update PIC hanya untuk detail yang sedang diedit (bukan massal)
             if ($request->has('pic')) {
@@ -421,6 +426,7 @@ class IqfLogsheetController extends Controller
         // Create detail logsheet (rack entry)
         $detail = $logsheet->details()->create([
             'time' => $time,
+            'batch_number' => $request->batch_number,
             'suhu_panel' => $request->suhu_panel,
             'suhu_produk' => $request->suhu_produk,
             'rak' => $request->rak,
@@ -610,15 +616,15 @@ class IqfLogsheetController extends Controller
         ]);
 
         $detail->update([
-            'tray_count' => $request->tray_count,
-            'rak'        => $request->filled('rak') ? $request->rak : $detail->rak,
+            'tray_count'   => $request->tray_count,
+            'rak'          => $request->filled('rak') ? $request->rak : $detail->rak,
+            'batch_number' => $request->filled('batch_number') ? $request->batch_number : $detail->batch_number,
         ]);
 
-        // Update batch_number and/or machine on parent logsheet if provided
+        // Update machine on parent logsheet if provided (batch_number is now per-detail)
         if ($detail->iqfLogsheet) {
             $parentUpdates = [];
-            if ($request->filled('batch_number')) $parentUpdates['batch_number'] = $request->batch_number;
-            if ($request->filled('machine'))      $parentUpdates['machine']      = $request->machine;
+            if ($request->filled('machine')) $parentUpdates['machine'] = $request->machine;
             if (!empty($parentUpdates)) $detail->iqfLogsheet->update($parentUpdates);
         }
 

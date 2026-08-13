@@ -248,7 +248,7 @@ export default function DataTable({ logsheets }) {
                         shift:          ls.shift,
                         machine:        ls.machine,
                         product_type:   ls.product_type,
-                        batch_number:   ls.batch_number || '-',
+                        batch_number:   d.batch_number || ls.batch_number || '-',
                         suhu_panel:     d.suhu_panel || '-',
                         suhu_produk:    d.suhu_produk || '-',
                         time:           d.time || '-',
