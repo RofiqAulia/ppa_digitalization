@@ -517,7 +517,7 @@ class SyncIqfToGoogleSheets extends Command
                             ]);
                         }
 
-                        // Tulis SPV, BATCH, KENDALA
+                        // Tulis SPV, KENDALA
                         if ($extra) {
                             if (!empty($extra['spv'])) {
                                 $aCol = $this->indexToColumn(self::COL_SPV);
@@ -526,15 +526,31 @@ class SyncIqfToGoogleSheets extends Command
                                     'values' => [[$extra['spv']]],
                                 ]);
                             }
-                            if (!empty($extra['batch'])) {
-                                $batchColIdx = $machineNum === 1 ? self::COL_IQF1 : self::COL_IQF2;
-                                $batchCol = $this->indexToColumn($batchColIdx);
-                                $batchData[] = new ValueRange([
-                                    'range'  => "'{$sheetName}'!{$batchCol}{$rowNumber}",
-                                    'values' => [[$extra['batch']]],
-                                ]);
-                            }
                             // Kolom AG (kendala) tidak ditulis karena sheet hanya sampai AF (32 kolom)
+                        }
+
+                        // Paksa tulis ulang nomor IQF yang benar (1 atau 2) di kolom D/E
+                        // agar data yang terlanjur tertimpa batch_number dikembalikan
+                        $iqfCol1 = $this->indexToColumn(self::COL_IQF1); // D
+                        $iqfCol2 = $this->indexToColumn(self::COL_IQF2); // E
+                        if ($machineNum === 1) {
+                            $batchData[] = new ValueRange([
+                                'range'  => "'{$sheetName}'!{$iqfCol1}{$rowNumber}",
+                                'values' => [[1]],
+                            ]);
+                            $batchData[] = new ValueRange([
+                                'range'  => "'{$sheetName}'!{$iqfCol2}{$rowNumber}",
+                                'values' => [['']],
+                            ]);
+                        } else {
+                            $batchData[] = new ValueRange([
+                                'range'  => "'{$sheetName}'!{$iqfCol1}{$rowNumber}",
+                                'values' => [['']],
+                            ]);
+                            $batchData[] = new ValueRange([
+                                'range'  => "'{$sheetName}'!{$iqfCol2}{$rowNumber}",
+                                'values' => [[2]],
+                            ]);
                         }
                     }
                 }
