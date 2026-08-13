@@ -1105,10 +1105,10 @@ export default function DataTable({ logsheets }) {
                 const lumpiaRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'lumpia'));
                 const adonanRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'adonan_pangsit'));
 
-                /* Pentol dibagi 2 kolom karena volume terbanyak */
-                const pentolHalf = Math.ceil(pentolRows.length / 2);
-                const pentolCol1 = pentolRows.slice(0, pentolHalf);
-                const pentolCol2 = pentolRows.slice(pentolHalf);
+                /* Pentol diisi penuh di Kolom 1 dulu (max 20 baris per kolom) baru melimpah ke Kolom 2 */
+                const PENTOL_MAX_PER_COL = 20;
+                const pentolCol1 = pentolRows.slice(0, PENTOL_MAX_PER_COL);
+                const pentolCol2 = pentolRows.slice(PENTOL_MAX_PER_COL);
 
                 const maxRows = Math.max(
                     siomayRows.length, pentolCol1.length, pentolCol2.length,
