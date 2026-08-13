@@ -371,7 +371,22 @@ class IqfLogsheetController extends Controller
 
     public function destroyDetail($id)
     {
-        $detail = IqfLogsheetDetail::findOrFail($id);
+        if ($id < 0) {
+            $logsheet = IqfLogsheet::find(abs($id));
+            if ($logsheet) {
+                $logsheet->update(['unplanned_stop' => null]);
+                if ($logsheet->details()->count() === 0) {
+                    $logsheet->delete();
+                }
+            }
+            return redirect()->back()->with('success', 'Kendala berhasil dihapus.');
+        }
+
+        $detail = IqfLogsheetDetail::find($id);
+        if (!$detail) {
+            return redirect()->back()->with('error', 'Data tidak ditemukan.');
+        }
+
         $logsheet = $detail->iqfLogsheet;
         $comboKey = null;
 
@@ -384,6 +399,10 @@ class IqfLogsheetController extends Controller
         }
 
         $detail->delete();
+
+        if ($logsheet && $logsheet->details()->count() === 0 && (empty($logsheet->unplanned_stop) || $logsheet->unplanned_stop === '-')) {
+            $logsheet->delete();
+        }
 
         // Trigger sync ke Google Sheets secara real-time
         $options = [];

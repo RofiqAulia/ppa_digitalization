@@ -262,6 +262,23 @@ export default function DataTable({ logsheets }) {
                         unplanned_stop: idx === lastIdx ? parseUnplannedStop(ls, logsheets) : '-',
                     });
                 });
+            } else if (ls.unplanned_stop && ls.unplanned_stop !== '-') {
+                data.push({
+                    id:             -ls.id,
+                    pic:            '--',
+                    date:           ls.date,
+                    shift:          ls.shift,
+                    machine:        ls.machine,
+                    product_type:   ls.product_type,
+                    batch_number:   ls.batch_number || '-',
+                    suhu_panel:     '-',
+                    suhu_produk:    '-',
+                    time:           ls.created_at ? new Date(ls.created_at).toTimeString().substring(0, 5) : '-',
+                    rak:            '-',
+                    tray_count:     0,
+                    unplanned_stop: parseUnplannedStop(ls, logsheets),
+                    isKendalaOnly:  true,
+                });
             }
         });
         return data;
