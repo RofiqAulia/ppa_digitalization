@@ -59,6 +59,10 @@ class IqfExportController extends Controller
         $data = [];
         foreach ($allLogsheets as $row) {
             $jenis   = strtoupper($row->product_type);
+            $jenis   = preg_replace('/_[TW]$/', '', $jenis);
+            if ($jenis === 'ADONAN_PANGSIT') {
+                $jenis = 'ADONAN';
+            }
             $machine = (int) filter_var($row->machine, FILTER_SANITIZE_NUMBER_INT);
             $shift   = (int) $row->shift;
             $hour    = (int) explode(':', $row->time)[0];

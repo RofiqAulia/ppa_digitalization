@@ -219,9 +219,9 @@ class SyncIqfToGoogleSheets extends Command
                     ->where('h.date', $combo['date'])
                     ->where(function($q) use ($combo) {
                         if ($combo['jenis'] === 'ADONAN') {
-                            $q->whereRaw("UPPER(h.product_type) IN ('ADONAN', 'ADONAN_PANGSIT')");
+                            $q->whereRaw("UPPER(h.product_type) LIKE 'ADONAN%'");
                         } else {
-                            $q->whereRaw("UPPER(h.product_type) = ?", [$combo['jenis']]);
+                            $q->whereRaw("UPPER(h.product_type) LIKE ?", [$combo['jenis'] . '%']);
                         }
                     })
                     ->where('h.machine', 'LIKE', '%' . $combo['machine'])
@@ -254,9 +254,9 @@ class SyncIqfToGoogleSheets extends Command
                     ->where('h.date', $combo['date'])
                     ->where(function($q) use ($combo) {
                         if ($combo['jenis'] === 'ADONAN') {
-                            $q->whereRaw("UPPER(h.product_type) IN ('ADONAN', 'ADONAN_PANGSIT')");
+                            $q->whereRaw("UPPER(h.product_type) LIKE 'ADONAN%'");
                         } else {
-                            $q->whereRaw("UPPER(h.product_type) = ?", [$combo['jenis']]);
+                            $q->whereRaw("UPPER(h.product_type) LIKE ?", [$combo['jenis'] . '%']);
                         }
                     })
                     ->where('h.machine', 'LIKE', '%' . $combo['machine'])
@@ -273,9 +273,9 @@ class SyncIqfToGoogleSheets extends Command
                 $ls = \App\Models\IqfLogsheet::where('date', $combo['date'])
                     ->where(function($q) use ($combo) {
                         if ($combo['jenis'] === 'ADONAN') {
-                            $q->whereRaw("UPPER(product_type) IN ('ADONAN', 'ADONAN_PANGSIT')");
+                            $q->whereRaw("UPPER(product_type) LIKE 'ADONAN%'");
                         } else {
-                            $q->whereRaw("UPPER(product_type) = ?", [$combo['jenis']]);
+                            $q->whereRaw("UPPER(product_type) LIKE ?", [$combo['jenis'] . '%']);
                         }
                     })
                     ->where('machine', 'LIKE', '%' . $combo['machine'])

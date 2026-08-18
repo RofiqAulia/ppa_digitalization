@@ -28,12 +28,12 @@ export default function History({ logsheets }) {
 
                 <div className="flex items-center gap-3">
                     {/* Tombol Download Excel */}
-                    <a href="/iqf-logsheet/export-excel">
+                    {/* <a href="/iqf-logsheet/export-excel">
                         <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-colors">
                             <FileDown className="w-4 h-4 mr-2" />
                             Download Excel
                         </Button>
-                    </a>
+                    </a> */}
 
                     <Link href="/logsheet-iqf">
                         <Button variant="outline" className="text-slate-600 border-slate-300 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 shadow-sm transition-colors">
