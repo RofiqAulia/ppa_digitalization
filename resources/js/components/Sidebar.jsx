@@ -12,10 +12,10 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 const navigation = [
     { name: 'IQF', isTitle: true },
     { name: 'Dashboard',       href: '/dashboard',            icon: LayoutDashboard },
-    { name: 'Logsheet Harkian', href: '/logsheet-iqf',         icon: FileText },
+    { name: 'Logsheet Harian', href: '/logsheet-iqf',         icon: FileText },
     { name: 'History',         href: '/iqf-logsheet/history', icon: History },
 
-    { name: 'IQF-Refrezing', isTitle: true },
+    { name: 'IQF Refrezing', isTitle: true },
     { name: 'Dashboard',       href: '/refrezing/dashboard',  icon: Snowflake },
     { name: 'Logsheet Harian', href: '/refrezing/logsheet',   icon: ClipboardList },
     { name: 'History',         href: '/refrezing/history',    icon: History },
