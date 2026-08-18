@@ -297,9 +297,18 @@ function DetailEditRow({ detail, index, isLastInBatch, batchTotal, unplannedStop
             </td>
 
             {/* Unplanned Stop */}
-            <td className="py-2.5 px-2 text-left max-w-[150px] truncate" title={unplannedStop}>
+            <td className="py-2.5 px-3 text-left min-w-[200px] whitespace-normal break-words">
                 {isLastInBatch && unplannedStop && unplannedStop !== '-' ? (
-                    <span className="text-orange-600 font-medium text-[10px]">{unplannedStop}</span>
+                    <div className="flex flex-col gap-1 items-start">
+                        {unplannedStop.split(', ').map((stopItem, idx) => (
+                            <span
+                                key={idx}
+                                className="inline-block bg-orange-50 text-orange-700 border border-orange-200/80 px-2 py-1 rounded-md text-[10px] leading-normal font-semibold break-words max-w-full"
+                            >
+                                {stopItem}
+                            </span>
+                        ))}
+                    </div>
                 ) : (
                     <span className="text-slate-300">-</span>
                 )}
@@ -528,7 +537,7 @@ export default function RefrezingLogsheet({ logsheets }) {
                                                     <th className="py-2.5 px-2 text-center">Rak/Rongga</th>
                                                     <th className="py-2.5 px-2 text-center">Jumlah (Loyang/Keranjang)</th>
                                                     <th className="py-2.5 px-2 text-center bg-[#0f766e]">Total</th>
-                                                    <th className="py-2.5 px-2 text-left">Unplanned Stop</th>
+                                                    <th className="py-2.5 px-3 text-left min-w-[200px]">Unplanned Stop</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
