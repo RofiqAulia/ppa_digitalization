@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import OperatorLayout from '@/Layouts/OperatorLayout';
+import DraggableKendalaButton from '@/Components/DraggableKendalaButton';
 import axios from 'axios';
 
 // Helper functions for shift/date
@@ -277,18 +278,8 @@ export default function Landing() {
                 </button>
             </div>
 
-            {/* Floating Action Button for Kendala */}
-            <div className="fixed bottom-6 right-6 z-50 flex items-center gap-4 group cursor-pointer" onClick={() => router.visit('/kendala')}>
-                <p className="text-slate-700 bg-white/90 backdrop-blur px-4 py-2 rounded-xl shadow-lg font-black text-xs uppercase tracking-widest text-right opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 group-hover:translate-x-0">
-                    Klik Disini<br/><span className="text-pink-500">*Jika Terjadi Kendala!</span>
-                </p>
-                <button 
-                    className="bg-[#E51C77] text-white font-black text-sm py-4 px-8 rounded-full uppercase tracking-[0.2em] flex items-center gap-3 hover:bg-pink-600 shadow-xl shadow-pink-500/40 hover:shadow-pink-500/60 hover:-translate-y-1 transition-all"
-                >
-                    Lintasan Kendala 
-                    <span className="bg-amber-400 text-amber-900 rounded-sm w-5 h-5 flex items-center justify-center text-[12px] transform rotate-45 shadow-inner shadow-amber-600/50">!</span>
-                </button>
-            </div>
+            {/* Floating Action Button for Kendala (Draggable) */}
+            <DraggableKendalaButton href="/kendala" />
 
             {/* Toast Notification */}
             {toast.show && (
