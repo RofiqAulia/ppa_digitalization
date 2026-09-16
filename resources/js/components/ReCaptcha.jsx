@@ -6,10 +6,19 @@ const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LdXGL4tAAAAAOvpEnV
 export default function ReCaptcha({ onVerify, error }) {
     const containerRef = useRef(null);
     const widgetIdRef = useRef(null);
+    const onVerifyRef = useRef(onVerify);
+
     const [renderError, setRenderError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Keep onVerifyRef up-to-date without triggering re-render of reCAPTCHA iframe
+    useEffect(() => {
+        onVerifyRef.current = onVerify;
+    }, [onVerify]);
+
     const renderWidget = () => {
+        if (widgetIdRef.current !== null) return; // Prevent double rendering
+
         if (window.grecaptcha && window.grecaptcha.render && containerRef.current) {
             try {
                 containerRef.current.innerHTML = '';
@@ -17,10 +26,10 @@ export default function ReCaptcha({ onVerify, error }) {
                     sitekey: SITE_KEY,
                     callback: (token) => {
                         setRenderError(null);
-                        if (onVerify) onVerify(token);
+                        if (onVerifyRef.current) onVerifyRef.current(token);
                     },
                     'expired-callback': () => {
-                        if (onVerify) onVerify('');
+                        if (onVerifyRef.current) onVerifyRef.current('');
                     },
                     'error-callback': () => {
                         console.warn('Google reCAPTCHA error-callback triggered for sitekey:', SITE_KEY);
@@ -70,7 +79,7 @@ export default function ReCaptcha({ onVerify, error }) {
                 clearTimeout(timer);
             };
         }
-    }, [onVerify]);
+    }, []); // Empty dependency array: ONLY initialize reCAPTCHA once on mount!
 
     const handleReload = () => {
         setRenderError(null);
@@ -80,9 +89,11 @@ export default function ReCaptcha({ onVerify, error }) {
                 window.grecaptcha.reset(widgetIdRef.current);
                 setIsLoading(false);
             } catch (e) {
+                widgetIdRef.current = null;
                 renderWidget();
             }
         } else {
+            widgetIdRef.current = null;
             renderWidget();
         }
     };
