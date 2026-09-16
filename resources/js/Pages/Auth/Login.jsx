@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import ReCaptcha from '@/components/ReCaptcha';
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
+        captcha_token: '',
         remember: false,
     });
 
@@ -54,11 +56,11 @@ export default function Login({ status, canResetPassword }) {
                 <div>
                     <input
                         id="email"
-                        type="email"
+                        type="text"
                         name="email"
                         value={data.email}
                         autoComplete="username"
-                        placeholder="Masukan Email Anda"
+                        placeholder="Masukkan Email / Nama Anda"
                         className="w-full bg-[#E51C77] text-white placeholder-pink-200 text-sm font-bold px-6 py-3.5 rounded-full border-none focus:ring-4 focus:ring-pink-300 outline-none text-center shadow-md transition-all"
                         onChange={(e) => setData('email', e.target.value)}
                     />
@@ -77,6 +79,14 @@ export default function Login({ status, canResetPassword }) {
                         onChange={(e) => setData('password', e.target.value)}
                     />
                     {errors.password && <p className="text-pink-500 text-xs font-bold mt-2 text-center">{errors.password}</p>}
+                </div>
+
+                {/* reCAPTCHA Security Component */}
+                <div className="mt-1">
+                    <ReCaptcha
+                        onVerify={(token) => setData('captcha_token', token)}
+                        error={errors.captcha_token || errors.captcha}
+                    />
                 </div>
 
                 <div className="mt-2">
@@ -103,3 +113,4 @@ export default function Login({ status, canResetPassword }) {
         </GuestLayout>
     );
 }
+

@@ -28,8 +28,16 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string'],
             'password' => ['required', 'string'],
+            'captcha_token' => ['required', 'string'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'captcha_token.required' => 'Harap verifikasi reCAPTCHA ("Saya bukan robot") terlebih dahulu.',
         ];
     }
 
@@ -42,7 +50,15 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $input = trim($this->input('email'));
+        $user = \App\Models\User::whereRaw('LOWER(email) = ?', [strtolower($input)])
+                    ->orWhereRaw('LOWER(name) = ?', [strtolower($input)])
+                    ->orWhere('name', 'LIKE', '%' . $input . '%')
+                    ->first();
+
+        $emailToAttempt = $user ? $user->email : $input;
+
+        if (! Auth::attempt(['email' => $emailToAttempt, 'password' => $this->input('password')], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

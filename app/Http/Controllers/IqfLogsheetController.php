@@ -631,11 +631,29 @@ class IqfLogsheetController extends Controller
 
     public function operatorAuthenticate(Request $request)
     {
+        $inputName = trim($request->input('name') ?? $request->input('email') ?? '');
+
         $request->validate([
-            'email' => 'required|email'
+            'name' => 'nullable|string',
+            'email' => 'nullable|string',
+            'captcha_token' => 'required|string',
+        ], [
+            'captcha_token.required' => 'Harap verifikasi reCAPTCHA ("Saya bukan robot") terlebih dahulu.',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        if (empty($inputName)) {
+            return back()->withErrors(['name' => 'Harap masukkan nama operator.']);
+        }
+
+        if (empty($request->captcha_token)) {
+            return back()->withErrors(['captcha_token' => 'Harap verifikasi reCAPTCHA ("Saya bukan robot") terlebih dahulu.']);
+        }
+
+        // Cari user berdasarkan nama (persis / case-insensitive), email, atau nama parsial
+        $user = User::whereRaw('LOWER(name) = ?', [strtolower($inputName)])
+                    ->orWhereRaw('LOWER(email) = ?', [strtolower($inputName)])
+                    ->orWhere('name', 'LIKE', '%' . $inputName . '%')
+                    ->first();
 
         if ($user && $user->role === 'operator') {
             session(['operator_name' => $user->name]);
@@ -643,10 +661,10 @@ class IqfLogsheetController extends Controller
         }
 
         if ($user && $user->role === 'admin') {
-            return back()->withErrors(['email' => 'Akun ini adalah akun Admin Panel. Silakan login melalui /login.']);
+            return back()->withErrors(['name' => 'Akun ini adalah akun Admin Panel. Silakan login melalui /login.']);
         }
 
-        return back()->withErrors(['email' => 'Email tidak ditemukan di sistem.']);
+        return back()->withErrors(['name' => 'Nama operator tidak ditemukan di sistem. Pastikan nama yang dimasukkan sudah terdaftar.']);
     }
 
     public function operatorUpdateDetail(Request $request, $id)

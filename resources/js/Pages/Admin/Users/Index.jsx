@@ -136,12 +136,12 @@ export default function AdminUsersIndex({ users }) {
                                     <Monitor className="w-4 h-4 text-pink-500" />
                                     <span className="font-bold text-pink-700">Login Terminal Operator</span>
                                 </div>
-                                <p className="text-xs text-slate-500 mb-1">URL: <code className="bg-slate-100 px-1 rounded">/operator/login</code> (email saja)</p>
+                                <p className="text-xs text-slate-500 mb-1">URL: <code className="bg-slate-100 px-1 rounded">/operator/login</code> (nama / email)</p>
                                 <div className="space-y-1 font-mono text-xs">
                                     {operatorUsers.slice(0, 3).map(u => (
-                                        <div key={u.email} className="flex items-center gap-1">
-                                            <span className="text-slate-600">{u.email}</span>
-                                            <CopyButton text={u.email} />
+                                        <div key={u.id} className="flex items-center gap-1">
+                                            <span className="text-slate-600">{u.name}</span>
+                                            <CopyButton text={u.name} />
                                         </div>
                                     ))}
                                     {operatorUsers.length > 3 && (
@@ -232,7 +232,7 @@ export default function AdminUsersIndex({ users }) {
                                             <Monitor className="w-3.5 h-3.5 text-pink-500" />
                                             <span className="font-black text-sm text-slate-700">Operator</span>
                                         </div>
-                                        <p className="text-[10px] text-slate-400 mt-0.5">Login terminal dengan email saja</p>
+                                        <p className="text-[10px] text-slate-400 mt-0.5">Login terminal dengan nama / email</p>
                                     </div>
                                 </label>
                                 <label className={`flex-1 flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${data.role === 'admin' ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'}`}>

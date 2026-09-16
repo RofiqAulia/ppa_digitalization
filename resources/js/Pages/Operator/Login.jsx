@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import GuestLayout from '@/Layouts/GuestLayout';
+import ReCaptcha from '@/components/ReCaptcha';
 
 export default function OperatorLogin() {
     const { data, setData, post, processing, errors } = useForm({
-        email: '',
+        name: '',
+        captcha_token: '',
     });
 
     const [greeting, setGreeting] = useState('Selamat Datang');
@@ -44,16 +46,24 @@ export default function OperatorLogin() {
             <form onSubmit={submit} className="flex flex-col gap-4">
                 <div>
                     <input
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        autoComplete="username"
-                        placeholder="Masukkan Email Operator"
+                        id="name"
+                        type="text"
+                        name="name"
+                        value={data.name}
+                        autoComplete="name"
+                        placeholder="Masukkan Nama Operator"
                         className="w-full bg-[#E51C77] text-white placeholder-pink-200 text-sm font-bold px-6 py-3.5 rounded-full border-none focus:ring-4 focus:ring-pink-300 outline-none text-center shadow-md transition-all"
-                        onChange={(e) => setData('email', e.target.value)}
+                        onChange={(e) => setData('name', e.target.value)}
                     />
-                    {errors.email && <p className="text-pink-500 text-xs font-bold mt-2 text-center">{errors.email}</p>}
+                    {errors.name && <p className="text-pink-500 text-xs font-bold mt-2 text-center">{errors.name}</p>}
+                </div>
+
+                {/* reCAPTCHA Security Component */}
+                <div className="mt-1">
+                    <ReCaptcha
+                        onVerify={(token) => setData('captcha_token', token)}
+                        error={errors.captcha_token || errors.captcha}
+                    />
                 </div>
 
                 <div className="mt-2">
@@ -68,10 +78,11 @@ export default function OperatorLogin() {
 
                 <div className="mt-4 text-center">
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                        Hanya email terdaftar yang dapat masuk
+                        Hanya nama operator terdaftar yang dapat masuk
                     </p>
                 </div>
             </form>
         </GuestLayout>
     );
 }
+
