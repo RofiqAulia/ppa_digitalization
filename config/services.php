@@ -41,8 +41,8 @@ return [
     ],
 
     'recaptcha' => [
-        'site_key' => env('NOCAPTCHA_SITEKEY', '6LcyFL4tAAAAAEMxoz0fvlhDP-ylhGpbgPFjCtHh'),
-        'secret'   => env('NOCAPTCHA_SECRET', '6LcyFL4tAAAAADfBE6WGknsXsuTayWIqlsME_xqC'),
+        'site_key' => env('NOCAPTCHA_SITEKEY', '6LdXGL4tAAAAAOvpEnVcZfsPTiH_9NvYQZF65dHg'),
+        'secret'   => env('NOCAPTCHA_SECRET', '6LdXGL4tAAAAAGiHWXOe5Vl-4r7oQsZCafnUxAyv'),
     ],
 
 ];

@@ -653,7 +653,7 @@ class IqfLogsheetController extends Controller
         $captchaToken = $request->captcha_token;
         if (!str_starts_with($captchaToken, 'LOCAL_VERIFIED_')) {
             try {
-                $secret = config('services.recaptcha.secret', '6LcyFL4tAAAAADfBE6WGknsXsuTayWIqlsME_xqC');
+                $secret = config('services.recaptcha.secret', '6LdXGL4tAAAAAGiHWXOe5Vl-4r7oQsZCafnUxAyv');
                 $googleRes = \Illuminate\Support\Facades\Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
                     'secret'   => $secret,
                     'response' => $captchaToken,
