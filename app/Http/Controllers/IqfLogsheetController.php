@@ -429,6 +429,8 @@ class IqfLogsheetController extends Controller
 
         extract($this->getCurrentShiftAndDate());
 
+        $operatorName = session('operator_name', 'Unknown');
+
         // Find or create logsheet automatically so operator is not blocked
         $logsheet = IqfLogsheet::firstOrCreate([
             'date' => $date,
@@ -437,9 +439,14 @@ class IqfLogsheetController extends Controller
             'machine' => $request->machine,
             'batch_number' => $request->batch_number,
         ], [
+            'spv' => $operatorName,
             'planning_qty' => 0,
             'status' => 'ongoing'
         ]);
+
+        if (empty($logsheet->spv) || $logsheet->spv === 'Unknown') {
+            $logsheet->update(['spv' => $operatorName]);
+        }
 
         if ($request->has('unplanned_stop') && $request->unplanned_stop !== null) {
             $logsheet->update(['unplanned_stop' => $request->unplanned_stop]);
@@ -459,7 +466,7 @@ class IqfLogsheetController extends Controller
             'suhu_produk' => $request->suhu_produk,
             'rak' => $request->rak,
             'tray_count' => $request->tray_count,
-            'pic' => session('operator_name', 'Unknown'),
+            'pic' => $operatorName,
         ]);
 
         // Trigger sync ke Google Sheets secara real-time
@@ -667,22 +674,9 @@ class IqfLogsheetController extends Controller
             }
         }
 
-        // Cari user berdasarkan nama (persis / case-insensitive), email, atau nama parsial
-        $user = User::whereRaw('LOWER(name) = ?', [strtolower($inputName)])
-                    ->orWhereRaw('LOWER(email) = ?', [strtolower($inputName)])
-                    ->orWhere('name', 'LIKE', '%' . $inputName . '%')
-                    ->first();
-
-        if ($user && $user->role === 'operator') {
-            session(['operator_name' => $user->name]);
-            return redirect()->route('operator.landing');
-        }
-
-        if ($user && $user->role === 'admin') {
-            return back()->withErrors(['name' => 'Akun ini adalah akun Admin Panel. Silakan login melalui /login.']);
-        }
-
-        return back()->withErrors(['name' => 'Nama operator tidak ditemukan di sistem. Pastikan nama yang dimasukkan sudah terdaftar.']);
+        // Simpan nama operator ke session tanpa perlu terdaftar di DB management
+        session(['operator_name' => ucwords(strtolower($inputName))]);
+        return redirect()->route('operator.landing');
     }
 
     public function operatorUpdateDetail(Request $request, $id)

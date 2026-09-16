@@ -284,8 +284,22 @@ class SyncIqfToGoogleSheets extends Command
                     ->first();
 
                 if ($ls) {
+                    $spvName = $ls->spv;
+                    if (empty($spvName) || $spvName === 'Unknown') {
+                        $lastPic = DB::table('iqf_logsheet_details')
+                            ->where('iqf_logsheet_id', $ls->id)
+                            ->whereNotNull('pic')
+                            ->where('pic', '!=', '')
+                            ->where('pic', '!=', 'Unknown')
+                            ->latest('id')
+                            ->value('pic');
+                        if ($lastPic) {
+                            $spvName = $lastPic;
+                        }
+                    }
+
                     $extraDataAggregated[$combo['date']][$combo['jenis']][$combo['machine']][$combo['shift']] = [
-                        'spv' => $ls->spv,
+                        'spv' => $spvName,
                         'batch' => $ls->batch_number,
                         'refrezing' => $ls->refrezing,
                         'unplanned_stop' => $this->parseUnplannedStop($ls)

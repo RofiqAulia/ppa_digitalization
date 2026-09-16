@@ -78,7 +78,7 @@ export default function OperatorLogin() {
 
                 <div className="mt-4 text-center">
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                        Hanya nama operator terdaftar yang dapat masuk
+                        Nama operator akan otomatis tercatat di Kolom A Spreadsheet
                     </p>
                 </div>
             </form>
