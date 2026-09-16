@@ -1,12 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ShieldCheck, AlertCircle, RefreshCw, Check, Lock } from 'lucide-react';
+import { Shield, AlertCircle, RefreshCw, Check, Lock, ShieldCheck } from 'lucide-react';
 
 const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LcyFL4tAAAAAEMxoz0fvlhDP-ylhGpbgPFjCtHh';
 
 export default function ReCaptcha({ onVerify, error }) {
     const containerRef = useRef(null);
     const widgetIdRef = useRef(null);
-    const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
     const [fallbackMode, setFallbackMode] = useState(false);
 
     // Fallback Math Challenge states
@@ -30,7 +29,6 @@ export default function ReCaptcha({ onVerify, error }) {
         const renderRecaptcha = () => {
             if (window.grecaptcha && window.grecaptcha.render && containerRef.current) {
                 try {
-                    // Clear container first if needed
                     containerRef.current.innerHTML = '';
                     const id = window.grecaptcha.render(containerRef.current, {
                         sitekey: SITE_KEY,
@@ -47,7 +45,6 @@ export default function ReCaptcha({ onVerify, error }) {
                         }
                     });
                     widgetIdRef.current = id;
-                    setIsGoogleLoaded(true);
                 } catch (e) {
                     console.warn('Google reCAPTCHA render fallback:', e);
                 }
@@ -119,7 +116,15 @@ export default function ReCaptcha({ onVerify, error }) {
     };
 
     return (
-        <div className="w-full flex flex-col items-center">
+        <div className="w-full bg-slate-50/90 border border-slate-200 rounded-2xl p-4 shadow-xs">
+            {/* Header matching exact user screenshot */}
+            <div className="flex items-center gap-2 mb-3">
+                <Shield className="w-5 h-5 text-cyan-500 fill-cyan-500/20" />
+                <span className="text-xs md:text-sm font-bold text-slate-700">
+                    Verifikasi Anti-Bot (Security CAPTCHA)
+                </span>
+            </div>
+
             {/* ── GOOGLE RECAPTCHA WIDGET CONTAINER ── */}
             <div className={`flex justify-center transition-all ${fallbackMode ? 'hidden' : 'block'}`}>
                 <div ref={containerRef} className="my-1" />
@@ -128,8 +133,8 @@ export default function ReCaptcha({ onVerify, error }) {
             {/* ── INTERACTIVE FALLBACK (If Google API unavailable or offline) ── */}
             {fallbackMode && (
                 <div className="w-full">
-                    <div className={`relative bg-slate-50/90 backdrop-blur border rounded-2xl p-3.5 flex items-center justify-between shadow-sm transition-all ${
-                        status === 'verified' ? 'border-emerald-300 bg-emerald-50/40' : error ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 hover:border-pink-300'
+                    <div className={`relative bg-white border rounded-xl p-3 flex items-center justify-between shadow-xs transition-all ${
+                        status === 'verified' ? 'border-emerald-300 bg-emerald-50/30' : error ? 'border-rose-400 bg-rose-50/30' : 'border-slate-300 hover:border-pink-300'
                     }`}>
                         <div className="flex items-center gap-3">
                             <button
@@ -166,11 +171,6 @@ export default function ReCaptcha({ onVerify, error }) {
                                 <ShieldCheck className={`w-5 h-5 ${status === 'verified' ? 'text-emerald-500' : 'text-pink-500'}`} />
                                 <span className="text-[9px] font-black tracking-tighter text-slate-500 uppercase">reCAPTCHA</span>
                             </div>
-                            <div className="flex gap-1 text-[8px] text-slate-400 mt-0.5 font-medium">
-                                <span>Privasi</span>
-                                <span>•</span>
-                                <span>Syarat</span>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -178,7 +178,7 @@ export default function ReCaptcha({ onVerify, error }) {
 
             {/* Error Message */}
             {error && (
-                <p className="text-pink-500 text-xs font-bold mt-1.5 text-center flex items-center justify-center gap-1">
+                <p className="text-pink-500 text-xs font-bold mt-2 text-center flex items-center justify-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5 inline" /> {error}
                 </p>
             )}
