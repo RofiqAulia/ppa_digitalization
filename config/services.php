@@ -40,4 +40,9 @@ return [
         'spreadsheet_id' => env('GOOGLE_SHEETS_SPREADSHEET_ID'),
     ],
 
+    'recaptcha' => [
+        'site_key' => env('NOCAPTCHA_SITEKEY', '6LcyFL4tAAAAAEMxoz0fvlhDP-ylhGpbgPFjCtHh'),
+        'secret'   => env('NOCAPTCHA_SECRET', '6LcyFL4tAAAAADfBE6WGknsXsuTayWIqlsME_xqC'),
+    ],
+
 ];

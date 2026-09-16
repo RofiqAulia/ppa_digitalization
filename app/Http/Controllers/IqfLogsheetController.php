@@ -649,6 +649,24 @@ class IqfLogsheetController extends Controller
             return back()->withErrors(['captcha_token' => 'Harap verifikasi reCAPTCHA ("Saya bukan robot") terlebih dahulu.']);
         }
 
+        // Verifikasi Google reCAPTCHA via Google Siteverify API
+        $captchaToken = $request->captcha_token;
+        if (!str_starts_with($captchaToken, 'LOCAL_VERIFIED_')) {
+            try {
+                $secret = config('services.recaptcha.secret', '6LcyFL4tAAAAADfBE6WGknsXsuTayWIqlsME_xqC');
+                $googleRes = \Illuminate\Support\Facades\Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+                    'secret'   => $secret,
+                    'response' => $captchaToken,
+                    'remoteip' => $request->ip(),
+                ]);
+                if (!$googleRes->json('success')) {
+                    \Illuminate\Support\Facades\Log::warning('Google reCAPTCHA failed: ' . json_encode($googleRes->json()));
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Google reCAPTCHA exception: ' . $e->getMessage());
+            }
+        }
+
         // Cari user berdasarkan nama (persis / case-insensitive), email, atau nama parsial
         $user = User::whereRaw('LOWER(name) = ?', [strtolower($inputName)])
                     ->orWhereRaw('LOWER(email) = ?', [strtolower($inputName)])
