@@ -228,14 +228,21 @@ class IqfLogsheetController extends Controller
                     $lastPrevProductTime = $currMins;
                 }
 
-                [$fH, $fM] = explode(':', substr($mDetails->first()->time, 0, 5));
-                [$lH, $lM] = explode(':', substr($mDetails->last()->time, 0, 5));
-                $firstMins = (int)$fH * 60 + (int)$fM;
-                $lastMins  = (int)$lH * 60 + (int)$lM;
-                $spanMins  = $lastMins >= $firstMins ? ($lastMins - $firstMins) : ($lastMins + 1440 - $firstMins);
-                if ($spanMins === 0) $spanMins = 15;
+                $spanMins = 0;
+                $mDetailsByHeader = $mDetails->groupBy('iqf_logsheet_id');
+                foreach ($mDetailsByHeader as $hDetails) {
+                    if ($hDetails->count() > 0) {
+                        [$fH, $fM] = explode(':', substr($hDetails->first()->time, 0, 5));
+                        [$lH, $lM] = explode(':', substr($hDetails->last()->time, 0, 5));
+                        $firstMins = (int)$fH * 60 + (int)$fM;
+                        $lastMins  = (int)$lH * 60 + (int)$lM;
+                        $hSpan     = $lastMins >= $firstMins ? ($lastMins - $firstMins) : ($lastMins + 1440 - $firstMins);
+                        $spanMins += $hSpan;
+                    }
+                }
+                if ($spanMins === 0 && $mDetails->count() > 0) $spanMins = 15;
 
-                $activeMinutes = max(0, $spanMins - $changeoverMinutes - $unplannedMins);
+                $activeMinutes = max(0, $spanMins - $changeoverMinutes);
             } else {
                 $spanMins      = 0;
                 $activeMinutes = 0;
@@ -243,9 +250,9 @@ class IqfLogsheetController extends Controller
 
             $totalWorkMinutes = $activeMinutes + $unplannedMins;
 
-            // Loss time = Elapsed Shift Time - (Active + Changeover + Unplanned)
+            // Loss time = Elapsed Shift Time - (Total Active Input Span + Unplanned)
             // Ensures: Shift Berjalan == Input Aktif + Pergantian Dimsum + Kendala + Loss Time
-            $lossMinutes = max(0, $elapsedShiftMinutes - ($activeMinutes + $changeoverMinutes + $unplannedMins));
+            $lossMinutes = max(0, $elapsedShiftMinutes - ($spanMins + $unplannedMins));
 
             // Real-time efficiency: ((active_minutes + unplanned_minutes) / netElapsedWorkMinutes) * 100%
             $efficiencyPercent = $netElapsedWorkMinutes > 0 ? round(($totalWorkMinutes / $netElapsedWorkMinutes) * 100, 1) : 0;
