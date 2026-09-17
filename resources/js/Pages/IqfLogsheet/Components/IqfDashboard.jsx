@@ -226,7 +226,111 @@ export default function IqfDashboard() {
                     </button>
                 </div>
             </div>
-            {/* UNPLANNED STOPS SECTION */}
+
+            {/* EFFICIENCY & CHANGEOVER SECTION */}
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 md:p-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-emerald-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 text-lg">
+                            ⚡
+                        </div>
+                        <div>
+                            <h3 className="text-base md:text-lg font-extrabold text-slate-800">Analisis Efisiensi Kerja Karyawan</h3>
+                            <p className="text-xs font-semibold text-slate-400">Efektivitas Produksi, Pergantian Dimsum, & Jam Shift per Mesin</p>
+                        </div>
+                    </div>
+                    {/* Legend */}
+                    <div className="flex items-center gap-2 text-xs font-bold flex-wrap">
+                        <span className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span> &gt;90% Baik
+                        </span>
+                        <span className="flex items-center gap-1.5 text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                            <span className="w-2 h-2 rounded-full bg-amber-500"></span> 70-90% Cukup
+                        </span>
+                        <span className="flex items-center gap-1.5 text-rose-700 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200">
+                            <span className="w-2 h-2 rounded-full bg-rose-500"></span> &lt;70% Evaluasi
+                        </span>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {['IQF 1', 'IQF 2'].map(mName => {
+                        const effData = stats?.efficiency_by_machine?.[mName] || {
+                            total_shift_minutes: 480,
+                            active_minutes: 0,
+                            changeover_minutes: 0,
+                            changeover_count: 0,
+                            unplanned_minutes: 0,
+                            efficiency_percent: 0,
+                            status_text: 'Perlu Evaluasi',
+                            status_color: 'red'
+                        };
+
+                        const pct = effData.efficiency_percent || 0;
+                        const isGood = pct >= 90;
+                        const isFair = pct >= 70 && pct < 90;
+
+                        const badgeClass = isGood
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                            : isFair
+                            ? 'bg-amber-100 text-amber-800 border-amber-300'
+                            : 'bg-rose-100 text-rose-800 border-rose-300';
+
+                        const barColor = isGood
+                            ? 'bg-emerald-500'
+                            : isFair
+                            ? 'bg-amber-500'
+                            : 'bg-rose-500';
+
+                        return (
+                            <div key={mName} className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-black uppercase tracking-widest text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full">
+                                        {mName}
+                                    </span>
+                                    <span className={`text-xs font-extrabold px-3 py-1 rounded-full border ${badgeClass}`}>
+                                        {isGood ? '🟢' : isFair ? '🟡' : '🔴'} {effData.status_text}
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-baseline justify-between mb-1.5">
+                                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tingkat Efisiensi</span>
+                                        <span className="text-2xl font-black text-slate-800 font-mono">
+                                            {pct}%
+                                        </span>
+                                    </div>
+                                    <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                                        <div
+                                            className={`h-full ${barColor} transition-all duration-1000 ease-out`}
+                                            style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-200/60 text-center">
+                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Total Shift</p>
+                                        <p className="text-xs font-black text-slate-700 mt-0.5">{effData.total_shift_minutes} <span className="text-[9px] font-normal">mnt</span></p>
+                                    </div>
+                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Input Aktif</p>
+                                        <p className="text-xs font-black text-emerald-600 mt-0.5">{effData.active_minutes} <span className="text-[9px] font-normal">mnt</span></p>
+                                    </div>
+                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Pergantian Dimsum</p>
+                                        <p className="text-xs font-black text-amber-600 mt-0.5">{effData.changeover_minutes} <span className="text-[9px] font-normal">mnt ({effData.changeover_count}x)</span></p>
+                                    </div>
+                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Kendala (Stop)</p>
+                                        <p className="text-xs font-black text-rose-600 mt-0.5">{effData.unplanned_minutes} <span className="text-[9px] font-normal">mnt</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 md:px-8 md:py-5 border-b border-slate-100 flex items-center gap-3">
                     <span className="w-8 h-8 rounded-lg bg-rose-100 text-rose-500 flex items-center justify-center text-base">🛑</span>

@@ -131,14 +131,102 @@ class IqfLogsheetController extends Controller
             }
         }
 
+        // ── Calculate Efficiency & Changeover Stats per Machine ──────────
+        [$fromH, $fromM] = explode(':', $fromTime);
+        [$toH, $toM]     = explode(':', $toTime);
+        $fromMins = (int)$fromH * 60 + (int)$fromM;
+        $toMins   = (int)$toH * 60 + (int)$toM;
+        $totalShiftMinutes = $toMins >= $fromMins ? ($toMins - $fromMins) : ($toMins + 1440 - $fromMins);
+        if ($totalShiftMinutes <= 0 || $totalShiftMinutes >= 1439) {
+            $totalShiftMinutes = 480; // Default 8 hours (480 mins) for standard shift / all shifts
+        }
+
+        $efficiencyByMachine = [];
+        foreach ($machines as $m) {
+            $mDetails = DB::table('iqf_logsheets as h')
+                ->join('iqf_logsheet_details as d', 'd.iqf_logsheet_id', '=', 'h.id')
+                ->select('h.product_type', 'd.time', 'd.created_at', 'd.id')
+                ->where('h.date', $queryDate)
+                ->where('h.machine', $m)
+                ->where('d.time', '>=', $fromTime . ':00')
+                ->where('d.time', '<=', $toTime . ':59')
+                ->orderBy('d.created_at', 'asc')
+                ->get();
+
+            $changeoverMinutes = 0;
+            $changeoverCount   = 0;
+            $unplannedMins     = 0;
+
+            foreach ($unplannedStopsData as $stop) {
+                if ($stop['machine'] === $m && preg_match('/^(\d+)\s*menit/', $stop['duration'], $dm)) {
+                    $unplannedMins += (int)$dm[1];
+                }
+            }
+
+            if ($mDetails->count() > 0) {
+                $prevProduct = null;
+                $lastPrevProductTime = null;
+
+                foreach ($mDetails as $d) {
+                    $currProduct = preg_replace('/_[TWL]$/', '', strtolower($d->product_type));
+                    [$th, $tm] = explode(':', substr($d->time, 0, 5));
+                    $currMins = (int)$th * 60 + (int)$tm;
+
+                    if ($prevProduct !== null && $currProduct !== $prevProduct) {
+                        if ($lastPrevProductTime !== null) {
+                            $diff = $currMins >= $lastPrevProductTime ? ($currMins - $lastPrevProductTime) : ($currMins + 1440 - $lastPrevProductTime);
+                            if ($diff > 0 && $diff < 720) {
+                                $changeoverMinutes += $diff;
+                                $changeoverCount++;
+                            }
+                        }
+                    }
+
+                    $prevProduct = $currProduct;
+                    $lastPrevProductTime = $currMins;
+                }
+
+                [$fH, $fM] = explode(':', substr($mDetails->first()->time, 0, 5));
+                [$lH, $lM] = explode(':', substr($mDetails->last()->time, 0, 5));
+                $firstMins = (int)$fH * 60 + (int)$fM;
+                $lastMins  = (int)$lH * 60 + (int)$lM;
+                $spanMins  = $lastMins >= $firstMins ? ($lastMins - $firstMins) : ($lastMins + 1440 - $firstMins);
+                if ($spanMins === 0) $spanMins = 15;
+
+                $activeMinutes = max(0, $spanMins - $changeoverMinutes - $unplannedMins);
+            } else {
+                $spanMins      = 0;
+                $activeMinutes = 0;
+            }
+
+            $efficiencyPercent = $totalShiftMinutes > 0 ? round(($activeMinutes / $totalShiftMinutes) * 100, 1) : 0;
+            if ($efficiencyPercent > 100) $efficiencyPercent = 100.0;
+
+            $statusText = $efficiencyPercent >= 90 ? 'Baik' : ($efficiencyPercent >= 70 ? 'Cukup' : 'Perlu Evaluasi');
+            $statusColor = $efficiencyPercent >= 90 ? 'green' : ($efficiencyPercent >= 70 ? 'yellow' : 'red');
+
+            $efficiencyByMachine[$m] = [
+                'machine'               => $m,
+                'total_shift_minutes'   => $totalShiftMinutes,
+                'active_minutes'        => $activeMinutes,
+                'changeover_minutes'    => $changeoverMinutes,
+                'changeover_count'      => $changeoverCount,
+                'unplanned_minutes'     => $unplannedMins,
+                'efficiency_percent'    => $efficiencyPercent,
+                'status_text'           => $statusText,
+                'status_color'          => $statusColor,
+            ];
+        }
+
         return response()->json([
-            'date'        => $queryDate,
-            'shift'       => $shift,
-            'from_time'   => $fromTime,
-            'to_time'     => $toTime,
-            'by_machine'  => $byMachine,
-            'grand_total' => $grandTotal,
-            'unplanned_stops' => $unplannedStopsData,
+            'date'                 => $queryDate,
+            'shift'                => $shift,
+            'from_time'            => $fromTime,
+            'to_time'              => $toTime,
+            'by_machine'           => $byMachine,
+            'grand_total'          => $grandTotal,
+            'unplanned_stops'      => $unplannedStopsData,
+            'efficiency_by_machine'=> $efficiencyByMachine,
         ]);
     }
 
