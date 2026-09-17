@@ -1045,9 +1045,6 @@ export default function DataTable({ logsheets }) {
                                                             <div className="flex flex-wrap items-center gap-2 bg-indigo-50/90 border border-indigo-200 px-3 py-1.5 rounded-lg text-indigo-900 font-bold">
                                                                 <span className="text-indigo-700 font-extrabold flex items-center gap-1">⏱️ Total Waktu:</span>
                                                                 <span className="font-black text-indigo-800 font-mono text-sm">{tm.totalWorkMinutes} mnt</span>
-                                                                <span className="text-[11px] text-indigo-600/90 font-medium">
-                                                                    (Aktif: <strong className="text-emerald-700">{tm.activeMinutes}m</strong> | Pergantian: <strong className="text-amber-700">{tm.changeoverMinutes}m ({tm.changeoverCount}x)</strong> | Kendala: <strong className="text-rose-700">{tm.unplannedMinutes}m</strong> | Loss: <strong className="text-purple-700">{tm.lossMinutes}m</strong>)
-                                                                </span>
                                                             </div>
 
                                                             {/* Rekap Produk */}
