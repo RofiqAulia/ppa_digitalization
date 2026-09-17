@@ -8,9 +8,10 @@ export default function OperatorLayout({ children }) {
 
     // Determine active route
     const isLogsheet   = url.startsWith('/logsheet-operator');
-    const isTerminalIQF = url === '/' || (url.startsWith('/operator') && !url.startsWith('/operator/refrezing')) || url.startsWith('/kendala');
+    const isTerminalIQF = (url === '/' || (url.startsWith('/operator') && !url.startsWith('/operator/refrezing'))) && !url.startsWith('/kendala');
     const isTerminalRefrezing = url.startsWith('/refrezing-kiosk');
     const isLogsheetRefrezing = url.startsWith('/logsheet-refrezing');
+    const isKendala = url.startsWith('/kendala');
 
     const handleLogout = () => {
         router.post('/operator/logout');
@@ -29,7 +30,7 @@ export default function OperatorLayout({ children }) {
                     </div>
 
                     {/* Center: Navigation (Desktop) */}
-                    <nav className="hidden md:flex items-center gap-6 bg-slate-50/50 px-6 py-2.5 rounded-full border border-slate-100 shadow-inner">
+                    <nav className="hidden md:flex items-center gap-5 bg-slate-50/50 px-6 py-2.5 rounded-full border border-slate-100 shadow-inner">
                         <Link 
                             href="/logsheet-operator" 
                             className={`text-[12px] font-black uppercase tracking-widest transition-all hover:scale-105 relative ${isLogsheet ? 'text-pink-500' : 'text-slate-500 hover:text-pink-500'}`}
@@ -66,6 +67,17 @@ export default function OperatorLayout({ children }) {
                         >
                             Logsheet Refrezing
                             {isLogsheetRefrezing && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-cyan-500 rounded-full"></span>}
+                        </Link>
+
+                        <div className="h-4 w-px bg-slate-200"></div>
+
+                        <Link 
+                            href="/kendala" 
+                            className={`text-[12px] font-black uppercase tracking-widest transition-all hover:scale-105 relative flex items-center gap-1.5 ${isKendala ? 'text-rose-600' : 'text-slate-500 hover:text-rose-600'}`}
+                        >
+                            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                            Lintasan Kendala
+                            {isKendala && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-rose-600 rounded-full"></span>}
                         </Link>
                     </nav>
 
@@ -131,6 +143,12 @@ export default function OperatorLayout({ children }) {
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mt-1">Refrezing</p>
                         <Link href="/refrezing-kiosk" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isTerminalRefrezing ? 'text-cyan-500' : 'text-slate-600'}`} onClick={() => setIsMobileMenuOpen(false)}>Terminal Refrezing</Link>
                         <Link href="/logsheet-refrezing" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 ${isLogsheetRefrezing ? 'text-cyan-500' : 'text-slate-600'}`} onClick={() => setIsMobileMenuOpen(false)}>Logsheet Refrezing</Link>
+                        
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-400 mt-1">Kendala</p>
+                        <Link href="/kendala" className={`text-sm font-black uppercase tracking-widest border-b border-slate-50 pb-2 flex items-center justify-between ${isKendala ? 'text-rose-600' : 'text-slate-600'}`} onClick={() => setIsMobileMenuOpen(false)}>
+                            <span>Lintasan Kendala</span>
+                            <span className="text-xs bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full font-bold">⚠️</span>
+                        </Link>
                         
                         {operatorName ? (
                             <div className="mt-2 flex flex-col gap-2">

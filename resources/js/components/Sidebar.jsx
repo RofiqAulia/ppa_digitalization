@@ -129,7 +129,16 @@ function NavItem({ item, isCollapsed, setIsCollapsed, url }) {
 }
 
 function SidebarContent({ isCollapsed, setIsCollapsed }) {
-    const { url } = usePage();
+    const { url, props } = usePage();
+    const isAdmin = props.auth?.user?.role === 'admin';
+
+    const filteredNavigation = navigation.filter(item => {
+        if (item.href === '/admin/users' || (item.isTitle && item.name === 'Manajemen User')) {
+            return isAdmin;
+        }
+        return true;
+    });
+
     return (
         <div className="flex flex-col h-full bg-card border-r shadow-sm">
             <div className={cn("flex items-center h-16 border-b px-4", isCollapsed ? "justify-center" : "justify-start")}>
@@ -148,7 +157,7 @@ function SidebarContent({ isCollapsed, setIsCollapsed }) {
 
             <ScrollArea className="flex-1 py-4">
                 <nav className="space-y-1 px-2">
-                    {navigation.map((item) => (
+                    {filteredNavigation.map((item) => (
                         <NavItem
                             key={item.name}
                             item={item}

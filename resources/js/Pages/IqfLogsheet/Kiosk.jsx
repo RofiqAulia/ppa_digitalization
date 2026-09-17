@@ -277,8 +277,16 @@ export default function Kiosk() {
                 {step === 1 && (
                     <div className="w-full max-w-4xl mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="text-center mb-10">
-                            <h2 className="text-4xl font-black text-slate-800 mb-2">Pilih Konteks Shift</h2>
-                            <p className="text-slate-500 font-medium">Pilih jenis produk dan mesin sebelum memulai pencatatan.</p>
+                            <h2 className="text-4xl font-black text-slate-800 mb-4 uppercase tracking-[0.2em]">Pilih Konteks Shift</h2>
+                            <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-white/95 backdrop-blur-md px-6 py-2.5 rounded-full border-2 border-blue-400 shadow-lg shadow-blue-500/15">
+                                <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
+                                <span className="text-xs md:text-sm font-black text-slate-700 uppercase tracking-[0.15em]">
+                                    Inputan Terakhir Operator:
+                                </span>
+                                <span className="text-xs md:text-sm font-black text-blue-600 uppercase tracking-[0.15em] bg-blue-50 px-3 py-0.5 rounded-full border border-blue-200">
+                                    {product ? product.replace('_', ' ').toUpperCase() : 'DIMSUM'} | {batchNumber ? `BATCH ${batchNumber}` : 'BATCH'} | {isPack ? 'PACK' : (lastRak || rak ? `RAK ${lastRak || rak}` : 'RAK')}
+                                </span>
+                            </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="bg-white/80 backdrop-blur-xl border p-6 rounded-3xl shadow-sm flex flex-col">

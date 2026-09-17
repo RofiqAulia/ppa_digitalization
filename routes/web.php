@@ -74,36 +74,40 @@ Route::middleware('auth')->group(function () {
     // Refrezing History
     Route::get('/refrezing/history', [\App\Http\Controllers\RefrezingController::class, 'adminHistory'])->name('refrezing-logsheet.history');
 
-    // Refrezing Edit/Delete Details (Admin)
-    Route::put('/refrezing-logsheet-detail/{id}', [\App\Http\Controllers\RefrezingController::class, 'updateDetail'])->name('refrezing-logsheet.updateDetail');
-    Route::delete('/refrezing-logsheet-detail/{id}', [\App\Http\Controllers\RefrezingController::class, 'destroyDetail'])->name('refrezing-logsheet.destroyDetail');
-
+    // Shared Read Routes (Admin & Koordinator)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Prepare Produksi
-    Route::resource('prepare-produksi', \App\Http\Controllers\PrepareProductionController::class)->except(['destroy']);
-    Route::post('/prepare-produksi/{prepareProduksi}/update', [\App\Http\Controllers\PrepareProductionController::class, 'update'])->name('prepare-produksi.update');
-    Route::delete('/prepare-produksi/{prepareProduksi}', [\App\Http\Controllers\PrepareProductionController::class, 'destroy'])->name('prepare-produksi.destroy');
-    
     Route::get('/iqf-logsheet/history', [\App\Http\Controllers\IqfLogsheetController::class, 'history'])->name('iqf-logsheet.history');
-
-    Route::resource('iqf-logsheet', \App\Http\Controllers\IqfLogsheetController::class)->except(['index']); // index is public at /logsheet-iqf
-    
-    Route::post('/iqf-logsheet/{iqfLogsheet}/detail', [\App\Http\Controllers\IqfLogsheetController::class, 'storeDetail'])->name('iqf-logsheet.storeDetail');
-    Route::put('/iqf-logsheet-detail/{id}', [\App\Http\Controllers\IqfLogsheetController::class, 'updateDetail'])->name('iqf-logsheet.updateDetail');
-    Route::delete('/iqf-logsheet-detail/{id}', [\App\Http\Controllers\IqfLogsheetController::class, 'destroyDetail'])->name('iqf-logsheet.destroyDetail');
-    Route::put('/iqf-logsheet/{logsheet}/row', [\App\Http\Controllers\IqfLogsheetController::class, 'updateRow'])->name('iqf-logsheet.updateRow');
-
-    // Export Excel Route
     Route::get('/iqf-logsheet/export-excel', [\App\Http\Controllers\IqfExportController::class, 'download'])->name('iqf-logsheet.export');
+    Route::resource('prepare-produksi', \App\Http\Controllers\PrepareProductionController::class)->only(['index', 'show']);
 
-    // Admin User Management
-    Route::get('/admin/users', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('admin.users.index');
-    Route::post('/admin/users', [\App\Http\Controllers\AdminUserController::class, 'store'])->name('admin.users.store');
-    Route::put('/admin/users/{user}', [\App\Http\Controllers\AdminUserController::class, 'update'])->name('admin.users.update');
-    Route::delete('/admin/users/{user}', [\App\Http\Controllers\AdminUserController::class, 'destroy'])->name('admin.users.destroy');
+    // Admin ONLY Mutation Routes (Koordinator is Read-Only)
+    Route::middleware(\App\Http\Middleware\EnsureAdmin::class)->group(function () {
+        // Refrezing Edit/Delete Details
+        Route::put('/refrezing-logsheet-detail/{id}', [\App\Http\Controllers\RefrezingController::class, 'updateDetail'])->name('refrezing-logsheet.updateDetail');
+        Route::delete('/refrezing-logsheet-detail/{id}', [\App\Http\Controllers\RefrezingController::class, 'destroyDetail'])->name('refrezing-logsheet.destroyDetail');
+
+        // Prepare Produksi Mutations
+        Route::post('/prepare-produksi', [\App\Http\Controllers\PrepareProductionController::class, 'store'])->name('prepare-produksi.store');
+        Route::get('/prepare-produksi/create', [\App\Http\Controllers\PrepareProductionController::class, 'create'])->name('prepare-produksi.create');
+        Route::get('/prepare-produksi/{prepareProduksi}/edit', [\App\Http\Controllers\PrepareProductionController::class, 'edit'])->name('prepare-produksi.edit');
+        Route::post('/prepare-produksi/{prepareProduksi}/update', [\App\Http\Controllers\PrepareProductionController::class, 'update'])->name('prepare-produksi.update');
+        Route::delete('/prepare-produksi/{prepareProduksi}', [\App\Http\Controllers\PrepareProductionController::class, 'destroy'])->name('prepare-produksi.destroy');
+
+        // IQF Logsheet Mutations
+        Route::resource('iqf-logsheet', \App\Http\Controllers\IqfLogsheetController::class)->except(['index', 'history']);
+        Route::post('/iqf-logsheet/{iqfLogsheet}/detail', [\App\Http\Controllers\IqfLogsheetController::class, 'storeDetail'])->name('iqf-logsheet.storeDetail');
+        Route::put('/iqf-logsheet-detail/{id}', [\App\Http\Controllers\IqfLogsheetController::class, 'updateDetail'])->name('iqf-logsheet.updateDetail');
+        Route::delete('/iqf-logsheet-detail/{id}', [\App\Http\Controllers\IqfLogsheetController::class, 'destroyDetail'])->name('iqf-logsheet.destroyDetail');
+        Route::put('/iqf-logsheet/{logsheet}/row', [\App\Http\Controllers\IqfLogsheetController::class, 'updateRow'])->name('iqf-logsheet.updateRow');
+
+        // Admin User Management
+        Route::get('/admin/users', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('admin.users.index');
+        Route::post('/admin/users', [\App\Http\Controllers\AdminUserController::class, 'store'])->name('admin.users.store');
+        Route::put('/admin/users/{user}', [\App\Http\Controllers\AdminUserController::class, 'update'])->name('admin.users.update');
+        Route::delete('/admin/users/{user}', [\App\Http\Controllers\AdminUserController::class, 'destroy'])->name('admin.users.destroy');
+    });
 });
 
 // Refrezing Admin Routes (Public Index)

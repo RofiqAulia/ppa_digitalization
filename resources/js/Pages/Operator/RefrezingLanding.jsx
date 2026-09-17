@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import OperatorLayout from '@/Layouts/OperatorLayout';
-import DraggableKendalaButton from '@/Components/DraggableKendalaButton';
 import axios from 'axios';
 
 // Helper functions for shift/date
@@ -183,8 +182,16 @@ export default function Landing() {
                 
                 {/* Title and Dropdowns */}
                 <div className="text-center mb-10">
-                    <h2 className="text-3xl font-black text-cyan-900 uppercase tracking-[0.2em] mb-3 drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] [-webkit-text-stroke:1px_white]">Pilihan Dimsum (Refrezing)</h2>
-                    <p className="text-base font-black text-slate-800 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] [-webkit-text-stroke:0.5px_white]">Pilih jenis produk dan mesin sebelum memulai pencatatan.</p>
+                    <h2 className="text-3xl font-black text-cyan-900 uppercase tracking-[0.2em] mb-4 drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] [-webkit-text-stroke:1px_white]">Pilihan Dimsum (Refrezing)</h2>
+                    <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-white/95 backdrop-blur-md px-6 py-2.5 rounded-full border-2 border-cyan-400 shadow-lg shadow-cyan-500/15">
+                        <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
+                        <span className="text-xs md:text-sm font-black text-slate-700 uppercase tracking-[0.15em]">
+                            Inputan Terakhir Operator:
+                        </span>
+                        <span className="text-xs md:text-sm font-black text-cyan-600 uppercase tracking-[0.15em] bg-cyan-50 px-3 py-0.5 rounded-full border border-cyan-200">
+                            {product ? product.replace('_', ' ').toUpperCase() : 'DIMSUM'} | {batchNumber ? `BATCH ${batchNumber}` : 'BATCH'} | {isPackItem ? 'PACK' : (lastRak || rak ? `RAK ${lastRak || rak}` : 'RAK')}
+                        </span>
+                    </div>
                 </div>
 
                 <div className="flex bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden mb-12 max-w-md w-full border-2 border-cyan-500/50 p-1">
@@ -277,9 +284,6 @@ export default function Landing() {
                     {loading ? 'Mencatat...' : 'Lanjutkan Pencatatan'}
                 </button>
             </div>
-
-            {/* Floating Action Button for Kendala (Draggable) */}
-            <DraggableKendalaButton href="/kendala" />
 
             {/* Toast Notification */}
             {toast.show && (

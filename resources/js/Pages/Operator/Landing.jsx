@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import OperatorLayout from '@/Layouts/OperatorLayout';
-import DraggableKendalaButton from '@/Components/DraggableKendalaButton';
 import axios from 'axios';
 
 // Helper functions for shift/date
 const getCurrentShiftAndDate = () => {
     const now = new Date();
     const wibDateStr = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Jakarta' }).format(now);
-    const wibHour    = parseInt(
+    const wibHour = parseInt(
         new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jakarta', hour: 'numeric', hour12: false }).format(now),
         10
     );
@@ -16,10 +15,10 @@ const getCurrentShiftAndDate = () => {
     let shift, date;
     if (wibHour >= 8 && wibHour < 16) {
         shift = 1;
-        date  = wibDateStr;
+        date = wibDateStr;
     } else if (wibHour >= 16) {
         shift = 2;
-        date  = wibDateStr;
+        date = wibDateStr;
     } else {
         // 00:00–07:59 → Shift 3, tanggal hari sebelumnya
         shift = 3;
@@ -31,12 +30,12 @@ const getCurrentShiftAndDate = () => {
 };
 
 const readLastRakSafe = (machine, product) => {
-    const rakKey      = `iqf_lastRak_${machine}_${product}`;
-    const rakDateKey  = `iqf_lastRakDate_${machine}_${product}`;
+    const rakKey = `iqf_lastRak_${machine}_${product}`;
+    const rakDateKey = `iqf_lastRakDate_${machine}_${product}`;
     const rakShiftKey = `iqf_lastRakShift_${machine}_${product}`;
 
-    const savedRak   = localStorage.getItem(rakKey)   || '';
-    const savedDate  = localStorage.getItem(rakDateKey)  || '';
+    const savedRak = localStorage.getItem(rakKey) || '';
+    const savedDate = localStorage.getItem(rakDateKey) || '';
     const savedShift = localStorage.getItem(rakShiftKey) || '';
 
     if (!savedRak) return '';
@@ -54,8 +53,8 @@ const readLastRakSafe = (machine, product) => {
 
 const saveLastRak = (machine, product, rak) => {
     const { shift, date } = getCurrentShiftAndDate();
-    localStorage.setItem(`iqf_lastRak_${machine}_${product}`,      String(rak));
-    localStorage.setItem(`iqf_lastRakDate_${machine}_${product}`,  date);
+    localStorage.setItem(`iqf_lastRak_${machine}_${product}`, String(rak));
+    localStorage.setItem(`iqf_lastRakDate_${machine}_${product}`, date);
     localStorage.setItem(`iqf_lastRakShift_${machine}_${product}`, String(shift));
 };
 
@@ -72,7 +71,7 @@ export default function Landing() {
     const [lastRak, setLastRak] = useState('');
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', title: '', message: '' });
-    
+
     // Load state from local storage on mount
     useEffect(() => {
         const savedProduct = localStorage.getItem('iqf_product');
@@ -152,9 +151,9 @@ export default function Landing() {
     return (
         <OperatorLayout>
             <Head title="Operator Terminal" />
-            
+
             {/* Background image covering main content */}
-            <div 
+            <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
                 style={{ backgroundImage: 'url("/images/bg-miegacoan.png")' }}
             >
@@ -163,17 +162,25 @@ export default function Landing() {
             </div>
 
             <div className="relative z-10 flex flex-col items-center pt-8 pb-16 px-4">
-                
+
                 {/* Title and Dropdowns */}
                 <div className="text-center mb-10">
-                    <h2 className="text-3xl font-black text-slate-900 uppercase tracking-[0.2em] mb-3 drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] [-webkit-text-stroke:1px_white]">Pilihan Dimsum (IQF)</h2>
-                    <p className="text-base font-black text-slate-800 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] [-webkit-text-stroke:0.5px_white]">Pilih jenis produk dan mesin sebelum memulai pencatatan.</p>
+                    <h2 className="text-3xl font-black text-slate-900 uppercase tracking-[0.2em] mb-4 drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] [-webkit-text-stroke:1px_white]">Pilihan Dimsum (IQF)</h2>
+                    <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-white/95 backdrop-blur-md px-6 py-2.5 rounded-full border-2 border-pink-400 shadow-lg shadow-pink-500/15">
+                        <span className="w-2.5 h-2.5 rounded-full bg-pink-500 animate-pulse"></span>
+                        {/* <span className="text-xs md:text-sm font-black text-slate-700 uppercase tracking-[0.15em]">
+                            Inputan Terakhir Operator:
+                        </span> */}
+                        <span className="text-xs md:text-sm font-black text-pink-600 uppercase tracking-[0.15em] bg-pink-50 px-3 py-0.5 rounded-full border border-pink-200">
+                            {product ? product.replace('_', ' ').toUpperCase() : 'DIMSUM'} | {batchNumber ? `BATCH ${batchNumber}` : 'BATCH'} | {isPackItem ? 'PACK' : (lastRak || rak ? `RAK ${lastRak || rak}` : 'RAK')}
+                        </span>
+                    </div>
                 </div>
 
                 <div className="flex bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden mb-12 max-w-3xl w-full border-2 border-pink-500/50 p-1 flex-col md:flex-row">
                     <div className="flex-1">
-                        <select 
-                            value={product} 
+                        <select
+                            value={product}
                             onChange={e => setProduct(e.target.value)}
                             className="w-full bg-pink-500 text-white font-black text-sm uppercase px-4 py-4 md:rounded-l-[1.8rem] appearance-none outline-none text-center cursor-pointer hover:bg-pink-600 transition-all shadow-md md:rounded-none rounded-t-[1.8rem]"
                             style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1em top 50%', backgroundSize: '.65em auto' }}
@@ -184,8 +191,8 @@ export default function Landing() {
                         </select>
                     </div>
                     <div className="flex-1">
-                        <select 
-                            value={machine} 
+                        <select
+                            value={machine}
                             onChange={e => setMachine(e.target.value)}
                             className="w-full bg-transparent text-slate-700 font-black text-sm uppercase px-4 py-4 appearance-none outline-none text-center cursor-pointer hover:bg-slate-50 transition-all md:border-x-2 md:border-y-0 border-y-2 border-pink-100"
                             style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23475569%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1em top 50%', backgroundSize: '.65em auto' }}
@@ -196,8 +203,8 @@ export default function Landing() {
                         </select>
                     </div>
                     <div className="flex-1 relative">
-                        <select 
-                            value={statusDimsum} 
+                        <select
+                            value={statusDimsum}
                             onChange={e => setStatusDimsum(e.target.value)}
                             className="w-full bg-pink-500 text-white font-black text-sm uppercase px-4 py-4 md:rounded-r-[1.8rem] appearance-none outline-none text-center cursor-pointer hover:bg-pink-600 transition-all shadow-md md:rounded-none rounded-b-[1.8rem]"
                             style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1em top 50%', backgroundSize: '.65em auto' }}
@@ -263,17 +270,14 @@ export default function Landing() {
                 </div>
 
                 {/* Submit Button */}
-                <button 
-                    onClick={submitData} 
+                <button
+                    onClick={submitData}
                     disabled={loading || !trayCount || trayCount <= 0}
                     className="w-full md:w-auto bg-white/90 backdrop-blur-md border-2 border-pink-500 text-pink-500 font-black text-sm py-4 px-12 rounded-full uppercase tracking-[0.2em] hover:bg-pink-500 hover:text-white transition-all shadow-xl hover:shadow-pink-500/30 disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-pink-500"
                 >
                     {loading ? 'Mencatat...' : 'Lanjutkan Pencatatan'}
                 </button>
             </div>
-
-            {/* Floating Action Button for Kendala (Draggable) */}
-            <DraggableKendalaButton href="/kendala" />
 
             {/* Toast Notification */}
             {toast.show && (

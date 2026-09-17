@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import * as XLSX from 'xlsx-js-style';
 
 /* ─────────────────────────────────────────────
@@ -120,6 +120,8 @@ const PRINT_STYLE = `
 
 
 export default function DataTable({ logsheets }) {
+    const { auth } = usePage().props;
+    const isReadOnly = auth?.user?.role === 'koordinator';
     /* ── State ─────────────────────────────────── */
     const [search,          setSearch]         = useState('');
     const [groupsPerPage,   setGroupsPerPage]  = useState('10');
@@ -849,7 +851,9 @@ export default function DataTable({ logsheets }) {
                                             <SortableHeader columnKey="tray_count">Jumlah (Loyang/Keranjang)</SortableHeader>
                                             <th className="px-3 py-2.5 text-xs font-bold text-emerald-100 bg-emerald-700 border-b border-emerald-800 text-center">Total</th>
                                             <SortableHeader columnKey="unplanned_stop" className="hidden lg:table-cell">Unplanned Stop</SortableHeader>
-                                            <th className="no-print hidden sm:table-cell px-3 py-2.5 text-xs font-bold text-white bg-[#1e3a5f] border-b border-[#152d4a] text-center w-14">Aksi</th>
+                                            {!isReadOnly && (
+                                                <th className="no-print hidden sm:table-cell px-3 py-2.5 text-xs font-bold text-white bg-[#1e3a5f] border-b border-[#152d4a] text-center w-14">Aksi</th>
+                                            )}
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -919,24 +923,26 @@ export default function DataTable({ logsheets }) {
                                                             <span className="inline-flex px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded font-bold text-[10px]">{row.unplanned_stop}</span>
                                                         ) : <span className="text-slate-300">-</span>}
                                                     </td>
-                                                    <td className="no-print hidden sm:table-cell px-3 py-1.5 text-center">
-                                                        <div className="flex items-center justify-center gap-1.5">
-                                                            <button
-                                                                className="h-6 w-6 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors flex items-center justify-center"
-                                                                onClick={() => openEditModal(row)}
-                                                                title="Edit"
-                                                            >
-                                                                <Edit2 className="w-3 h-3" />
-                                                            </button>
-                                                            <button
-                                                                className="h-6 w-6 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors flex items-center justify-center"
-                                                                onClick={() => handleDeleteDetail(row.id)}
-                                                                title="Hapus"
-                                                            >
-                                                                <Trash2 className="w-3 h-3" />
-                                                            </button>
-                                                        </div>
-                                                    </td>
+                                                    {!isReadOnly && (
+                                                        <td className="no-print hidden sm:table-cell px-3 py-1.5 text-center">
+                                                            <div className="flex items-center justify-center gap-1.5">
+                                                                <button
+                                                                    className="h-6 w-6 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors flex items-center justify-center"
+                                                                    onClick={() => openEditModal(row)}
+                                                                    title="Edit"
+                                                                >
+                                                                    <Edit2 className="w-3 h-3" />
+                                                                </button>
+                                                                <button
+                                                                    className="h-6 w-6 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors flex items-center justify-center"
+                                                                    onClick={() => handleDeleteDetail(row.id)}
+                                                                    title="Hapus"
+                                                                >
+                                                                    <Trash2 className="w-3 h-3" />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    )}
                                                 </tr>
                                             );
                                          });

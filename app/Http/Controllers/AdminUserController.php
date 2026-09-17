@@ -22,7 +22,7 @@ class AdminUserController extends Controller
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', Password::min(8)],
-            'role'     => ['required', 'in:admin,operator'],
+            'role'     => ['required', 'in:admin,koordinator,operator'],
         ]);
 
         User::create([
@@ -33,7 +33,11 @@ class AdminUserController extends Controller
             'email_verified_at' => now(),
         ]);
 
-        $roleLabel = $validated['role'] === 'admin' ? 'Admin' : 'Operator';
+        $roleLabel = match ($validated['role']) {
+            'admin' => 'Admin',
+            'koordinator' => 'Koordinator',
+            default => 'Operator',
+        };
         return back()->with('success', "Akun {$roleLabel} berhasil ditambahkan!");
     }
 
@@ -43,7 +47,7 @@ class AdminUserController extends Controller
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'password' => ['nullable', Password::min(8)],
-            'role'     => ['required', 'in:admin,operator'],
+            'role'     => ['required', 'in:admin,koordinator,operator'],
         ]);
 
         $user->name  = $validated['name'];

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Edit2, Trash2, Monitor, ShieldCheck, Info, Copy, Check } from 'lucide-react';
+import { Edit2, Trash2, Monitor, ShieldCheck, Info, Copy, Check, Eye } from 'lucide-react';
 
 function CopyButton({ text }) {
     const [copied, setCopied] = useState(false);
@@ -73,16 +73,19 @@ export default function AdminUsersIndex({ users }) {
         }
     };
 
-    const adminUsers    = users.filter(u => u.role === 'admin');
-    const operatorUsers = users.filter(u => u.role === 'operator');
-    const displayUsers  = activeTab === 'admin'    ? adminUsers
-                        : activeTab === 'operator' ? operatorUsers
-                        : users;
+    const adminUsers       = users.filter(u => u.role === 'admin');
+    const koordinatorUsers = users.filter(u => u.role === 'koordinator');
+    const operatorUsers    = users.filter(u => u.role === 'operator');
+    const displayUsers     = activeTab === 'admin'       ? adminUsers
+                           : activeTab === 'koordinator' ? koordinatorUsers
+                           : activeTab === 'operator'    ? operatorUsers
+                           : users;
 
     const tabs = [
-        { key: 'all',      label: 'Semua Akun',      count: users.length },
-        { key: 'admin',    label: 'Admin Panel',      count: adminUsers.length },
-        { key: 'operator', label: 'Terminal Operator', count: operatorUsers.length },
+        { key: 'all',         label: 'Semua Akun',              count: users.length },
+        { key: 'admin',       label: 'Admin Panel (Full)',       count: adminUsers.length },
+        { key: 'koordinator', label: 'Koordinator (Read-Only)', count: koordinatorUsers.length },
+        { key: 'operator',    label: 'Terminal Operator',        count: operatorUsers.length },
     ];
 
     return (
@@ -217,8 +220,8 @@ export default function AdminUsersIndex({ users }) {
                         {/* Role / Tipe Akun */}
                         <div>
                             <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5">Tipe Akun</label>
-                            <div className="flex gap-3 mt-1">
-                                <label className={`flex-1 flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${data.role === 'operator' ? 'border-pink-400 bg-pink-50' : 'border-slate-200 hover:border-slate-300'}`}>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-1">
+                                <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${data.role === 'operator' ? 'border-pink-400 bg-pink-50' : 'border-slate-200 hover:border-slate-300'}`}>
                                     <input
                                         type="radio"
                                         name="role"
@@ -232,10 +235,27 @@ export default function AdminUsersIndex({ users }) {
                                             <Monitor className="w-3.5 h-3.5 text-pink-500" />
                                             <span className="font-black text-sm text-slate-700">Operator</span>
                                         </div>
-                                        <p className="text-[10px] text-slate-400 mt-0.5">Login terminal dengan nama / email</p>
+                                        <p className="text-[10px] text-slate-400 mt-0.5">Terminal Operator</p>
                                     </div>
                                 </label>
-                                <label className={`flex-1 flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${data.role === 'admin' ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'}`}>
+                                <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${data.role === 'koordinator' ? 'border-amber-400 bg-amber-50' : 'border-slate-200 hover:border-slate-300'}`}>
+                                    <input
+                                        type="radio"
+                                        name="role"
+                                        value="koordinator"
+                                        checked={data.role === 'koordinator'}
+                                        onChange={() => setData('role', 'koordinator')}
+                                        className="accent-amber-500"
+                                    />
+                                    <div>
+                                        <div className="flex items-center gap-1.5">
+                                            <Eye className="w-3.5 h-3.5 text-amber-600" />
+                                            <span className="font-black text-sm text-slate-700">Koordinator</span>
+                                        </div>
+                                        <p className="text-[10px] text-slate-400 mt-0.5">Admin (Read-Only)</p>
+                                    </div>
+                                </label>
+                                <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${data.role === 'admin' ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'}`}>
                                     <input
                                         type="radio"
                                         name="role"
@@ -247,9 +267,9 @@ export default function AdminUsersIndex({ users }) {
                                     <div>
                                         <div className="flex items-center gap-1.5">
                                             <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
-                                            <span className="font-black text-sm text-slate-700">Admin Panel</span>
+                                            <span className="font-black text-sm text-slate-700">Admin</span>
                                         </div>
-                                        <p className="text-[10px] text-slate-400 mt-0.5">Login admin dengan email + password</p>
+                                        <p className="text-[10px] text-slate-400 mt-0.5">Full Admin Access</p>
                                     </div>
                                 </label>
                             </div>
@@ -333,6 +353,10 @@ export default function AdminUsersIndex({ users }) {
                                         {isAdmin ? (
                                             <span className="inline-flex items-center gap-1.5 text-[11px] font-black px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 uppercase tracking-widest">
                                                 <ShieldCheck className="w-3 h-3" /> Admin Panel
+                                            </span>
+                                        ) : user.role === 'koordinator' ? (
+                                            <span className="inline-flex items-center gap-1.5 text-[11px] font-black px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-300 uppercase tracking-widest">
+                                                <Eye className="w-3 h-3 text-amber-600" /> Koordinator (Read-Only)
                                             </span>
                                         ) : (
                                             <span className="inline-flex items-center gap-1.5 text-[11px] font-black px-2.5 py-1 rounded-full bg-pink-100 text-pink-700 uppercase tracking-widest">
