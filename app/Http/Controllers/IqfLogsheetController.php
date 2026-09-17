@@ -233,8 +233,10 @@ class IqfLogsheetController extends Controller
 
             $totalWorkMinutes = $activeMinutes + $unplannedMins;
 
-            // Loss time = Elapsed Shift Time - (Active + Changeover + Unplanned + Elapsed Break)
-            $lossMinutes = max(0, $elapsedShiftMinutes - ($activeMinutes + $changeoverMinutes + $unplannedMins + $elapsedBreakMinutes));
+            $effectiveBreakMinutes = min($plannedBreakMinutes, $elapsedShiftMinutes);
+            // Loss time = Elapsed Shift Time - (Active + Changeover + Unplanned + Break)
+            // Ensures: Shift Berjalan == Input Aktif + Pergantian Dimsum + Kendala + Istirahat + Loss Time
+            $lossMinutes = max(0, $elapsedShiftMinutes - ($activeMinutes + $changeoverMinutes + $unplannedMins + $effectiveBreakMinutes));
 
             // Real-time efficiency: ((active_minutes + unplanned_minutes) / netElapsedWorkMinutes) * 100%
             $efficiencyPercent = $netElapsedWorkMinutes > 0 ? round(($totalWorkMinutes / $netElapsedWorkMinutes) * 100, 1) : 0;
@@ -247,8 +249,8 @@ class IqfLogsheetController extends Controller
                 'machine'               => $m,
                 'total_shift_minutes'   => $totalShiftMinutes,
                 'elapsed_shift_minutes' => $elapsedShiftMinutes,
-                'break_minutes'         => $plannedBreakMinutes,
-                'elapsed_break_minutes' => $elapsedBreakMinutes,
+                'break_minutes'         => $effectiveBreakMinutes,
+                'elapsed_break_minutes' => $effectiveBreakMinutes,
                 'net_work_target'       => $netShiftTarget,
                 'total_work_minutes'    => $totalWorkMinutes,
                 'active_minutes'        => $activeMinutes,
