@@ -173,17 +173,17 @@ export default function IqfDashboard() {
     return (
         <div className="space-y-6 select-none max-w-[1400px] mx-auto pb-10">
             {/* HEADER - CoreUI Dark Card */}
-            <CCard className="bg-[#1a2035] text-white border-0 shadow-lg rounded-3xl p-5 md:px-8">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="flex items-center gap-4 w-full md:w-auto">
-                        <div className="w-14 h-14 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0">
-                            <Activity className="w-7 h-7 text-white" />
+            <CCard className="bg-[#1a2035] text-white border-0 shadow-lg rounded-3xl p-4 sm:p-5 md:px-8">
+                <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 sm:gap-6">
+                    <div className="flex items-center gap-3 sm:gap-4 w-full lg:w-auto">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0">
+                            <Activity className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                         </div>
                         <div>
-                            <h2 className="text-white text-xl font-bold tracking-tight">Dashboard Produksi IQF</h2>
+                            <h2 className="text-white text-lg sm:text-xl font-bold tracking-tight m-0">Dashboard Produksi IQF</h2>
                             <div className="flex items-center gap-2 mt-1">
                                 <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                                <span className="text-indigo-200 text-sm font-medium flex items-center gap-1.5">
+                                <span className="text-indigo-200 text-xs sm:text-sm font-medium flex items-center gap-1.5">
                                     <Clock className="w-3.5 h-3.5" />
                                     Live · <LiveClock />
                                 </span>
@@ -192,44 +192,53 @@ export default function IqfDashboard() {
                     </div>
 
                     {/* Filters */}
-                    <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-start md:justify-end">
-                        <CButtonGroup role="group" className="bg-[#272f48] p-1 rounded-xl">
-                            {SHIFT_PRESETS.map(p => (
-                                <CButton
-                                    key={p.label}
-                                    onClick={() => applyPreset(p)}
-                                    color={activePreset === p.label ? 'primary' : 'transparent'}
-                                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all border-0 ${
-                                        activePreset === p.label
-                                        ? 'bg-blue-500 text-white shadow-sm'
-                                        : 'text-indigo-200 hover:text-white hover:bg-white/5'
-                                    }`}
-                                >
-                                    {p.label}
-                                </CButton>
-                            ))}
-                        </CButtonGroup>
-                        <div className="flex items-center gap-2 bg-[#272f48] rounded-xl px-4 py-2 border border-white/5">
+                    <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 w-full lg:w-auto justify-start lg:justify-end">
+                        {/* Shift Presets */}
+                        <div className="grid grid-cols-4 sm:flex sm:items-center bg-[#272f48] p-1 rounded-xl w-full sm:w-auto border border-white/5">
+                            {SHIFT_PRESETS.map(p => {
+                                const isActive = activePreset === p.label;
+                                return (
+                                    <button
+                                        key={p.label}
+                                        type="button"
+                                        onClick={() => applyPreset(p)}
+                                        className={`px-2 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all border-0 text-center ${
+                                            isActive
+                                            ? 'bg-blue-600 text-white shadow-sm font-bold'
+                                            : 'text-indigo-200 hover:text-white hover:bg-white/10'
+                                        }`}
+                                    >
+                                        {p.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* Custom Time Select */}
+                        <div className="flex items-center justify-between sm:justify-start gap-2 bg-[#272f48] rounded-xl px-3 py-2 border border-white/5 w-full sm:w-auto">
                             <CFormSelect
                                 value={fromTime}
                                 onChange={e => { setFromTime(e.target.value); setActivePreset('Custom'); }}
-                                className="bg-transparent text-white text-sm font-semibold border-0 p-0 shadow-none cursor-pointer focus:ring-0"
+                                className="bg-transparent text-white text-xs sm:text-sm font-semibold border-0 p-0 shadow-none cursor-pointer focus:ring-0"
                             >
-                                {HOURS.map(h => <option key={h} value={h} className="text-slate-900">{h}</option>)}
+                                {HOURS.map(h => <option key={h} value={h} className="text-slate-900 bg-white">{h}</option>)}
                             </CFormSelect>
-                            <span className="text-indigo-300/50">→</span>
+                            <span className="text-indigo-300/70 font-bold text-xs sm:text-sm">→</span>
                             <CFormSelect
                                 value={toTime}
                                 onChange={e => { setToTime(e.target.value); setActivePreset('Custom'); }}
-                                className="bg-transparent text-white text-sm font-semibold border-0 p-0 shadow-none cursor-pointer focus:ring-0"
+                                className="bg-transparent text-white text-xs sm:text-sm font-semibold border-0 p-0 shadow-none cursor-pointer focus:ring-0"
                             >
-                                {HOURS.map(h => <option key={h} value={h} className="text-slate-900">{h}</option>)}
+                                {HOURS.map(h => <option key={h} value={h} className="text-slate-900 bg-white">{h}</option>)}
                             </CFormSelect>
                         </div>
+
+                        {/* Refresh Button */}
                         <CButton
                             onClick={fetchStats}
                             disabled={loading}
-                            className="w-10 h-10 p-0 flex items-center justify-center rounded-xl bg-[#272f48] hover:bg-[#323b56] border border-white/5 text-indigo-200 hover:text-white"
+                            title="Refresh Data"
+                            className="h-10 px-4 sm:px-0 sm:w-10 flex items-center justify-center rounded-xl bg-[#272f48] hover:bg-[#323b56] border border-white/5 text-indigo-200 hover:text-white transition-all"
                         >
                             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                         </CButton>
