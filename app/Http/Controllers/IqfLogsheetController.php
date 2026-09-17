@@ -215,9 +215,9 @@ class IqfLogsheetController extends Controller
                 $activeMinutes = 0;
             }
 
-            $totalWorkMinutes = $activeMinutes + $changeoverMinutes + $unplannedMins;
+            $totalWorkMinutes = $activeMinutes + $unplannedMins;
 
-            // Real-time efficiency: ((active_minutes + unplanned_minutes + changeover_minutes) / elapsed_shift_minutes) * 100%
+            // Real-time efficiency: ((active_minutes + unplanned_minutes) / elapsed_shift_minutes) * 100%
             $efficiencyPercent = $elapsedShiftMinutes > 0 ? round(($totalWorkMinutes / $elapsedShiftMinutes) * 100, 1) : 0;
             if ($efficiencyPercent > 100) $efficiencyPercent = 100.0;
 

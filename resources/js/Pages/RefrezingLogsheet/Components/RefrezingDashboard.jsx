@@ -40,9 +40,9 @@ const PRODUCTS = [
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0') + ':00');
 
 const SHIFT_PRESETS = [
-    { label: 'Shift 1', from: '08:00', to: '15:00' },
-    { label: 'Shift 2', from: '16:00', to: '23:00' },
-    { label: 'Shift 3', from: '00:00', to: '07:00' },
+    { label: 'Shift 1', from: '08:00', to: '16:00' },
+    { label: 'Shift 2', from: '16:00', to: '00:00' },
+    { label: 'Shift 3', from: '00:00', to: '08:00' },
     { label: 'Semua',   from: '00:00', to: '23:00' },
 ];
 
