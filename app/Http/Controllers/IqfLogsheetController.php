@@ -141,6 +141,22 @@ class IqfLogsheetController extends Controller
             $totalShiftMinutes = 480; // Default 8 hours (480 mins) for standard shift / all shifts
         }
 
+        // Real-time elapsed shift calculation
+        $todayWib = now('Asia/Jakarta')->format('Y-m-d');
+        if ($queryDate === $todayWib) {
+            $nowWib = now('Asia/Jakarta');
+            $nowMins = $nowWib->hour * 60 + $nowWib->minute;
+            if ($nowMins < $fromMins) {
+                $elapsedShiftMinutes = 15;
+            } else if ($nowMins <= $toMins) {
+                $elapsedShiftMinutes = max(15, $nowMins - $fromMins);
+            } else {
+                $elapsedShiftMinutes = $totalShiftMinutes;
+            }
+        } else {
+            $elapsedShiftMinutes = $totalShiftMinutes;
+        }
+
         $efficiencyByMachine = [];
         foreach ($machines as $m) {
             $mDetails = DB::table('iqf_logsheets as h')
@@ -199,17 +215,19 @@ class IqfLogsheetController extends Controller
                 $activeMinutes = 0;
             }
 
-            $efficiencyPercent = $totalShiftMinutes > 0 ? round(($activeMinutes / $totalShiftMinutes) * 100, 1) : 0;
+            $totalWorkMinutes = $activeMinutes + $changeoverMinutes + $unplannedMins;
+
+            // Real-time efficiency: ((active_minutes + unplanned_minutes + changeover_minutes) / elapsed_shift_minutes) * 100%
+            $efficiencyPercent = $elapsedShiftMinutes > 0 ? round(($totalWorkMinutes / $elapsedShiftMinutes) * 100, 1) : 0;
             if ($efficiencyPercent > 100) $efficiencyPercent = 100.0;
 
             $statusText = $efficiencyPercent >= 90 ? 'Baik' : ($efficiencyPercent >= 70 ? 'Cukup' : 'Perlu Evaluasi');
             $statusColor = $efficiencyPercent >= 90 ? 'green' : ($efficiencyPercent >= 70 ? 'yellow' : 'red');
 
-            $totalWorkMinutes = $activeMinutes + $changeoverMinutes + $unplannedMins;
-
             $efficiencyByMachine[$m] = [
                 'machine'               => $m,
                 'total_shift_minutes'   => $totalShiftMinutes,
+                'elapsed_shift_minutes' => $elapsedShiftMinutes,
                 'total_work_minutes'    => $totalWorkMinutes,
                 'active_minutes'        => $activeMinutes,
                 'changeover_minutes'    => $changeoverMinutes,

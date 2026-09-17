@@ -308,8 +308,14 @@ export default function IqfDashboard() {
 
                                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-200/60 text-center">
                                     <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Total Shift</p>
-                                        <p className="text-xs font-black text-slate-700 mt-0.5">{effData.total_shift_minutes} <span className="text-[9px] font-normal">mnt</span></p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase">
+                                            {effData.elapsed_shift_minutes && effData.elapsed_shift_minutes < effData.total_shift_minutes ? 'Shift Berjalan' : 'Total Shift'}
+                                        </p>
+                                        <p className="text-xs font-black text-slate-700 mt-0.5">
+                                            {effData.elapsed_shift_minutes && effData.elapsed_shift_minutes < effData.total_shift_minutes 
+                                                ? `${effData.elapsed_shift_minutes}/${effData.total_shift_minutes}`
+                                                : effData.total_shift_minutes} <span className="text-[9px] font-normal">mnt</span>
+                                        </p>
                                     </div>
                                     <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase">Jumlah Bekerja</p>
