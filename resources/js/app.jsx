@@ -1,4 +1,5 @@
 import '../css/app.css';
+import '@coreui/coreui/dist/css/coreui.min.css';
 import './bootstrap';
 
 import { createInertiaApp } from '@inertiajs/react';

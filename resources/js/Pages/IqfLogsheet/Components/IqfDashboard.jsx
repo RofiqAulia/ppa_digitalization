@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
+import {
+    CCard, CCardHeader, CCardBody, CRow, CCol, CBadge, CButton, CButtonGroup,
+    CFormSelect, CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell, CSpinner
+} from '@coreui/react';
 import { RefreshCw, Clock, Activity, Users } from 'lucide-react';
 
 const PRODUCTS = [
@@ -168,165 +172,172 @@ export default function IqfDashboard() {
 
     return (
         <div className="space-y-6 select-none max-w-[1400px] mx-auto pb-10">
-            {/* HEADER - Dark Style */}
-            <div className="bg-[#1a2035] rounded-3xl p-5 md:px-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg shadow-indigo-900/10">
-                <div className="flex items-center gap-4 w-full md:w-auto">
-                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0">
-                        <Activity className="w-7 h-7 text-white" />
-                    </div>
-                    <div>
-                        <h2 className="text-white text-xl font-bold tracking-tight">Dashboard Produksi</h2>
-                        <div className="flex items-center gap-2 mt-1">
-                            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            <span className="text-indigo-200 text-sm font-medium flex items-center gap-1.5">
-                                <Clock className="w-3.5 h-3.5" />
-                                Live · <LiveClock />
-                            </span>
+            {/* HEADER - CoreUI Dark Card */}
+            <CCard className="bg-[#1a2035] text-white border-0 shadow-lg rounded-3xl p-5 md:px-8">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="flex items-center gap-4 w-full md:w-auto">
+                        <div className="w-14 h-14 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0">
+                            <Activity className="w-7 h-7 text-white" />
+                        </div>
+                        <div>
+                            <h2 className="text-white text-xl font-bold tracking-tight">Dashboard Produksi IQF</h2>
+                            <div className="flex items-center gap-2 mt-1">
+                                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                <span className="text-indigo-200 text-sm font-medium flex items-center gap-1.5">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    Live · <LiveClock />
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Filters */}
-                <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-start md:justify-end">
-                    <div className="flex bg-[#272f48] p-1 rounded-xl">
-                        {SHIFT_PRESETS.map(p => (
-                            <button
-                                key={p.label}
-                                onClick={() => applyPreset(p)}
-                                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-                                    activePreset === p.label 
-                                    ? 'bg-blue-500 text-white shadow-sm' 
-                                    : 'text-indigo-200 hover:text-white hover:bg-white/5'
-                                }`}
+                    {/* Filters */}
+                    <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-start md:justify-end">
+                        <CButtonGroup role="group" className="bg-[#272f48] p-1 rounded-xl">
+                            {SHIFT_PRESETS.map(p => (
+                                <CButton
+                                    key={p.label}
+                                    onClick={() => applyPreset(p)}
+                                    color={activePreset === p.label ? 'primary' : 'transparent'}
+                                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all border-0 ${
+                                        activePreset === p.label
+                                        ? 'bg-blue-500 text-white shadow-sm'
+                                        : 'text-indigo-200 hover:text-white hover:bg-white/5'
+                                    }`}
+                                >
+                                    {p.label}
+                                </CButton>
+                            ))}
+                        </CButtonGroup>
+                        <div className="flex items-center gap-2 bg-[#272f48] rounded-xl px-4 py-2 border border-white/5">
+                            <CFormSelect
+                                value={fromTime}
+                                onChange={e => { setFromTime(e.target.value); setActivePreset('Custom'); }}
+                                className="bg-transparent text-white text-sm font-semibold border-0 p-0 shadow-none cursor-pointer focus:ring-0"
                             >
-                                {p.label}
-                            </button>
-                        ))}
-                    </div>
-                    <div className="flex items-center gap-2 bg-[#272f48] rounded-xl px-4 py-2 border border-white/5">
-                        <select
-                            value={fromTime}
-                            onChange={e => { setFromTime(e.target.value); setActivePreset('Custom'); }}
-                            className="bg-transparent text-white text-sm font-semibold outline-none cursor-pointer"
+                                {HOURS.map(h => <option key={h} value={h} className="text-slate-900">{h}</option>)}
+                            </CFormSelect>
+                            <span className="text-indigo-300/50">→</span>
+                            <CFormSelect
+                                value={toTime}
+                                onChange={e => { setToTime(e.target.value); setActivePreset('Custom'); }}
+                                className="bg-transparent text-white text-sm font-semibold border-0 p-0 shadow-none cursor-pointer focus:ring-0"
+                            >
+                                {HOURS.map(h => <option key={h} value={h} className="text-slate-900">{h}</option>)}
+                            </CFormSelect>
+                        </div>
+                        <CButton
+                            onClick={fetchStats}
+                            disabled={loading}
+                            className="w-10 h-10 p-0 flex items-center justify-center rounded-xl bg-[#272f48] hover:bg-[#323b56] border border-white/5 text-indigo-200 hover:text-white"
                         >
-                            {HOURS.map(h => <option key={h} value={h} className="text-slate-900">{h}</option>)}
-                        </select>
-                        <span className="text-indigo-300/50">→</span>
-                        <select
-                            value={toTime}
-                            onChange={e => { setToTime(e.target.value); setActivePreset('Custom'); }}
-                            className="bg-transparent text-white text-sm font-semibold outline-none cursor-pointer"
-                        >
-                            {HOURS.map(h => <option key={h} value={h} className="text-slate-900">{h}</option>)}
-                        </select>
+                            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                        </CButton>
                     </div>
-                    <button
-                        onClick={fetchStats}
-                        disabled={loading}
-                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-[#272f48] hover:bg-[#323b56] transition-colors border border-white/5 text-indigo-200 hover:text-white"
-                    >
-                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    </button>
                 </div>
-            </div>
+            </CCard>
 
             {/* WORK TIME ANALYSIS SECTION */}
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 md:p-8">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+            <CCard className="border border-slate-100 shadow-sm rounded-3xl overflow-hidden">
+                <CCardHeader className="bg-white px-6 py-4 md:px-8 border-b border-slate-100">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-emerald-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 text-lg">
                             ⏱️
                         </div>
                         <div>
-                            <h3 className="text-base md:text-lg font-extrabold text-slate-800">Analisis Jam Kerja Karyawan</h3>
-                            <p className="text-xs font-semibold text-slate-400">Rincian Durasi Input Aktif, Downtime Kendala, Pergantian Dimsum, & Loss Time per Mesin</p>
+                            <h3 className="text-base md:text-lg font-extrabold text-slate-800 m-0">Analisis Jam Kerja Karyawan</h3>
+                            <p className="text-xs font-semibold text-slate-400 m-0">Rincian Durasi Input Aktif, Downtime Kendala, Pergantian Dimsum, & Loss Time per Mesin</p>
                         </div>
                     </div>
-                </div>
+                </CCardHeader>
+                <CCardBody className="p-6 md:p-8">
+                    <CRow className="g-4">
+                        {['IQF 1', 'IQF 2'].map(mName => {
+                            const effData = stats?.efficiency_by_machine?.[mName] || {
+                                total_shift_minutes: 480,
+                                active_minutes: 0,
+                                changeover_minutes: 0,
+                                changeover_count: 0,
+                                unplanned_minutes: 0,
+                                loss_minutes: 0,
+                            };
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {['IQF 1', 'IQF 2'].map(mName => {
-                        const effData = stats?.efficiency_by_machine?.[mName] || {
-                            total_shift_minutes: 480,
-                            active_minutes: 0,
-                            changeover_minutes: 0,
-                            changeover_count: 0,
-                            unplanned_minutes: 0,
-                            loss_minutes: 0,
-                        };
+                            return (
+                                <CCol key={mName} md={6}>
+                                    <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-3 h-full">
+                                        <div className="flex items-center justify-between">
+                                            <CBadge color="indigo" className="text-xs font-black uppercase tracking-widest bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded-full">
+                                                {mName}
+                                            </CBadge>
+                                        </div>
 
-                        return (
-                            <div key={mName} className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-black uppercase tracking-widest text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full">
-                                        {mName}
-                                    </span>
-                                </div>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 pt-2 border-t border-slate-200/60 text-center">
+                                            <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase m-0">
+                                                    {effData.elapsed_shift_minutes && effData.elapsed_shift_minutes < effData.total_shift_minutes ? 'Shift Berjalan' : 'Total Shift'}
+                                                </p>
+                                                <p className="text-xs font-black text-slate-700 mt-0.5 mb-0">
+                                                    {effData.elapsed_shift_minutes && effData.elapsed_shift_minutes < effData.total_shift_minutes 
+                                                        ? `${effData.elapsed_shift_minutes}/${effData.total_shift_minutes}`
+                                                        : effData.total_shift_minutes} <span className="text-[9px] font-normal">mnt</span>
+                                                </p>
+                                            </div>
+                                            <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase m-0">Input Aktif</p>
+                                                <p className="text-xs font-black text-emerald-600 mt-0.5 mb-0">{effData.active_minutes} <span className="text-[9px] font-normal">mnt</span></p>
+                                            </div>
+                                            <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase m-0">Pergantian Dimsum</p>
+                                                <p className="text-xs font-black text-amber-600 mt-0.5 mb-0">{effData.changeover_minutes} <span className="text-[9px] font-normal">mnt ({effData.changeover_count}x)</span></p>
+                                            </div>
+                                            <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase m-0">Kendala (Stop)</p>
+                                                <p className="text-xs font-black text-rose-600 mt-0.5 mb-0">{effData.unplanned_minutes} <span className="text-[9px] font-normal">mnt</span></p>
+                                            </div>
+                                            <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase m-0">Loss Time (Idle)</p>
+                                                <p className="text-xs font-black text-purple-600 mt-0.5 mb-0">{effData.loss_minutes ?? 0} <span className="text-[9px] font-normal">mnt</span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CCol>
+                            );
+                        })}
+                    </CRow>
+                </CCardBody>
+            </CCard>
 
-                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 pt-2 border-t border-slate-200/60 text-center">
-                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase">
-                                            {effData.elapsed_shift_minutes && effData.elapsed_shift_minutes < effData.total_shift_minutes ? 'Shift Berjalan' : 'Total Shift'}
-                                        </p>
-                                        <p className="text-xs font-black text-slate-700 mt-0.5">
-                                            {effData.elapsed_shift_minutes && effData.elapsed_shift_minutes < effData.total_shift_minutes 
-                                                ? `${effData.elapsed_shift_minutes}/${effData.total_shift_minutes}`
-                                                : effData.total_shift_minutes} <span className="text-[9px] font-normal">mnt</span>
-                                        </p>
-                                    </div>
-                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Input Aktif</p>
-                                        <p className="text-xs font-black text-emerald-600 mt-0.5">{effData.active_minutes} <span className="text-[9px] font-normal">mnt</span></p>
-                                    </div>
-                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Pergantian Dimsum</p>
-                                        <p className="text-xs font-black text-amber-600 mt-0.5">{effData.changeover_minutes} <span className="text-[9px] font-normal">mnt ({effData.changeover_count}x)</span></p>
-                                    </div>
-                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Kendala (Stop)</p>
-                                        <p className="text-xs font-black text-rose-600 mt-0.5">{effData.unplanned_minutes} <span className="text-[9px] font-normal">mnt</span></p>
-                                    </div>
-                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Loss Time (Idle)</p>
-                                        <p className="text-xs font-black text-purple-600 mt-0.5">{effData.loss_minutes ?? 0} <span className="text-[9px] font-normal">mnt</span></p>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 md:px-8 md:py-5 border-b border-slate-100 flex items-center gap-3">
+            {/* UNPLANNED STOPS SECTION */}
+            <CCard className="border border-slate-100 shadow-sm rounded-3xl overflow-hidden">
+                <CCardHeader className="bg-white px-6 py-4 md:px-8 border-b border-slate-100 flex items-center gap-3">
                     <span className="w-8 h-8 rounded-lg bg-rose-100 text-rose-500 flex items-center justify-center text-base">🛑</span>
-                    <h3 className="text-base font-bold text-slate-800">Rekapan Kendala (Unplanned Stop)</h3>
+                    <h3 className="text-base font-bold text-slate-800 m-0">Rekapan Kendala (Unplanned Stop)</h3>
                     {stats?.unplanned_stops?.length > 0 && (
-                        <span className="ml-auto bg-rose-100 text-rose-700 text-xs font-black px-2.5 py-1 rounded-full">
+                        <CBadge color="danger" className="ml-auto bg-rose-100 text-rose-700 text-xs font-black px-2.5 py-1 rounded-full border-0">
                             {stats.unplanned_stops.length} kejadian
-                        </span>
+                        </CBadge>
                     )}
-                </div>
-
-                {(!stats || !stats.unplanned_stops || stats.unplanned_stops.length === 0) ? (
-                    <div className="flex flex-col items-center justify-center py-8 text-center">
-                        <span className="text-3xl mb-2">✅</span>
-                        <p className="text-slate-400 font-semibold text-sm">Tidak ada kendala pada periode ini.</p>
-                    </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
-                                    <th className="px-5 py-3 text-left">#</th>
-                                    <th className="px-5 py-3 text-left">Jenis Kendala</th>
-                                    <th className="px-5 py-3 text-left">Mulai</th>
-                                    <th className="px-5 py-3 text-left">Mesin</th>
-                                    <th className="px-5 py-3 text-left">Shift</th>
-                                    <th className="px-5 py-3 text-left">PIC</th>
-                                    <th className="px-5 py-3 text-left">Durasi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                </CCardHeader>
+                <CCardBody className="p-0">
+                    {(!stats || !stats.unplanned_stops || stats.unplanned_stops.length === 0) ? (
+                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                            <span className="text-3xl mb-2">✅</span>
+                            <p className="text-slate-400 font-semibold text-sm">Tidak ada kendala pada periode ini.</p>
+                        </div>
+                    ) : (
+                        <CTable align="middle" hover responsive className="mb-0 text-sm">
+                            <CTableHead className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                                <CTableRow>
+                                    <CTableHeaderCell className="px-5 py-3">#</CTableHeaderCell>
+                                    <CTableHeaderCell className="px-5 py-3">Jenis Kendala</CTableHeaderCell>
+                                    <CTableHeaderCell className="px-5 py-3">Mulai</CTableHeaderCell>
+                                    <CTableHeaderCell className="px-5 py-3">Mesin</CTableHeaderCell>
+                                    <CTableHeaderCell className="px-5 py-3">Shift</CTableHeaderCell>
+                                    <CTableHeaderCell className="px-5 py-3">PIC</CTableHeaderCell>
+                                    <CTableHeaderCell className="px-5 py-3">Durasi</CTableHeaderCell>
+                                </CTableRow>
+                            </CTableHead>
+                            <CTableBody>
                                 {stats.unplanned_stops.map((stop, idx) => {
                                     let timeString = "-";
                                     let descString = stop.text;
@@ -337,82 +348,81 @@ export default function IqfDashboard() {
                                     }
                                     const isUnfinished = stop.duration === 'Belum Selesai';
                                     return (
-                                        <tr key={idx} className="border-t border-slate-100 hover:bg-slate-50 transition-colors">
-                                            <td className="px-5 py-3.5 text-slate-400 font-bold">{idx + 1}</td>
-                                            <td className="px-5 py-3.5">
-                                                <span className="font-semibold text-slate-800">{descString}</span>
-                                            </td>
-                                            <td className="px-5 py-3.5">
+                                        <CTableRow key={idx}>
+                                            <CTableDataCell className="px-5 py-3.5 text-slate-400 font-bold">{idx + 1}</CTableDataCell>
+                                            <CTableDataCell className="px-5 py-3.5 font-semibold text-slate-800">{descString}</CTableDataCell>
+                                            <CTableDataCell className="px-5 py-3.5">
                                                 <span className="flex items-center gap-1.5 font-semibold text-slate-600">
                                                     <Clock className="w-3.5 h-3.5 text-slate-400" />
                                                     {timeString}
                                                 </span>
-                                            </td>
-                                            <td className="px-5 py-3.5">
-                                                <span className="text-[11px] font-black uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-full">
+                                            </CTableDataCell>
+                                            <CTableDataCell className="px-5 py-3.5">
+                                                <CBadge color="indigo" className="text-[11px] font-black uppercase tracking-wider bg-indigo-50 text-indigo-600 border border-indigo-200 px-2.5 py-1 rounded-full">
                                                     {stop.machine}
-                                                </span>
-                                            </td>
-                                            <td className="px-5 py-3.5">
-                                                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                                                </CBadge>
+                                            </CTableDataCell>
+                                            <CTableDataCell className="px-5 py-3.5">
+                                                <CBadge color="success" className="text-[11px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-200 px-2.5 py-1 rounded-full">
                                                     Shift {stop.shift}
-                                                </span>
-                                            </td>
-                                            <td className="px-5 py-3.5">
+                                                </CBadge>
+                                            </CTableDataCell>
+                                            <CTableDataCell className="px-5 py-3.5">
                                                 <span className="flex items-center gap-1.5 text-slate-700 font-medium">
                                                     <Users className="w-3.5 h-3.5 text-slate-400" />
                                                     {stop.pic}
                                                 </span>
-                                            </td>
-                                            <td className="px-5 py-3.5">
-                                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${isUnfinished ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>
+                                            </CTableDataCell>
+                                            <CTableDataCell className="px-5 py-3.5">
+                                                <CBadge color={isUnfinished ? 'danger' : 'warning'} className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${isUnfinished ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>
                                                     {isUnfinished ? '🔴' : '⏱'} {stop.duration}
-                                                </span>
-                                            </td>
-                                        </tr>
+                                                </CBadge>
+                                            </CTableDataCell>
+                                        </CTableRow>
                                     );
                                 })}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-            </div>
+                            </CTableBody>
+                        </CTable>
+                    )}
+                </CCardBody>
+            </CCard>
 
             {/* GRAND TOTAL CARDS (4 Squares) */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            <CRow className="g-4">
                 {PRODUCTS.map(p => {
                     const val = stats?.grand_total?.[p.key] ?? 0;
                     return (
-                        <div key={p.key} className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start mb-6">
-                                <div className={`w-12 h-12 rounded-2xl ${p.bgClass} flex items-center justify-center text-2xl`}>
-                                    {p.emoji}
+                        <CCol key={p.key} xs={6} md={3}>
+                            <CCard className="border border-slate-100 shadow-sm rounded-3xl p-6 hover:shadow-md transition-shadow">
+                                <div className="flex justify-between items-start mb-6">
+                                    <div className={`w-12 h-12 rounded-2xl ${p.bgClass} flex items-center justify-center text-2xl`}>
+                                        {p.emoji}
+                                    </div>
+                                    <div className={`w-2 h-2 rounded-full ${p.bgClass.replace('50', '400')}`} />
                                 </div>
-                                {/* Small decorative badge / dot */}
-                                <div className={`w-2 h-2 rounded-full ${p.bgClass.replace('50', '400')}`} />
-                            </div>
-                            <div>
-                                <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">
-                                    Total {p.label}
-                                </p>
-                                <div className="flex items-baseline gap-2">
-                                    <h3 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">
-                                        <AnimatedNumber value={val} />
-                                    </h3>
-                                    <span className="text-sm font-semibold text-slate-400">
-                                        {p.unit}
-                                    </span>
+                                <div>
+                                    <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">
+                                        Total {p.label}
+                                    </p>
+                                    <div className="flex items-baseline gap-2">
+                                        <h3 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight m-0">
+                                            <AnimatedNumber value={val} />
+                                        </h3>
+                                        <span className="text-sm font-semibold text-slate-400">
+                                            {p.unit}
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
+                            </CCard>
+                        </CCol>
                     );
                 })}
-            </div>
+            </CRow>
 
             {/* PYRAMID CHART - IQF 1 vs IQF 2 */}
-            <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-100 shadow-sm">
+            <CCard className="border border-slate-100 shadow-sm rounded-3xl p-6 md:p-8">
                 <div className="text-center mb-8">
-                    <h3 className="text-lg font-bold text-slate-800">Perbandingan Mesin Produksi</h3>
+                    <h3 className="text-lg font-bold text-slate-800 m-0">Perbandingan Mesin Produksi</h3>
                     
                     {/* Legend */}
                     <div className="flex items-center justify-center gap-12 mt-6">
@@ -488,7 +498,7 @@ export default function IqfDashboard() {
                         <span>100%</span>
                     </div>
                 </div>
-            </div>
+            </CCard>
 
         </div>
     );
