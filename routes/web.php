@@ -13,9 +13,7 @@ Route::post('/operator/login', [\App\Http\Controllers\IqfLogsheetController::cla
 Route::post('/operator/logout', [\App\Http\Controllers\IqfLogsheetController::class, 'operatorLogout'])->name('operator.logout');
 
 Route::middleware(\App\Http\Middleware\OperatorAuth::class)->group(function () {
-    Route::get('/', function () {
-        return Inertia::render('Operator/Landing');
-    })->name('operator.landing');
+    Route::get('/', [\App\Http\Controllers\IqfLogsheetController::class, 'landing'])->name('operator.landing');
 
     Route::get('/kendala', function () {
         return Inertia::render('Operator/Kendala');

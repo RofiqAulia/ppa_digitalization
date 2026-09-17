@@ -337,9 +337,58 @@ class RefrezingController extends Controller
         return Inertia::render('Operator/RefrezingLogsheet', ['logsheets' => $logsheets]);
     }
 
+    public static function getLatestEntriesPerMachine()
+    {
+        $machines = ['IQF 1', 'IQF 2', 'Refrezing 1', 'Refrezing 2', 'Refrezing 3'];
+        $latest = [];
+
+        foreach ($machines as $machine) {
+            $detail = \App\Models\RefrezingLogsheetDetail::whereHas('refrezingLogsheet', function ($query) use ($machine) {
+                $query->where('machine', $machine);
+            })
+            ->orderBy('id', 'desc')
+            ->first();
+
+            if ($detail) {
+                $logsheet = $detail->refrezingLogsheet;
+                $productType = $logsheet->product_type ?? '';
+                $cleanProduct = preg_replace('/_[TWL]$/', '', strtolower($productType));
+
+                $latest[$machine] = [
+                    'machine'      => $machine,
+                    'product_type' => $cleanProduct,
+                    'batch_number' => $detail->batch_number ?: ($logsheet->batch_number ?: '-'),
+                    'rak'          => $detail->rak,
+                    'tray_count'   => $detail->tray_count,
+                    'time'         => $detail->time ? substr($detail->time, 0, 5) : '-',
+                ];
+            } else {
+                $latest[$machine] = [
+                    'machine'      => $machine,
+                    'product_type' => null,
+                    'batch_number' => null,
+                    'rak'          => null,
+                    'tray_count'   => null,
+                    'time'         => null,
+                ];
+            }
+        }
+
+        return $latest;
+    }
+
+    public function landing()
+    {
+        return Inertia::render('Operator/RefrezingLanding', [
+            'latestEntries' => self::getLatestEntriesPerMachine()
+        ]);
+    }
+
     public function kiosk()
     {
-        return Inertia::render('Operator/RefrezingLanding');
+        return Inertia::render('Operator/RefrezingLanding', [
+            'latestEntries' => self::getLatestEntriesPerMachine()
+        ]);
     }
 
     public function storeKiosk(Request $request)
@@ -413,7 +462,8 @@ class RefrezingController extends Controller
             'detail' => $detail,
             'total_achieve' => $totalAchieve,
             'totals_by_product' => $totalsByProduct,
-            'kalkulasi' => number_format($totalAchieve / 150, 2)
+            'kalkulasi' => number_format($totalAchieve / 150, 2),
+            'latest_entries' => self::getLatestEntriesPerMachine()
         ]);
     }
 

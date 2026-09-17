@@ -58,7 +58,7 @@ const saveLastRak = (machine, product, rak) => {
     localStorage.setItem(`iqf_lastRakShift_${machine}_${product}`, String(shift));
 };
 
-export default function Landing() {
+export default function Landing({ latestEntries }) {
     const products = ['siomay', 'pentol', 'lumpia', 'adonan_pangsit'];
     const machines = ['IQF 1', 'IQF 2'];
 
@@ -71,6 +71,20 @@ export default function Landing() {
     const [lastRak, setLastRak] = useState('');
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', title: '', message: '' });
+
+    const [serverLatestEntries, setServerLatestEntries] = useState(latestEntries || {});
+
+    const formatLatestText = (m) => {
+        const entry = serverLatestEntries?.[m];
+        if (!entry || (!entry.product_type && !entry.batch_number)) {
+            return 'BELUM ADA INPUT';
+        }
+        const pName = entry.product_type ? entry.product_type.replace('_', ' ').toUpperCase() : 'DIMSUM';
+        const batch = entry.batch_number ? `BATCH ${entry.batch_number}` : 'BATCH -';
+        const isPack = entry.product_type === 'lumpia' || entry.product_type === 'adonan_pangsit';
+        const rakVal = isPack ? 'PACK' : (entry.rak ? `RAK ${entry.rak}` : 'RAK -');
+        return `${pName} | ${batch} | ${rakVal}`;
+    };
 
     // Load state from local storage on mount
     useEffect(() => {
@@ -121,8 +135,6 @@ export default function Landing() {
             return;
         }
 
-
-
         setLoading(true);
         try {
             let finalProduct = product;
@@ -130,9 +142,14 @@ export default function Landing() {
             else if (statusDimsum === 'Waste') finalProduct = `${product}_W`;
             else if (statusDimsum === 'Lainnya') finalProduct = `${product}_L`;
 
-            await axios.post('/iqf-kiosk/store', {
+            const res = await axios.post('/iqf-kiosk/store', {
                 product_type: finalProduct, machine, batch_number: batchNumber, rak: isPackItem ? null : rak, tray_count: trayCount,
             });
+            
+            if (res.data && res.data.latest_entries) {
+                setServerLatestEntries(res.data.latest_entries);
+            }
+
             showNotification('success', 'Berhasil Dicatat!', isPackItem ? `${trayCount} dimasukkan.` : `Rak ${rak} - ${trayCount} dimasukkan.`);
 
             if (!isPackItem && (lastRak === '' || parseInt(rak) >= parseInt(lastRak))) {
@@ -166,14 +183,26 @@ export default function Landing() {
                 {/* Title and Dropdowns */}
                 <div className="text-center mb-10">
                     <h2 className="text-3xl font-black text-slate-900 uppercase tracking-[0.2em] mb-4 drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] [-webkit-text-stroke:1px_white]">Pilihan Dimsum (IQF)</h2>
-                    <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-white/95 backdrop-blur-md px-6 py-2.5 rounded-full border-2 border-pink-400 shadow-lg shadow-pink-500/15">
-                        <span className="w-2.5 h-2.5 rounded-full bg-pink-500 animate-pulse"></span>
-                        {/* <span className="text-xs md:text-sm font-black text-slate-700 uppercase tracking-[0.15em]">
-                            Inputan Terakhir Operator:
-                        </span> */}
-                        <span className="text-xs md:text-sm font-black text-pink-600 uppercase tracking-[0.15em] bg-pink-50 px-3 py-0.5 rounded-full border border-pink-200">
-                            {product ? product.replace('_', ' ').toUpperCase() : 'DIMSUM'} | {batchNumber ? `BATCH ${batchNumber}` : 'BATCH'} | {isPackItem ? 'PACK' : (lastRak || rak ? `RAK ${lastRak || rak}` : 'RAK')}
-                        </span>
+                    
+                    {/* Separate badges for IQF 1 & IQF 2 */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                        {/* IQF 1 */}
+                        <div className="inline-flex items-center gap-2 bg-white/95 backdrop-blur-md px-5 py-2 rounded-full border-2 border-pink-400 shadow-md">
+                            <span className="w-2.5 h-2.5 rounded-full bg-pink-500 animate-pulse"></span>
+                            <span className="text-xs md:text-sm font-black text-slate-700 uppercase tracking-[0.1em]">IQF 1:</span>
+                            <span className="text-xs md:text-sm font-black text-pink-600 uppercase tracking-[0.1em] bg-pink-50 px-3 py-0.5 rounded-full border border-pink-200">
+                                {formatLatestText('IQF 1')}
+                            </span>
+                        </div>
+
+                        {/* IQF 2 */}
+                        <div className="inline-flex items-center gap-2 bg-white/95 backdrop-blur-md px-5 py-2 rounded-full border-2 border-cyan-400 shadow-md">
+                            <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
+                            <span className="text-xs md:text-sm font-black text-slate-700 uppercase tracking-[0.1em]">IQF 2:</span>
+                            <span className="text-xs md:text-sm font-black text-cyan-600 uppercase tracking-[0.1em] bg-cyan-50 px-3 py-0.5 rounded-full border border-cyan-200">
+                                {formatLatestText('IQF 2')}
+                            </span>
+                        </div>
                     </div>
                 </div>
 

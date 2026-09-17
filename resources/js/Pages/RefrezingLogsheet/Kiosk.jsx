@@ -71,7 +71,7 @@ const saveLastRak = (machine, product, rak) => {
     localStorage.setItem(`iqf_lastRakShift_${machine}_${product}`, String(shift));
 };
 
-export default function Kiosk() {
+export default function Kiosk({ latestEntries }) {
     const [step, setStep]               = useState(1);
     const [currentTime, setCurrentTime] = useState('');
     const products = ['siomay', 'pentol', 'lumpia', 'adonan_pangsit'];
@@ -83,6 +83,20 @@ export default function Kiosk() {
     const [trayCount,       setTrayCount]      = useState('');
     const [lastRak,         setLastRak]        = useState('');  // highest Rak shift ini (auto-reset antar shift/hari)
     const [totalsByProduct, setTotalsByProduct]= useState(null);
+
+    const [serverLatestEntries, setServerLatestEntries] = useState(latestEntries || {});
+
+    const formatLatestText = (m) => {
+        const entry = serverLatestEntries?.[m];
+        if (!entry || (!entry.product_type && !entry.batch_number)) {
+            return 'BELUM ADA INPUT';
+        }
+        const pName = entry.product_type ? entry.product_type.replace('_', ' ').toUpperCase() : 'DIMSUM';
+        const batch = entry.batch_number ? `BATCH ${entry.batch_number}` : 'BATCH -';
+        const isPack = entry.product_type === 'adonan_pangsit' || entry.product_type === 'lumpia';
+        const rakVal = isPack ? 'PACK' : (entry.rak ? `RAK ${entry.rak}` : 'RAK -');
+        return `${pName} | ${batch} | ${rakVal}`;
+    };
     const [loading,         setLoading]        = useState(false);
     const [toast,           setToast]          = useState({ show: false, type: '', title: '', message: '' });
     const [kendalaLog,      setKendalaLog]     = useState([]);
@@ -286,14 +300,25 @@ export default function Kiosk() {
                     <div className="w-full max-w-4xl mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="text-center mb-10">
                             <h2 className="text-4xl font-black text-slate-800 mb-4 uppercase tracking-[0.2em]">Pilih Konteks Shift</h2>
-                            <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-white/95 backdrop-blur-md px-6 py-2.5 rounded-full border-2 border-cyan-400 shadow-lg shadow-cyan-500/15">
-                                <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
-                                <span className="text-xs md:text-sm font-black text-slate-700 uppercase tracking-[0.15em]">
-                                    Inputan Terakhir Operator:
-                                </span>
-                                <span className="text-xs md:text-sm font-black text-cyan-600 uppercase tracking-[0.15em] bg-cyan-50 px-3 py-0.5 rounded-full border border-cyan-200">
-                                    {product ? product.replace('_', ' ').toUpperCase() : 'DIMSUM'} | {batchNumber ? `BATCH ${batchNumber}` : 'BATCH'} | {isPack ? 'PACK' : (lastRak || rak ? `RAK ${lastRak || rak}` : 'RAK')}
-                                </span>
+                            
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                                {/* IQF 1 */}
+                                <div className="inline-flex items-center gap-2 bg-white/95 backdrop-blur-md px-5 py-2 rounded-full border-2 border-cyan-400 shadow-md">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
+                                    <span className="text-xs md:text-sm font-black text-slate-700 uppercase tracking-[0.1em]">IQF 1:</span>
+                                    <span className="text-xs md:text-sm font-black text-cyan-600 uppercase tracking-[0.1em] bg-cyan-50 px-3 py-0.5 rounded-full border border-cyan-200">
+                                        {formatLatestText('IQF 1')}
+                                    </span>
+                                </div>
+
+                                {/* IQF 2 */}
+                                <div className="inline-flex items-center gap-2 bg-white/95 backdrop-blur-md px-5 py-2 rounded-full border-2 border-teal-400 shadow-md">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse"></span>
+                                    <span className="text-xs md:text-sm font-black text-slate-700 uppercase tracking-[0.1em]">IQF 2:</span>
+                                    <span className="text-xs md:text-sm font-black text-teal-600 uppercase tracking-[0.1em] bg-teal-50 px-3 py-0.5 rounded-full border border-teal-200">
+                                        {formatLatestText('IQF 2')}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
