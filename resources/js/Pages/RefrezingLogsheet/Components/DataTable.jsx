@@ -501,7 +501,7 @@ export default function DataTable({ logsheets }) {
 
                 return {
                     ...g,
-                    rows: sortByProductOrder(sortData(rowsWithChangeover, sortConfig))
+                    rows: sortData(rowsWithChangeover, sortConfig)
                 };
             });
     }, [flatData, search, sortConfig, filterShift, filterMachine, filterDateFrom, filterDateTo]);
@@ -1002,8 +1002,17 @@ export default function DataTable({ logsheets }) {
 
                                             return group.rows.map((row, idx) => {
                                             const basePt       = getBaseProduct(row.product_type);
-                                            const isLastOfProd = lastIdxMap[basePt] === idx;
-                                            const rowTotal     = productTotals[basePt];
+                                            const isLastOfProd = idx === group.rows.length - 1 || getBaseProduct(group.rows[idx + 1].product_type) !== basePt;
+                                            let rowTotal       = 0;
+                                            if (isLastOfProd) {
+                                                for (let i = idx; i >= 0; i--) {
+                                                    if (getBaseProduct(group.rows[i].product_type) === basePt) {
+                                                        rowTotal += (group.rows[i].tray_count || 0);
+                                                    } else {
+                                                        break;
+                                                    }
+                                                }
+                                            }
                                             const pt           = basePt;
                                             const printClass   = PRODUCT_PRINT_CLASS[pt] || '';
                                             const isRakAnomaly = rakAnomalyIds.has(row.id);

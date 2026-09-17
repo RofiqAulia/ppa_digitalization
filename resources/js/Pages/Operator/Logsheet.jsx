@@ -322,6 +322,7 @@ function DetailEditRow({ detail, index, isLastInBatch, batchTotal, unplannedStop
 /* ─── Main Component ─────────────────────────────────────── */
 export default function OperatorLogsheet({ logsheets }) {
     const [filterShift, setFilterShift] = useState(getCurrentShift());
+    const [filterMachine, setFilterMachine] = useState('ALL');
     const [nowMinutes, setNowMinutes] = useState(() => {
         const now = new Date();
         const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
@@ -342,19 +343,22 @@ export default function OperatorLogsheet({ logsheets }) {
     const filteredData = useMemo(() => {
         let data = logsheets || [];
         if (filterShift !== 'ALL') data = data.filter(d => d.shift.toString() === filterShift);
+        if (filterMachine !== 'ALL') data = data.filter(d => d.machine === filterMachine);
         return data;
-    }, [logsheets, filterShift]);
+    }, [logsheets, filterShift, filterMachine]);
 
-    // Group by Date + Shift only (all machines combined)
+    // Group by Date + Shift + Machine (IQF 1 and IQF 2 separated)
     const groups = useMemo(() => {
         const grouped = {};
 
         filteredData.forEach(ls => {
-            const groupKey = `${ls.date}|${ls.shift}`;
+            const machine = ls.machine || 'IQF 1';
+            const groupKey = `${ls.date}|${ls.shift}|${machine}`;
             if (!grouped[groupKey]) {
                 grouped[groupKey] = {
                     date: ls.date,
                     shift: ls.shift,
+                    machine: machine,
                     details: [],
                     totalsByProduct: {}
                 };
@@ -489,7 +493,8 @@ export default function OperatorLogsheet({ logsheets }) {
 
         return Object.values(grouped).sort((a, b) => {
             if (a.date !== b.date) return b.date.localeCompare(a.date);
-            return b.shift - a.shift;
+            if (a.shift !== b.shift) return b.shift - a.shift;
+            return a.machine.localeCompare(b.machine);
         });
     }, [filteredData]);
 
@@ -518,12 +523,19 @@ export default function OperatorLogsheet({ logsheets }) {
                         <div className="flex items-center gap-6 flex-wrap">
                             <h1 className="text-xl font-black text-slate-800 uppercase tracking-widest">LOGSHEET IQF</h1>
                             <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-1">Shift:</span>
                                 <PillTab active={filterShift === 'ALL'} onClick={() => setFilterShift('ALL')} label="Semua" />
-                                {['1', '2', '3'].filter(s => uniqueShifts.includes(parseInt(s))).map(s => (
+                                {['1', '2', '3'].map(s => (
                                     <PillTab key={s} active={filterShift === s} onClick={() => setFilterShift(s)} label={`Shift ${s}`} colorClass="bg-blue-600 text-white" />
                                 ))}
+                            </div>
+                            <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-1">Mesin:</span>
+                                <PillTab active={filterMachine === 'ALL'} onClick={() => setFilterMachine('ALL')} label="Semua Mesin" />
+                                <PillTab active={filterMachine === 'IQF 1'} onClick={() => setFilterMachine('IQF 1')} label="IQF 1" colorClass="bg-indigo-600 text-white" />
+                                <PillTab active={filterMachine === 'IQF 2'} onClick={() => setFilterMachine('IQF 2')} label="IQF 2" colorClass="bg-purple-600 text-white" />
                             </div>
                         </div>
                         <Link href="/" className="px-5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-[10px] uppercase tracking-widest rounded-full transition-all shadow-sm">
@@ -548,8 +560,8 @@ export default function OperatorLogsheet({ logsheets }) {
                                     {/* Card Header */}
                                     <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
                                         <div className="flex items-center gap-3 text-xs font-bold text-slate-600">
-                                            <div className="w-2.5 h-2.5 rounded-full bg-purple-500"></div>
-                                            <span className="text-sm font-black text-slate-800">IQF</span>
+                                            <div className={`w-2.5 h-2.5 rounded-full ${group.machine === 'IQF 1' ? 'bg-indigo-500' : 'bg-purple-500'}`}></div>
+                                            <span className="text-sm font-black text-slate-800">{group.machine || 'IQF 1'}</span>
                                             <span className="text-slate-300">|</span>
                                             <span>{formattedDate}</span>
                                             <span className="text-slate-300">|</span>
