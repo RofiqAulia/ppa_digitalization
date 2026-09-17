@@ -155,9 +155,13 @@ class RefrezingController extends Controller
         [$toH, $toM]     = explode(':', $toTime);
         $fromMins = (int)$fromH * 60 + (int)$fromM;
         $toMins   = (int)$toH * 60 + (int)$toM;
-        $totalShiftMinutes = $toMins >= $fromMins ? ($toMins - $fromMins) : ($toMins + 1440 - $fromMins);
-        if ($totalShiftMinutes <= 0 || $totalShiftMinutes >= 1439) {
-            $totalShiftMinutes = 480; // Default 8 hours (480 mins)
+        $diff = $toMins >= $fromMins ? ($toMins - $fromMins) : ($toMins + 1440 - $fromMins);
+        if ((int)$toM === 59) {
+            $diff += 1;
+        }
+        $totalShiftMinutes = $diff;
+        if ($totalShiftMinutes <= 0 || $totalShiftMinutes > 1440) {
+            $totalShiftMinutes = 480; // Default 8 hours
         }
 
         // Real-time elapsed shift calculation
@@ -167,8 +171,8 @@ class RefrezingController extends Controller
             $nowMins = $nowWib->hour * 60 + $nowWib->minute;
             if ($nowMins < $fromMins) {
                 $elapsedShiftMinutes = 15;
-            } else if ($nowMins <= $toMins) {
-                $elapsedShiftMinutes = max(15, $nowMins - $fromMins);
+            } else if ($nowMins <= ($toMins + 1)) {
+                $elapsedShiftMinutes = max(15, min($totalShiftMinutes, $nowMins - $fromMins));
             } else {
                 $elapsedShiftMinutes = $totalShiftMinutes;
             }
@@ -247,10 +251,9 @@ class RefrezingController extends Controller
 
             $totalWorkMinutes = $activeMinutes + $unplannedMins;
 
-            $effectiveBreakMinutes = min($plannedBreakMinutes, $elapsedShiftMinutes);
-            // Loss time = Elapsed Shift Time - (Active + Changeover + Unplanned + Break)
-            // Ensures: Shift Berjalan == Input Aktif + Pergantian Dimsum + Kendala + Istirahat + Loss Time
-            $lossMinutes = max(0, $elapsedShiftMinutes - ($activeMinutes + $changeoverMinutes + $unplannedMins + $effectiveBreakMinutes));
+            // Loss time = Elapsed Shift Time - (Active + Changeover + Unplanned)
+            // Ensures: Shift Berjalan == Input Aktif + Pergantian Dimsum + Kendala + Loss Time
+            $lossMinutes = max(0, $elapsedShiftMinutes - ($activeMinutes + $changeoverMinutes + $unplannedMins));
 
             // Real-time efficiency: ((active_minutes + unplanned_minutes) / netElapsedWorkMinutes) * 100%
             $efficiencyPercent = $netElapsedWorkMinutes > 0 ? round(($totalWorkMinutes / $netElapsedWorkMinutes) * 100, 1) : 0;
@@ -263,8 +266,8 @@ class RefrezingController extends Controller
                 'machine'               => $m,
                 'total_shift_minutes'   => $totalShiftMinutes,
                 'elapsed_shift_minutes' => $elapsedShiftMinutes,
-                'break_minutes'         => $effectiveBreakMinutes,
-                'elapsed_break_minutes' => $effectiveBreakMinutes,
+                'break_minutes'         => 0,
+                'elapsed_break_minutes' => 0,
                 'net_work_target'       => $netShiftTarget,
                 'total_work_minutes'    => $totalWorkMinutes,
                 'active_minutes'        => $activeMinutes,

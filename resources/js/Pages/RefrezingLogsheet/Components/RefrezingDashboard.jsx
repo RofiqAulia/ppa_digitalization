@@ -40,10 +40,10 @@ const PRODUCTS = [
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0') + ':00');
 
 const SHIFT_PRESETS = [
-    { label: 'Shift 1', from: '08:00', to: '16:00' },
-    { label: 'Shift 2', from: '16:00', to: '00:00' },
-    { label: 'Shift 3', from: '00:00', to: '08:00' },
-    { label: 'Semua',   from: '00:00', to: '23:00' },
+    { label: 'Shift 1', from: '08:00', to: '15:59' },
+    { label: 'Shift 2', from: '16:00', to: '23:59' },
+    { label: 'Shift 3', from: '00:00', to: '07:59' },
+    { label: 'Semua',   from: '00:00', to: '23:59' },
 ];
 
 /** Detect which shift preset matches the current WIB time */
@@ -234,7 +234,7 @@ export default function IqfDashboard() {
                         </div>
                         <div>
                             <h3 className="text-base md:text-lg font-extrabold text-slate-800">Analisis Jam Kerja Karyawan</h3>
-                            <p className="text-xs font-semibold text-slate-400">Rincian Durasi Input Aktif, Downtime Kendala, Pergantian Dimsum, Istirahat, & Loss Time per Mesin</p>
+                            <p className="text-xs font-semibold text-slate-400">Rincian Durasi Input Aktif, Downtime Kendala, Pergantian Dimsum, & Loss Time per Mesin</p>
                         </div>
                     </div>
                 </div>
@@ -247,7 +247,6 @@ export default function IqfDashboard() {
                             changeover_minutes: 0,
                             changeover_count: 0,
                             unplanned_minutes: 0,
-                            break_minutes: 60,
                             loss_minutes: 0,
                         };
 
@@ -259,7 +258,7 @@ export default function IqfDashboard() {
                                     </span>
                                 </div>
 
-                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-2 border-t border-slate-200/60 text-center">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 pt-2 border-t border-slate-200/60 text-center">
                                     <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase">
                                             {effData.elapsed_shift_minutes && effData.elapsed_shift_minutes < effData.total_shift_minutes ? 'Shift Berjalan' : 'Total Shift'}
@@ -281,10 +280,6 @@ export default function IqfDashboard() {
                                     <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase">Kendala (Stop)</p>
                                         <p className="text-xs font-black text-rose-600 mt-0.5">{effData.unplanned_minutes} <span className="text-[9px] font-normal">mnt</span></p>
-                                    </div>
-                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Istirahat (Break)</p>
-                                        <p className="text-xs font-black text-blue-600 mt-0.5">{effData.break_minutes ?? 60} <span className="text-[9px] font-normal">mnt</span></p>
                                     </div>
                                     <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase">Loss Time (Idle)</p>
