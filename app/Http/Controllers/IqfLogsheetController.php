@@ -201,6 +201,9 @@ class IqfLogsheetController extends Controller
 
             foreach ($unplannedStopsData as $stop) {
                 if ($stop['machine'] === $m) {
+                    if (str_contains($stop['text'], 'Pergantian Dimsum')) {
+                        continue;
+                    }
                     $unplannedMins += (int)($stop['duration_mins'] ?? 0);
                 }
             }

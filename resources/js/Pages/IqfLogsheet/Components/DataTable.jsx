@@ -258,6 +258,7 @@ export default function DataTable({ logsheets }) {
             }
         });
         stopsSet.forEach(st => {
+            if (st.includes('Pergantian Dimsum')) return;
             const dm = st.match(/(\d+)\s*menit/i);
             if (dm) {
                 unplannedMinutes += parseInt(dm[1], 10);
@@ -461,7 +462,49 @@ export default function DataTable({ logsheets }) {
                 if (a.machine !== b.machine) return a.machine > b.machine ?  1 : -1;
                 return 0;
             })
-            .map(g => ({ ...g, rows: sortByProductOrder(sortData(g.rows, sortConfig)) }));
+            .map(g => {
+                const chronologicalDetails = [...g.rows]
+                    .filter(r => r.time && r.time !== '-' && !r.isKendalaOnly)
+                    .sort((a, b) => a.time.localeCompare(b.time));
+
+                let prevProduct = null;
+                let lastPrevProductTimeMins = null;
+                const changeoverMap = {};
+
+                chronologicalDetails.forEach(r => {
+                    const currPt = getBaseProduct(r.product_type);
+                    const currMins = timeToMinutes(r.time);
+                    if (currMins === null) return;
+
+                    if (prevProduct !== null && currPt !== prevProduct) {
+                        if (lastPrevProductTimeMins !== null) {
+                            const diff = calcDurationMinutes(lastPrevProductTimeMins, currMins);
+                            if (diff !== null && diff > 0 && diff < 720) {
+                                const timeFormatted = r.time ? r.time.substring(0, 5) : '';
+                                changeoverMap[r.id] = `${timeFormatted} - Pergantian Dimsum (⏱ ${diff} menit)`;
+                            }
+                        }
+                    }
+
+                    prevProduct = currPt;
+                    lastPrevProductTimeMins = currMins;
+                });
+
+                const rowsWithChangeover = g.rows.map(r => {
+                    const coText = changeoverMap[r.id];
+                    if (!coText) return r;
+                    const existing = r.unplanned_stop;
+                    const finalStop = (!existing || existing === '-')
+                        ? coText
+                        : `${coText}, ${existing}`;
+                    return { ...r, unplanned_stop: finalStop };
+                });
+
+                return {
+                    ...g,
+                    rows: sortByProductOrder(sortData(rowsWithChangeover, sortConfig))
+                };
+            });
     }, [flatData, search, sortConfig, filterShift, filterMachine, filterDateFrom, filterDateTo]);
 
     /* ── Stats ─────────────────────────────────── */
@@ -1006,7 +1049,13 @@ export default function DataTable({ logsheets }) {
                                                     </td>
                                                     <td className="hidden lg:table-cell px-3 py-1.5 text-xs">
                                                         {row.unplanned_stop !== '-' ? (
-                                                            <span className="inline-flex px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded font-bold text-[10px]">{row.unplanned_stop}</span>
+                                                            <span className={`inline-flex px-1.5 py-0.5 rounded font-bold text-[10px] ${
+                                                                row.unplanned_stop.includes('Pergantian Dimsum') && !row.unplanned_stop.includes('Temperatur') && !row.unplanned_stop.includes('Macet')
+                                                                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                                                    : 'bg-rose-100 text-rose-700'
+                                                            }`}>
+                                                                {row.unplanned_stop}
+                                                            </span>
                                                         ) : <span className="text-slate-300">-</span>}
                                                     </td>
                                                     {!isReadOnly && (

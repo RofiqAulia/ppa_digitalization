@@ -402,6 +402,35 @@ export default function OperatorLogsheet({ logsheets }) {
         });
 
         Object.values(grouped).forEach(g => {
+            const chronological = [...g.details]
+                .filter(d => d.time && d.time !== '-' && !d.isKendalaOnly)
+                .sort((a, b) => a.time.localeCompare(b.time));
+
+            let prevProduct = null;
+            let lastPrevProductTimeMins = null;
+            const changeoverMap = {};
+
+            chronological.forEach(d => {
+                const currPt = d.product_type ? d.product_type.replace('_T', '') : '';
+                const timeMatch = d.time ? d.time.match(/^(\d{1,2}):(\d{2})/) : null;
+                if (!timeMatch) return;
+                const currMins = parseInt(timeMatch[1]) * 60 + parseInt(timeMatch[2]);
+
+                if (prevProduct !== null && currPt !== prevProduct) {
+                    if (lastPrevProductTimeMins !== null) {
+                        let diff = currMins - lastPrevProductTimeMins;
+                        if (diff < 0) diff += 1440;
+                        if (diff > 0 && diff < 720) {
+                            const timeFormatted = d.time ? d.time.substring(0, 5) : '';
+                            changeoverMap[d.id] = `${timeFormatted} - Pergantian Dimsum (⏱ ${diff} menit)`;
+                        }
+                    }
+                }
+
+                prevProduct = currPt;
+                lastPrevProductTimeMins = currMins;
+            });
+
             g.details.sort((a, b) => {
                 const timeA = a.time || '';
                 const timeB = b.time || '';
@@ -414,16 +443,20 @@ export default function OperatorLogsheet({ logsheets }) {
                 const batchKey = `${d.machine}_${d.product_type}_${d.batch_number}`;
                 if (!batchTracker[batchKey]) batchTracker[batchKey] = { count: 0, newestId: d.id, oldestId: d.id };
                 batchTracker[batchKey].count += (parseInt(d.tray_count) || 0);
-                batchTracker[batchKey].oldestId = d.id; // since it's sorted descending, last visited is oldest
+                batchTracker[batchKey].oldestId = d.id;
                 if (batchTracker[batchKey].newestId < d.id) batchTracker[batchKey].newestId = d.id;
             });
             g.details.forEach(d => {
                 const batchKey = `${d.machine}_${d.product_type}_${d.batch_number}`;
                 d.batchTotal = batchTracker[batchKey].count;
-                if (d.isKendalaOnly) {
+                if (changeoverMap[d.id]) {
+                    const coText = changeoverMap[d.id];
+                    const existing = d.unplanned_stop;
+                    d.unplanned_stop = (!existing || existing === '-') ? coText : `${coText}, ${existing}`;
+                    d.isLastInBatch = true;
+                } else if (d.isKendalaOnly) {
                     d.isLastInBatch = true;
                 } else {
-                    // Tampilkan unplanned stop di baris terbaru (paling atas)
                     d.isLastInBatch = (d.id === batchTracker[batchKey].newestId);
                 }
             });

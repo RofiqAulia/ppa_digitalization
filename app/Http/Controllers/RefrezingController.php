@@ -215,6 +215,9 @@ class RefrezingController extends Controller
 
             foreach ($unplannedStops as $stop) {
                 if ($stop['machine'] === $m) {
+                    if (str_contains($stop['text'], 'Pergantian Dimsum')) {
+                        continue;
+                    }
                     $unplannedMins += (int)($stop['duration_mins'] ?? 0);
                 }
             }
