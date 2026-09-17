@@ -300,6 +300,7 @@ export default function DataTable({ logsheets }) {
 
         const activeMinutes = Math.max(0, spanMins - changeoverMinutes - unplannedMinutes);
         const totalWorkMinutes = activeMinutes + unplannedMinutes;
+        const lossMinutes = Math.max(0, spanMins - (activeMinutes + changeoverMinutes + unplannedMinutes));
 
         return {
             totalWorkMinutes,
@@ -307,6 +308,8 @@ export default function DataTable({ logsheets }) {
             changeoverMinutes,
             changeoverCount,
             unplannedMinutes,
+            lossMinutes,
+            spanMinutes: spanMins
         };
     };
 
@@ -1043,7 +1046,7 @@ export default function DataTable({ logsheets }) {
                                                                 <span className="text-indigo-700 font-extrabold flex items-center gap-1">⏱️ Total Waktu:</span>
                                                                 <span className="font-black text-indigo-800 font-mono text-sm">{tm.totalWorkMinutes} mnt</span>
                                                                 <span className="text-[11px] text-indigo-600/90 font-medium">
-                                                                    (Aktif: <strong className="text-emerald-700">{tm.activeMinutes}m</strong> | Pergantian: <strong className="text-amber-700">{tm.changeoverMinutes}m ({tm.changeoverCount}x)</strong> | Kendala: <strong className="text-rose-700">{tm.unplannedMinutes}m</strong>)
+                                                                    (Aktif: <strong className="text-emerald-700">{tm.activeMinutes}m</strong> | Pergantian: <strong className="text-amber-700">{tm.changeoverMinutes}m ({tm.changeoverCount}x)</strong> | Kendala: <strong className="text-rose-700">{tm.unplannedMinutes}m</strong> | Loss: <strong className="text-purple-700">{tm.lossMinutes}m</strong>)
                                                                 </span>
                                                             </div>
 

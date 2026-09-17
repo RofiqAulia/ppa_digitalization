@@ -308,7 +308,7 @@ export default function IqfDashboard() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-200/60 text-center">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-2 border-t border-slate-200/60 text-center">
                                     <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase">
                                             {effData.elapsed_shift_minutes && effData.elapsed_shift_minutes < effData.total_shift_minutes ? 'Shift Berjalan' : 'Total Shift'}
@@ -320,10 +320,6 @@ export default function IqfDashboard() {
                                         </p>
                                     </div>
                                     <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Jumlah Bekerja</p>
-                                        <p className="text-xs font-black text-indigo-600 mt-0.5">{effData.total_work_minutes} <span className="text-[9px] font-normal">mnt</span></p>
-                                    </div>
-                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase">Input Aktif</p>
                                         <p className="text-xs font-black text-emerald-600 mt-0.5">{effData.active_minutes} <span className="text-[9px] font-normal">mnt</span></p>
                                     </div>
@@ -331,9 +327,17 @@ export default function IqfDashboard() {
                                         <p className="text-[10px] font-bold text-slate-400 uppercase">Pergantian Dimsum</p>
                                         <p className="text-xs font-black text-amber-600 mt-0.5">{effData.changeover_minutes} <span className="text-[9px] font-normal">mnt ({effData.changeover_count}x)</span></p>
                                     </div>
-                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs col-span-2 sm:col-span-1">
+                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase">Kendala (Stop)</p>
                                         <p className="text-xs font-black text-rose-600 mt-0.5">{effData.unplanned_minutes} <span className="text-[9px] font-normal">mnt</span></p>
+                                    </div>
+                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Istirahat (Break)</p>
+                                        <p className="text-xs font-black text-blue-600 mt-0.5">{effData.break_minutes ?? 60} <span className="text-[9px] font-normal">mnt</span></p>
+                                    </div>
+                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Loss Time (Idle)</p>
+                                        <p className="text-xs font-black text-purple-600 mt-0.5">{effData.loss_minutes ?? 0} <span className="text-[9px] font-normal">mnt</span></p>
                                     </div>
                                 </div>
                             </div>

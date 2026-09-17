@@ -169,6 +169,17 @@ class RefrezingController extends Controller
             $elapsedShiftMinutes = $totalShiftMinutes;
         }
 
+        $plannedBreakMinutes = 60; // 60 minutes planned break per shift
+        $netShiftTarget = max(0, $totalShiftMinutes - $plannedBreakMinutes); // 420 minutes
+
+        // Proportional break time during mid-shift
+        if ($elapsedShiftMinutes >= $totalShiftMinutes) {
+            $elapsedBreakMinutes = $plannedBreakMinutes;
+        } else {
+            $elapsedBreakMinutes = (int) round(($elapsedShiftMinutes / $totalShiftMinutes) * $plannedBreakMinutes);
+        }
+        $netElapsedWorkMinutes = max(15, $elapsedShiftMinutes - $elapsedBreakMinutes);
+
         $efficiencyByMachine = [];
         foreach ($machines as $m) {
             $mDetails = \Illuminate\Support\Facades\DB::table('refrezing_logsheets as h')
@@ -229,8 +240,11 @@ class RefrezingController extends Controller
 
             $totalWorkMinutes = $activeMinutes + $unplannedMins;
 
-            // Real-time efficiency: ((active_minutes + unplanned_minutes) / elapsed_shift_minutes) * 100%
-            $efficiencyPercent = $elapsedShiftMinutes > 0 ? round(($totalWorkMinutes / $elapsedShiftMinutes) * 100, 1) : 0;
+            // Loss time = Elapsed Shift Time - (Active + Changeover + Unplanned + Elapsed Break)
+            $lossMinutes = max(0, $elapsedShiftMinutes - ($activeMinutes + $changeoverMinutes + $unplannedMins + $elapsedBreakMinutes));
+
+            // Real-time efficiency: ((active_minutes + unplanned_minutes) / netElapsedWorkMinutes) * 100%
+            $efficiencyPercent = $netElapsedWorkMinutes > 0 ? round(($totalWorkMinutes / $netElapsedWorkMinutes) * 100, 1) : 0;
             if ($efficiencyPercent > 100) $efficiencyPercent = 100.0;
 
             $statusText = $efficiencyPercent >= 90 ? 'Baik' : ($efficiencyPercent >= 70 ? 'Cukup' : 'Perlu Evaluasi');
@@ -240,11 +254,15 @@ class RefrezingController extends Controller
                 'machine'               => $m,
                 'total_shift_minutes'   => $totalShiftMinutes,
                 'elapsed_shift_minutes' => $elapsedShiftMinutes,
+                'break_minutes'         => $plannedBreakMinutes,
+                'elapsed_break_minutes' => $elapsedBreakMinutes,
+                'net_work_target'       => $netShiftTarget,
                 'total_work_minutes'    => $totalWorkMinutes,
                 'active_minutes'        => $activeMinutes,
                 'changeover_minutes'    => $changeoverMinutes,
                 'changeover_count'      => $changeoverCount,
                 'unplanned_minutes'     => $unplannedMins,
+                'loss_minutes'          => $lossMinutes,
                 'efficiency_percent'    => $efficiencyPercent,
                 'status_text'           => $statusText,
                 'status_color'          => $statusColor,
