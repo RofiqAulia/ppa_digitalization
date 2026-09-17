@@ -217,9 +217,12 @@ class RefrezingController extends Controller
             $statusText = $efficiencyPercent >= 90 ? 'Baik' : ($efficiencyPercent >= 70 ? 'Cukup' : 'Perlu Evaluasi');
             $statusColor = $efficiencyPercent >= 90 ? 'green' : ($efficiencyPercent >= 70 ? 'yellow' : 'red');
 
+            $totalWorkMinutes = $activeMinutes + $changeoverMinutes + $unplannedMins;
+
             $efficiencyByMachine[$m] = [
                 'machine'               => $m,
                 'total_shift_minutes'   => $totalShiftMinutes,
+                'total_work_minutes'    => $totalWorkMinutes,
                 'active_minutes'        => $activeMinutes,
                 'changeover_minutes'    => $changeoverMinutes,
                 'changeover_count'      => $changeoverCount,

@@ -241,6 +241,75 @@ export default function DataTable({ logsheets }) {
         }).join(', ');
     };
 
+    const calculateGroupTimeMetrics = (rows) => {
+        if (!rows || rows.length === 0) {
+            return { totalWorkMinutes: 0, activeMinutes: 0, changeoverMinutes: 0, changeoverCount: 0, unplannedMinutes: 0 };
+        }
+
+        const sorted = [...rows]
+            .filter(r => r.time && r.time !== '-')
+            .sort((a, b) => a.time.localeCompare(b.time));
+
+        let unplannedMinutes = 0;
+        const stopsSet = new Set();
+        rows.forEach(r => {
+            if (r.unplanned_stop && r.unplanned_stop !== '-') {
+                stopsSet.add(r.unplanned_stop);
+            }
+        });
+        stopsSet.forEach(st => {
+            const dm = st.match(/(\d+)\s*menit/i);
+            if (dm) {
+                unplannedMinutes += parseInt(dm[1], 10);
+            }
+        });
+
+        let changeoverMinutes = 0;
+        let changeoverCount = 0;
+        let prevProduct = null;
+        let lastPrevProductTimeMins = null;
+
+        sorted.forEach(r => {
+            const currPt = getBaseProduct(r.product_type);
+            const currMins = timeToMinutes(r.time);
+            if (currMins === null) return;
+
+            if (prevProduct !== null && currPt !== prevProduct) {
+                if (lastPrevProductTimeMins !== null) {
+                    const diff = calcDurationMinutes(lastPrevProductTimeMins, currMins);
+                    if (diff !== null && diff > 0 && diff < 720) {
+                        changeoverMinutes += diff;
+                        changeoverCount++;
+                    }
+                }
+            }
+
+            prevProduct = currPt;
+            lastPrevProductTimeMins = currMins;
+        });
+
+        let spanMins = 0;
+        if (sorted.length > 0) {
+            const firstMins = timeToMinutes(sorted[0].time);
+            const lastMins  = timeToMinutes(sorted[sorted.length - 1].time);
+            if (firstMins !== null && lastMins !== null) {
+                spanMins = calcDurationMinutes(firstMins, lastMins);
+                if (spanMins === 0) spanMins = 15;
+            }
+        }
+
+        const activeMinutes = Math.max(0, spanMins - changeoverMinutes - unplannedMinutes);
+        const totalWorkMinutes = activeMinutes + changeoverMinutes + unplannedMinutes;
+
+        return {
+            totalWorkMinutes,
+            activeMinutes,
+            changeoverMinutes,
+            changeoverCount,
+            unplannedMinutes,
+        };
+    };
+
     const flatData = useMemo(() => {
         if (!logsheets || logsheets.length === 0) return [];
 
@@ -801,6 +870,16 @@ export default function DataTable({ logsheets }) {
                                 </div>
 
                                 <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                    {/* Total Time badge */}
+                                    {(() => {
+                                        const tm = calculateGroupTimeMetrics(group.rows);
+                                        return (
+                                            <span className="text-[10px] px-2 py-0.5 rounded border font-bold bg-indigo-50 text-indigo-700 border-indigo-200">
+                                                ⏱️ {tm.totalWorkMinutes} mnt
+                                            </span>
+                                        );
+                                    })()}
+
                                     {/* Product badges */}
                                     {[
                                         { pt: 'siomay',         val: group.totals.siomay, unit: 'L' },
@@ -955,20 +1034,37 @@ export default function DataTable({ logsheets }) {
                                     <tfoot className="bg-slate-50 border-t-2 border-slate-200">
                                         <tr>
                                             <td colSpan={12} className="p-0">
-                                                <div className="flex flex-wrap items-center justify-end gap-3 px-4 py-2.5 text-xs">
-                                                    <span className="text-slate-400 uppercase font-medium mr-1">Rekap:</span>
-                                                    {[
-                                                        { label:'Siomay', val: group.totals.siomay, unit:'L', cls:'text-yellow-800 bg-yellow-100 border-yellow-300' },
-                                                        { label:'Pentol', val: group.totals.pentol, unit:'L', cls:'text-blue-800 bg-blue-100 border-blue-300' },
-                                                        { label:'Lumpia', val: group.totals.lumpia, unit:'K', cls:'text-green-800 bg-green-100 border-green-300' },
-                                                        { label:'Adonan', val: group.totals.adonan, unit:'K', cls:'text-purple-800 bg-purple-100 border-purple-300' },
-                                                    ].map(({ label, val, unit, cls }) => (
-                                                        <div key={label} className="flex items-center gap-1">
-                                                            <span className="text-slate-400">{label}:</span>
-                                                            <span className={`border px-1.5 py-0.5 rounded font-black ${cls}`}>{val} {unit}</span>
+                                                {(() => {
+                                                    const tm = calculateGroupTimeMetrics(group.rows);
+                                                    return (
+                                                        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-xs">
+                                                            {/* Total Waktu Logsheet & Breakdown */}
+                                                            <div className="flex flex-wrap items-center gap-2 bg-indigo-50/90 border border-indigo-200 px-3 py-1.5 rounded-lg text-indigo-900 font-bold">
+                                                                <span className="text-indigo-700 font-extrabold flex items-center gap-1">⏱️ Total Waktu:</span>
+                                                                <span className="font-black text-indigo-800 font-mono text-sm">{tm.totalWorkMinutes} mnt</span>
+                                                                <span className="text-[11px] text-indigo-600/90 font-medium">
+                                                                    (Aktif: <strong className="text-emerald-700">{tm.activeMinutes}m</strong> | Pergantian: <strong className="text-amber-700">{tm.changeoverMinutes}m ({tm.changeoverCount}x)</strong> | Kendala: <strong className="text-rose-700">{tm.unplannedMinutes}m</strong>)
+                                                                </span>
+                                                            </div>
+
+                                                            {/* Rekap Produk */}
+                                                            <div className="flex flex-wrap items-center gap-3">
+                                                                <span className="text-slate-400 uppercase font-medium mr-1">Rekap:</span>
+                                                                {[
+                                                                    { label:'Siomay', val: group.totals.siomay, unit:'L', cls:'text-yellow-800 bg-yellow-100 border-yellow-300' },
+                                                                    { label:'Pentol', val: group.totals.pentol, unit:'L', cls:'text-blue-800 bg-blue-100 border-blue-300' },
+                                                                    { label:'Lumpia', val: group.totals.lumpia, unit:'K', cls:'text-green-800 bg-green-100 border-green-300' },
+                                                                    { label:'Adonan', val: group.totals.adonan, unit:'K', cls:'text-purple-800 bg-purple-100 border-purple-300' },
+                                                                ].map(({ label, val, unit, cls }) => (
+                                                                    <div key={label} className="flex items-center gap-1">
+                                                                        <span className="text-slate-400">{label}:</span>
+                                                                        <span className={`border px-1.5 py-0.5 rounded font-black ${cls}`}>{val} {unit}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
                                                         </div>
-                                                    ))}
-                                                </div>
+                                                    );
+                                                })()}
                                             </td>
                                         </tr>
                                     </tfoot>

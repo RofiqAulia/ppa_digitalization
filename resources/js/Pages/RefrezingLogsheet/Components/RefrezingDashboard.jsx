@@ -306,10 +306,14 @@ export default function IqfDashboard() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-200/60 text-center">
+                                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-200/60 text-center">
                                     <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase">Total Shift</p>
                                         <p className="text-xs font-black text-slate-700 mt-0.5">{effData.total_shift_minutes} <span className="text-[9px] font-normal">mnt</span></p>
+                                    </div>
+                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Jumlah Bekerja</p>
+                                        <p className="text-xs font-black text-indigo-600 mt-0.5">{effData.total_work_minutes} <span className="text-[9px] font-normal">mnt</span></p>
                                     </div>
                                     <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase">Input Aktif</p>
@@ -319,7 +323,7 @@ export default function IqfDashboard() {
                                         <p className="text-[10px] font-bold text-slate-400 uppercase">Pergantian Dimsum</p>
                                         <p className="text-xs font-black text-amber-600 mt-0.5">{effData.changeover_minutes} <span className="text-[9px] font-normal">mnt ({effData.changeover_count}x)</span></p>
                                     </div>
-                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
+                                    <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs col-span-2 sm:col-span-1">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase">Kendala (Stop)</p>
                                         <p className="text-xs font-black text-rose-600 mt-0.5">{effData.unplanned_minutes} <span className="text-[9px] font-normal">mnt</span></p>
                                     </div>
