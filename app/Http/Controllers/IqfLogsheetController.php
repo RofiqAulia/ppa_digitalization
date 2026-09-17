@@ -52,6 +52,14 @@ class IqfLogsheetController extends Controller
             }
         }
 
+        [$fromH, $fromM] = explode(':', $fromTime);
+        [$toH, $toM]     = explode(':', $toTime);
+        $fromMins = (int)$fromH * 60 + (int)$fromM;
+        $toMins   = ($toTime === '00:00' && $fromTime !== '00:00') ? 1440 : ((int)$toH * 60 + (int)$toM);
+        if ($toMins < $fromMins) {
+            $toMins += 1440;
+        }
+
         $unplannedStopsData = [];
         $stopsQuery = IqfLogsheet::with('details')
             ->where('date', $queryDate)
@@ -95,6 +103,19 @@ class IqfLogsheetController extends Controller
                 if (preg_match('/^(\d{1,2}):(\d{2})/', $stopText, $matches)) {
                     $stopMin = (int)$matches[1] * 60 + (int)$matches[2];
 
+                    // Filter stop by active time range (shift)
+                    if (!($fromTime === '00:00' && ($toTime === '23:59' || $toTime === '00:00'))) {
+                        if ($toMins >= $fromMins) {
+                            if ($stopMin < $fromMins || $stopMin >= $toMins) {
+                                continue;
+                            }
+                        } else {
+                            if ($stopMin < $fromMins && $stopMin >= $toMins) {
+                                continue;
+                            }
+                        }
+                    }
+
                     // Find the first detail on THIS MACHINE (any logsheet) entered AFTER the stop time
                     $nextDetail = $machineSortedDetails->first(function($d) use ($stopMin) {
                         $wibTime = $d->created_at->setTimezone('Asia/Jakarta')->format('H:i');
@@ -120,10 +141,14 @@ class IqfLogsheetController extends Controller
                     }
 
                     $pic = 'Unknown';
-                    if ($nextDetail && $nextDetail->pic) {
-                        $pic = $nextDetail->pic;
+                    if (!empty($ls->spv) && $ls->spv !== 'Unknown' && $ls->spv !== '-') {
+                        $pic = $ls->spv;
                     } else if ($sameLogsheetDetails->count() > 0) {
-                        $pic = $sameLogsheetDetails->last()->pic;
+                        $firstPic = $sameLogsheetDetails->first()->pic ?? null;
+                        $lastPic  = $sameLogsheetDetails->last()->pic ?? null;
+                        $pic = ($firstPic && $firstPic !== 'Unknown') ? $firstPic : (($lastPic && $lastPic !== 'Unknown') ? $lastPic : 'Unknown');
+                    } else if ($nextDetail && !empty($nextDetail->pic) && $nextDetail->pic !== 'Unknown') {
+                        $pic = $nextDetail->pic;
                     }
 
                     $unplannedStopsData[] = [
@@ -240,7 +265,7 @@ class IqfLogsheetController extends Controller
                 $spanMins    = $lastMins >= $firstMins ? ($lastMins - $firstMins) : ($lastMins + 1440 - $firstMins);
                 if ($spanMins === 0) $spanMins = 15;
 
-                $activeMinutes = max(0, $spanMins - $changeoverMinutes - $unplannedMins);
+                $activeMinutes = $spanMins;
             } else {
                 $spanMins      = 0;
                 $activeMinutes = 0;

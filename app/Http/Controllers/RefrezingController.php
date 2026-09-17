@@ -101,6 +101,14 @@ class RefrezingController extends Controller
             }
         }
 
+        [$fromH, $fromM] = explode(':', $fromTime);
+        [$toH, $toM]     = explode(':', $toTime);
+        $fromMins = (int)$fromH * 60 + (int)$fromM;
+        $toMins   = ($toTime === '00:00' && $fromTime !== '00:00') ? 1440 : ((int)$toH * 60 + (int)$toM);
+        if ($toMins < $fromMins) {
+            $toMins += 1440;
+        }
+
         // Get unplanned stops for today
         $unplannedStops = [];
         $logsheetsWithStops = RefrezingLogsheet::where('date', $queryDate)
@@ -119,6 +127,20 @@ class RefrezingController extends Controller
                 $durMins = 0;
                 if (preg_match('/^(\d{1,2}):(\d{2})/', $stopText, $matches)) {
                     $stopMin = (int)$matches[1] * 60 + (int)$matches[2];
+
+                    // Filter stop by active time range (shift)
+                    if (!($fromTime === '00:00' && ($toTime === '23:59' || $toTime === '00:00'))) {
+                        if ($toMins >= $fromMins) {
+                            if ($stopMin < $fromMins || $stopMin >= $toMins) {
+                                continue;
+                            }
+                        } else {
+                            if ($stopMin < $fromMins && $stopMin >= $toMins) {
+                                continue;
+                            }
+                        }
+                    }
+
                     $nextDetail = $sortedDetails->first(function ($d) use ($stopMin) {
                         $dt = new Carbon($d->created_at);
                         $dt->setTimezone('Asia/Jakarta');
@@ -141,11 +163,22 @@ class RefrezingController extends Controller
                     }
                 }
                 
+                $pic = 'Unknown';
+                if (!empty($ls->spv) && $ls->spv !== 'Unknown' && $ls->spv !== '-') {
+                    $pic = $ls->spv;
+                } else if ($sortedDetails->count() > 0) {
+                    $firstPic = $sortedDetails->first()->pic ?? null;
+                    $lastPic  = $sortedDetails->last()->pic ?? null;
+                    $pic = ($firstPic && $firstPic !== 'Unknown') ? $firstPic : (($lastPic && $lastPic !== 'Unknown') ? $lastPic : 'Unknown');
+                } else if (isset($nextDetail) && $nextDetail && !empty($nextDetail->pic) && $nextDetail->pic !== 'Unknown') {
+                    $pic = $nextDetail->pic;
+                }
+
                 $unplannedStops[] = [
                     'text'          => $stopText,
                     'machine'       => $ls->machine,
                     'shift'         => $ls->shift,
-                    'pic'           => $ls->details->first()->pic ?? 'Unknown',
+                    'pic'           => $pic,
                     'duration'      => $durationStr,
                     'duration_mins' => $durMins,
                 ];
@@ -254,7 +287,7 @@ class RefrezingController extends Controller
                 $spanMins    = $lastMins >= $firstMins ? ($lastMins - $firstMins) : ($lastMins + 1440 - $firstMins);
                 if ($spanMins === 0) $spanMins = 15;
 
-                $activeMinutes = max(0, $spanMins - $changeoverMinutes - $unplannedMins);
+                $activeMinutes = $spanMins;
             } else {
                 $spanMins      = 0;
                 $activeMinutes = 0;

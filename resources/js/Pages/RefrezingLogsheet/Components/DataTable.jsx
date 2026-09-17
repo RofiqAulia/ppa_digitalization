@@ -298,7 +298,7 @@ export default function DataTable({ logsheets }) {
             }
         }
 
-        const activeMinutes = Math.max(0, spanMins - changeoverMinutes - unplannedMinutes);
+        const activeMinutes = spanMins;
         const totalWorkMinutes = spanMins;
         const lossMinutes = Math.max(0, spanMins - (activeMinutes + changeoverMinutes + unplannedMinutes));
 
