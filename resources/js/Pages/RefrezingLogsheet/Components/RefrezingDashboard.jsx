@@ -225,29 +225,17 @@ export default function IqfDashboard() {
                 </div>
             </div>
 
-            {/* EFFICIENCY & CHANGEOVER SECTION */}
+            {/* WORK TIME ANALYSIS SECTION */}
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 md:p-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-emerald-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 text-lg">
-                            ⚡
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-emerald-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 text-lg">
+                            ⏱️
                         </div>
                         <div>
-                            <h3 className="text-base md:text-lg font-extrabold text-slate-800">Analisis Efisiensi Kerja Karyawan</h3>
-                            <p className="text-xs font-semibold text-slate-400">Efektivitas Produksi, Pergantian Dimsum, & Jam Shift per Mesin</p>
+                            <h3 className="text-base md:text-lg font-extrabold text-slate-800">Analisis Jam Kerja Karyawan</h3>
+                            <p className="text-xs font-semibold text-slate-400">Rincian Durasi Input Aktif, Downtime Kendala, Pergantian Dimsum, Istirahat, & Loss Time per Mesin</p>
                         </div>
-                    </div>
-                    {/* Legend */}
-                    <div className="flex items-center gap-2 text-xs font-bold flex-wrap">
-                        <span className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span> &gt;90% Baik
-                        </span>
-                        <span className="flex items-center gap-1.5 text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-                            <span className="w-2 h-2 rounded-full bg-amber-500"></span> 70-90% Cukup
-                        </span>
-                        <span className="flex items-center gap-1.5 text-rose-700 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200">
-                            <span className="w-2 h-2 rounded-full bg-rose-500"></span> &lt;70% Evaluasi
-                        </span>
                     </div>
                 </div>
 
@@ -259,51 +247,16 @@ export default function IqfDashboard() {
                             changeover_minutes: 0,
                             changeover_count: 0,
                             unplanned_minutes: 0,
-                            efficiency_percent: 0,
-                            status_text: 'Perlu Evaluasi',
-                            status_color: 'red'
+                            break_minutes: 60,
+                            loss_minutes: 0,
                         };
 
-                        const pct = effData.efficiency_percent || 0;
-                        const isGood = pct >= 90;
-                        const isFair = pct >= 70 && pct < 90;
-
-                        const badgeClass = isGood
-                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                            : isFair
-                            ? 'bg-amber-100 text-amber-800 border-amber-300'
-                            : 'bg-rose-100 text-rose-800 border-rose-300';
-
-                        const barColor = isGood
-                            ? 'bg-emerald-500'
-                            : isFair
-                            ? 'bg-amber-500'
-                            : 'bg-rose-500';
-
                         return (
-                            <div key={mName} className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-4">
+                            <div key={mName} className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-3">
                                 <div className="flex items-center justify-between">
                                     <span className="text-xs font-black uppercase tracking-widest text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full">
                                         {mName}
                                     </span>
-                                    <span className={`text-xs font-extrabold px-3 py-1 rounded-full border ${badgeClass}`}>
-                                        {isGood ? '🟢' : isFair ? '🟡' : '🔴'} {effData.status_text}
-                                    </span>
-                                </div>
-
-                                <div>
-                                    <div className="flex items-baseline justify-between mb-1.5">
-                                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tingkat Efisiensi</span>
-                                        <span className="text-2xl font-black text-slate-800 font-mono">
-                                            {pct}%
-                                        </span>
-                                    </div>
-                                    <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
-                                        <div
-                                            className={`h-full ${barColor} transition-all duration-1000 ease-out`}
-                                            style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
-                                        />
-                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-2 border-t border-slate-200/60 text-center">

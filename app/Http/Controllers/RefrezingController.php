@@ -114,6 +114,7 @@ class RefrezingController extends Controller
 
             foreach ($stops as $stopText) {
                 $durationStr = 'Belum Selesai';
+                $durMins = 0;
                 if (preg_match('/^(\d{1,2}):(\d{2})/', $stopText, $matches)) {
                     $stopMin = (int)$matches[1] * 60 + (int)$matches[2];
                     $nextDetail = $sortedDetails->first(function ($d) use ($stopMin) {
@@ -127,18 +128,24 @@ class RefrezingController extends Controller
                         $parts = explode(':', $nextDetail->time);
                         if (count($parts) >= 2) {
                             $nextMin = (int)$parts[0] * 60 + (int)$parts[1];
-                            $dur = $nextMin >= $stopMin ? $nextMin - $stopMin : $nextMin + 1440 - $stopMin;
-                            $durationStr = $dur . ' menit';
+                            $durMins = $nextMin >= $stopMin ? $nextMin - $stopMin : $nextMin + 1440 - $stopMin;
+                            $durationStr = $durMins . ' menit';
                         }
+                    } else {
+                        $nowWib = now('Asia/Jakarta');
+                        $nowMins = (int)$nowWib->format('H') * 60 + (int)$nowWib->format('i');
+                        $durMins = $nowMins >= $stopMin ? $nowMins - $stopMin : $nowMins + 1440 - $stopMin;
+                        $durationStr = $durMins . ' menit - Belum Selesai';
                     }
                 }
                 
                 $unplannedStops[] = [
-                    'text' => $stopText,
-                    'machine' => $ls->machine,
-                    'shift' => $ls->shift,
-                    'pic' => $ls->details->first()->pic ?? 'Unknown',
-                    'duration' => $durationStr
+                    'text'          => $stopText,
+                    'machine'       => $ls->machine,
+                    'shift'         => $ls->shift,
+                    'pic'           => $ls->details->first()->pic ?? 'Unknown',
+                    'duration'      => $durationStr,
+                    'duration_mins' => $durMins,
                 ];
             }
         }
@@ -197,8 +204,8 @@ class RefrezingController extends Controller
             $unplannedMins     = 0;
 
             foreach ($unplannedStops as $stop) {
-                if ($stop['machine'] === $m && preg_match('/^(\d+)\s*menit/', $stop['duration'], $dm)) {
-                    $unplannedMins += (int)$dm[1];
+                if ($stop['machine'] === $m) {
+                    $unplannedMins += (int)($stop['duration_mins'] ?? 0);
                 }
             }
 

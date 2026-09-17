@@ -103,14 +103,18 @@ class IqfLogsheetController extends Controller
                     });
 
                     $duration = null;
+                    $durMins = 0;
                     if ($nextDetail) {
                         // Use the `time` field (operator-entered time) for duration calculation
                         [$th, $tm] = explode(':', substr($nextDetail->time, 0, 5));
                         $nextMin = (int)$th * 60 + (int)$tm;
-                        $diffMin = $nextMin >= $stopMin ? $nextMin - $stopMin : $nextMin + 1440 - $stopMin;
-                        $duration = $diffMin . ' menit';
+                        $durMins = $nextMin >= $stopMin ? $nextMin - $stopMin : $nextMin + 1440 - $stopMin;
+                        $duration = $durMins . ' menit';
                     } else {
-                        $duration = 'Belum Selesai';
+                        $nowWib = now('Asia/Jakarta');
+                        $nowMins = (int)$nowWib->format('H') * 60 + (int)$nowWib->format('i');
+                        $durMins = $nowMins >= $stopMin ? $nowMins - $stopMin : $nowMins + 1440 - $stopMin;
+                        $duration = $durMins . ' menit - Belum Selesai';
                     }
 
                     $pic = 'Unknown';
@@ -121,11 +125,12 @@ class IqfLogsheetController extends Controller
                     }
 
                     $unplannedStopsData[] = [
-                        'shift'    => $ls->shift,
-                        'machine'  => $ls->machine,
-                        'pic'      => $pic,
-                        'text'     => $stopText,
-                        'duration' => $duration,
+                        'shift'         => $ls->shift,
+                        'machine'       => $ls->machine,
+                        'pic'           => $pic,
+                        'text'          => $stopText,
+                        'duration'      => $duration,
+                        'duration_mins' => $durMins,
                     ];
                 }
             }
@@ -185,8 +190,8 @@ class IqfLogsheetController extends Controller
             $unplannedMins     = 0;
 
             foreach ($unplannedStopsData as $stop) {
-                if ($stop['machine'] === $m && preg_match('/^(\d+)\s*menit/', $stop['duration'], $dm)) {
-                    $unplannedMins += (int)$dm[1];
+                if ($stop['machine'] === $m) {
+                    $unplannedMins += (int)($stop['duration_mins'] ?? 0);
                 }
             }
 
