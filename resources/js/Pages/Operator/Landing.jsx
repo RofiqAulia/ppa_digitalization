@@ -182,7 +182,7 @@ export default function Landing({ latestEntries }) {
 
                 {/* Title and Dropdowns */}
                 <div className="text-center mb-10">
-                    <h2 className="text-3xl font-black text-slate-900 uppercase tracking-[0.2em] mb-4 drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] [-webkit-text-stroke:1px_white]">Pilihan Dimsum</h2>
+                    {/* <h2 className="text-3xl font-black text-slate-900 uppercase tracking-[0.2em] mb-4 drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)] [-webkit-text-stroke:1px_white]">Pilihan Dimsum</h2> */}
                     
                     {/* Separate badges for IQF 1 & IQF 2 */}
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
