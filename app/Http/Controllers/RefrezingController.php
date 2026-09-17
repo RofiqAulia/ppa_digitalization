@@ -60,6 +60,8 @@ class RefrezingController extends Controller
         $toTime   = $request->get('to_time',   '23:59');
         $queryDate = $request->get('date', $date);
 
+        $toTimeSql = ($toTime === '00:00' && $fromTime !== '00:00') ? '23:59:59' : ($toTime . ':59');
+
         $products = ['siomay', 'pentol', 'lumpia', 'adonan_pangsit'];
         $machines = ['Refrezing 1', 'Refrezing 2', 'Refrezing 3']; // or just get distinct machines from DB
 
@@ -82,7 +84,7 @@ class RefrezingController extends Controller
             ->select('h.machine', 'h.product_type', \Illuminate\Support\Facades\DB::raw('SUM(d.tray_count) as total'))
             ->where('h.date', $queryDate)
             ->where('d.time', '>=', $fromTime . ':00')
-            ->where('d.time', '<=', $toTime . ':59')
+            ->where('d.time', '<=', $toTimeSql)
             ->groupBy('h.machine', 'h.product_type')
             ->get();
 
@@ -154,8 +156,12 @@ class RefrezingController extends Controller
         [$fromH, $fromM] = explode(':', $fromTime);
         [$toH, $toM]     = explode(':', $toTime);
         $fromMins = (int)$fromH * 60 + (int)$fromM;
-        $toMins   = (int)$toH * 60 + (int)$toM;
-        $diff = $toMins >= $fromMins ? ($toMins - $fromMins) : ($toMins + 1440 - $fromMins);
+        $toMins   = ($toTime === '00:00' && $fromTime !== '00:00') ? 1440 : ((int)$toH * 60 + (int)$toM);
+
+        if ($toMins < $fromMins) {
+            $toMins += 1440;
+        }
+        $diff = $toMins - $fromMins;
         if ((int)$toM === 59) {
             $diff += 1;
         }
@@ -171,7 +177,7 @@ class RefrezingController extends Controller
             $nowMins = $nowWib->hour * 60 + $nowWib->minute;
             if ($nowMins < $fromMins) {
                 $elapsedShiftMinutes = 15;
-            } else if ($nowMins <= ($toMins + 1)) {
+            } else if ($nowMins <= $toMins) {
                 $elapsedShiftMinutes = max(15, min($totalShiftMinutes, $nowMins - $fromMins));
             } else {
                 $elapsedShiftMinutes = $totalShiftMinutes;
@@ -199,7 +205,7 @@ class RefrezingController extends Controller
                 ->where('h.date', $queryDate)
                 ->where('h.machine', $m)
                 ->where('d.time', '>=', $fromTime . ':00')
-                ->where('d.time', '<=', $toTime . ':59')
+                ->where('d.time', '<=', $toTimeSql)
                 ->orderBy('d.created_at', 'asc')
                 ->get();
 
