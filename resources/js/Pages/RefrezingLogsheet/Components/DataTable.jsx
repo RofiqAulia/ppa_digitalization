@@ -975,9 +975,9 @@ export default function DataTable({ logsheets }) {
                                             <SortableHeader columnKey="rak">Rak/Rongga</SortableHeader>
                                             <SortableHeader columnKey="tray_count">Jumlah (Loyang/Keranjang)</SortableHeader>
                                             <th className="px-3 py-2.5 text-xs font-bold text-emerald-100 bg-emerald-700 border-b border-emerald-800 text-center">Total</th>
-                                            <SortableHeader columnKey="unplanned_stop" className="hidden lg:table-cell">Unplanned Stop</SortableHeader>
+                                            <SortableHeader columnKey="unplanned_stop">Unplanned Stop</SortableHeader>
                                             {!isReadOnly && (
-                                                <th className="no-print hidden sm:table-cell px-3 py-2.5 text-xs font-bold text-white bg-[#1e3a5f] border-b border-[#152d4a] text-center w-14">Aksi</th>
+                                                <th className="no-print px-3 py-2.5 text-xs font-bold text-white bg-[#1e3a5f] border-b border-[#152d4a] text-center w-14">Aksi</th>
                                             )}
                                         </tr>
                                     </thead>
@@ -1026,10 +1026,10 @@ export default function DataTable({ logsheets }) {
                                                         </span>
                                                     </td>
                                                     <td className="px-3 py-1.5 font-mono text-slate-600 truncate max-w-[90px]">{row.batch_number}</td>
-                                                    <td className="px-3 py-1.5 font-mono text-slate-600 hidden sm:table-cell">{row.suhu_panel}</td>
-                                                    <td className="px-3 py-1.5 font-mono text-slate-600 hidden sm:table-cell">{row.suhu_produk}</td>
+                                                    <td className="px-3 py-1.5 font-mono text-slate-600">{row.suhu_panel}</td>
+                                                    <td className="px-3 py-1.5 font-mono text-slate-600">{row.suhu_produk}</td>
                                                     <td className="px-3 py-1.5 font-mono text-indigo-700 font-bold">{formatTime(row.time)}</td>
-                                                    <td className={`px-3 py-1.5 text-center font-bold hidden md:table-cell ${isRakAnomaly ? 'text-red-600 bg-red-100' : 'text-slate-700'}`}>
+                                                    <td className={`px-3 py-1.5 text-center font-bold ${isRakAnomaly ? 'text-red-600 bg-red-100' : 'text-slate-700'}`}>
                                                         {['lumpia','adonan_pangsit'].includes(pt)
                                                             ? <span className="text-slate-300">-</span>
                                                             : (
@@ -1052,7 +1052,7 @@ export default function DataTable({ logsheets }) {
                                                             </span>
                                                         ) : <span className="text-slate-200">—</span>}
                                                     </td>
-                                                    <td className="hidden lg:table-cell px-3 py-1.5 text-xs">
+                                                    <td className="px-3 py-1.5 text-xs">
                                                         {row.unplanned_stop !== '-' ? (
                                                             <span className={`inline-flex px-1.5 py-0.5 rounded font-bold text-[10px] ${
                                                                 row.unplanned_stop.includes('Pergantian Dimsum') && !row.unplanned_stop.includes('Temperatur') && !row.unplanned_stop.includes('Macet')
@@ -1064,7 +1064,7 @@ export default function DataTable({ logsheets }) {
                                                         ) : <span className="text-slate-300">-</span>}
                                                     </td>
                                                     {!isReadOnly && (
-                                                        <td className="no-print hidden sm:table-cell px-3 py-1.5 text-center">
+                                                        <td className="no-print px-3 py-1.5 text-center">
                                                             <div className="flex items-center justify-center gap-1.5">
                                                                 <button
                                                                     className="h-6 w-6 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors flex items-center justify-center"
