@@ -4,6 +4,7 @@ import {
     LayoutDashboard, FileText, History, Snowflake, ClipboardList, Users, LogOut, PanelLeftClose, PanelLeftOpen, Layers
 } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { SidebarAnomalyWidget } from '@/components/SidebarAnomalyWidget';
 
 export function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) {
     const { url, props } = usePage();
@@ -229,6 +230,9 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) {
                     </div>
                 )}
             </div>
+
+            {/* Sidebar Anomaly Detection Widget */}
+            <SidebarAnomalyWidget isCollapsed={isCollapsed} />
 
             {/* Footer / User / Collapse Action */}
             <div className="p-3 border-t border-slate-800/80 bg-[#151a2d] space-y-2 shrink-0">

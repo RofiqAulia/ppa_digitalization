@@ -325,11 +325,163 @@ class RefrezingController extends Controller
             ];
         }
 
+        // ── Calculate Anomaly Detection & Shift Matrix Table ────────────────
+        $activeByProduct = [
+            'pentol'         => 0,
+            'siomay'         => 0,
+            'lumpia'         => 0,
+            'adonan_pangsit' => 0,
+        ];
+
+        // Fetch all details for this date and time filter across all logsheets
+        $shiftDetails = \Illuminate\Support\Facades\DB::table('refrezing_logsheets as h')
+            ->join('refrezing_logsheet_details as d', 'd.refrezing_logsheet_id', '=', 'h.id')
+            ->select('h.product_type', 'h.machine', 'd.time', 'd.tray_count', 'd.rak', 'd.created_at')
+            ->where('h.date', $queryDate)
+            ->where('d.time', '>=', $fromTime . ':00')
+            ->where('d.time', '<=', $toTimeSql)
+            ->orderBy('d.time', 'asc')
+            ->get();
+
+        // Build continuous blocks per product to calculate realistic active duration in minutes
+        $productBlocks = [];
+        $currBlock = null;
+
+        foreach ($shiftDetails as $d) {
+            $pt = strtolower($d->product_type);
+            $pt = preg_replace('/_[twl]$/', '', $pt);
+            if ($pt === 'adonan') $pt = 'adonan_pangsit';
+
+            [$th, $tm] = explode(':', substr($d->time, 0, 5));
+            $dMins = (int)$th * 60 + (int)$tm;
+
+            if (!$currBlock) {
+                $currBlock = [
+                    'product_type' => $pt,
+                    'start_mins'   => $dMins,
+                    'last_mins'    => $dMins,
+                    'first_time'   => substr($d->time, 0, 5),
+                    'last_time'    => substr($d->time, 0, 5),
+                    'entries'      => [substr($d->time, 0, 5)],
+                ];
+            } else if ($currBlock['product_type'] === $pt && ($dMins - $currBlock['last_mins']) <= 45) {
+                $currBlock['last_mins'] = $dMins;
+                $currBlock['last_time'] = substr($d->time, 0, 5);
+                $currBlock['entries'][] = substr($d->time, 0, 5);
+            } else {
+                $productBlocks[] = $currBlock;
+                $currBlock = [
+                    'product_type' => $pt,
+                    'start_mins'   => $dMins,
+                    'last_mins'    => $dMins,
+                    'first_time'   => substr($d->time, 0, 5),
+                    'last_time'    => substr($d->time, 0, 5),
+                    'entries'      => [substr($d->time, 0, 5)],
+                ];
+            }
+        }
+        if ($currBlock) {
+            $productBlocks[] = $currBlock;
+        }
+
+        // Calculate active minutes per product from blocks
+        for ($i = 0; $i < count($productBlocks); $i++) {
+            $blk = &$productBlocks[$i];
+            $pt = $blk['product_type'];
+
+            if (isset($productBlocks[$i + 1])) {
+                $nextStart = $productBlocks[$i + 1]['start_mins'];
+                $gap = $nextStart - $blk['start_mins'];
+                if ($gap > 0 && $gap <= 120) {
+                    $dur = $gap;
+                } else {
+                    $dur = max(5, ($blk['last_mins'] - $blk['start_mins']) + 5);
+                }
+            } else {
+                $dur = max(5, ($blk['last_mins'] - $blk['start_mins']) + 5);
+            }
+            $blk['duration_mins'] = $dur;
+            if (isset($activeByProduct[$pt])) {
+                $activeByProduct[$pt] += $dur;
+            } else {
+                $activeByProduct[$pt] = $dur;
+            }
+        }
+
+        $totalDowntimeMins = 0;
+        $downtimeEntries = [];
+        foreach ($unplannedStops as $stop) {
+            if (!str_contains($stop['text'], 'Pergantian Dimsum')) {
+                $durMins = (int)($stop['duration_mins'] ?? 0);
+                $totalDowntimeMins += $durMins;
+                $downtimeEntries[] = [
+                    'text'     => $stop['text'],
+                    'duration' => $stop['duration'],
+                    'dur_mins' => $durMins,
+                    'machine'  => $stop['machine'],
+                ];
+            }
+        }
+
+        $totalActiveDimsumMins = array_sum($activeByProduct);
+        $totalRecordedMins     = $totalActiveDimsumMins + $totalDowntimeMins;
+        $targetShiftMins       = $totalShiftMinutes;
+        $unaccountedMins       = max(0, $targetShiftMins - $totalRecordedMins);
+
+        $anomalyMessages = [];
+        $anomalyStatus = 'normal';
+
+        if ($unaccountedMins > 30) {
+            $anomalyStatus = 'anomaly';
+            $anomalyMessages[] = "Selisih {$unaccountedMins} menit belum ter-log (Loss Time / Unaccounted). Total input aktif + kendala: {$totalRecordedMins} menit dari target {$targetShiftMins} menit.";
+        } else if ($unaccountedMins > 0) {
+            $anomalyStatus = 'warning';
+            $anomalyMessages[] = "Terdapat selisih {$unaccountedMins} menit jam kerja belum ter-log pada shift ini.";
+        } else {
+            $anomalyMessages[] = "Jam kerja shift ter-cover 100% tanpa anomali loss time.";
+        }
+
+        foreach ($unplannedStops as $stop) {
+            if (str_contains($stop['duration'] ?? '', 'Belum Selesai')) {
+                $anomalyStatus = 'anomaly';
+                $anomalyMessages[] = "Kendala '{$stop['text']}' di {$stop['machine']} belum diselesaikan (Belum Selesai).";
+            }
+        }
+
+        // Build timestamp log rows for frontend matrix table
+        $matrixRows = [];
+        foreach ($shiftDetails as $d) {
+            $pt = strtolower($d->product_type);
+            $pt = preg_replace('/_[twl]$/', '', $pt);
+            if ($pt === 'adonan') $pt = 'adonan_pangsit';
+
+            $matrixRows[] = [
+                'product_type' => $pt,
+                'time'         => substr($d->time, 0, 5),
+                'machine'      => $d->machine,
+                'tray_count'   => $d->tray_count,
+            ];
+        }
+
+        $anomalyDetection = [
+            'active_minutes_by_product' => $activeByProduct,
+            'total_active_dimsum_mins'  => $totalActiveDimsumMins,
+            'downtime_minutes'          => $totalDowntimeMins,
+            'total_recorded_minutes'    => $totalRecordedMins,
+            'target_shift_minutes'      => $targetShiftMins,
+            'unaccounted_minutes'       => $unaccountedMins,
+            'status'                    => $anomalyStatus,
+            'messages'                  => $anomalyMessages,
+            'downtime_entries'          => $downtimeEntries,
+            'matrix_rows'               => $matrixRows,
+        ];
+
         return response()->json([
             'by_machine'           => $byMachine,
             'grand_total'          => $grandTotal,
             'unplanned_stops'      => $unplannedStops,
             'efficiency_by_machine'=> $efficiencyByMachine,
+            'anomaly_detection'    => $anomalyDetection,
         ]);
     }
 

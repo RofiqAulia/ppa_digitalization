@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { RefreshCw, Clock, Activity, Users } from 'lucide-react';
+import AnomalyDetectionSection from '@/components/AnomalyDetectionSection';
 
 const PRODUCTS = [
     {
@@ -485,6 +486,12 @@ export default function RefrezingDashboard() {
                     </div>
                 </div>
             </div>
+
+            {/* DETEKSI ANOMALI SECTION */}
+            <AnomalyDetectionSection 
+                anomalyData={stats?.anomaly_detection} 
+                title="Deteksi Anomali & Rekap Shift Refrezing" 
+            />
         </div>
     );
 }
