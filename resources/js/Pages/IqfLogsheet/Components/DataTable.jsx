@@ -127,12 +127,12 @@ const PRINT_STYLE = `
   .spt-d-stop   { background: #fff5f5 !important; vertical-align: top !important; text-align: left !important; padding: 1.5px 2px !important; font-size: 5px !important; line-height: 1.1 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   /* Column width classes (used on <col>) */
-  .spt-c-batch { width: 10mm; }
-  .spt-c-suhu  { width: 7mm; }
-  .spt-c-time  { width: 9mm; }
+  .spt-c-batch { width: 9.5mm; }
+  .spt-c-suhu  { width: 8.2mm; }
+  .spt-c-time  { width: 8.5mm; }
   .spt-c-rak   { width: 6.5mm; }
-  .spt-c-qty   { width: 7.5mm; }
-  .spt-c-stop  { width: 32mm; }
+  .spt-c-qty   { width: 8.5mm; }
+  .spt-c-stop  { width: 30mm; }
 
   /* Header & Cell override for Stop */
   .spt-gh-stop {
@@ -1359,6 +1359,19 @@ export default function DataTable({ logsheets }) {
                 const unplannedStops = [...new Set(pg.rows.map(r => r.unplanned_stop).filter(s => s && s !== '-'))].join('\n') || '';
                 const pgPics = [...new Set(pg.rows.map(r => r.pic).filter(p => p && p !== '--'))].join(', ') || '-';
 
+                /* Total Unplanned Stop Minutes */
+                const totalUnplannedMins = (() => {
+                    let sum = 0;
+                    const stopsSet = new Set(pg.rows.map(r => r.unplanned_stop).filter(s => s && s !== '-'));
+                    stopsSet.forEach(stText => {
+                        const matches = stText.matchAll(/(\d+)\s*menit/gi);
+                        for (const match of matches) {
+                            sum += parseInt(match[1], 10);
+                        }
+                    });
+                    return sum;
+                })();
+
                 /* Tanggal berlaku = hari ini */
                 const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 
@@ -1435,36 +1448,36 @@ export default function DataTable({ logsheets }) {
                                 {/* ROW B: Sub-headers */}
                                 <tr>
                                     {/* SIOMAY */}
-                                    <th className="spt-sh-siomay">No.Batch</th>
-                                    <th className="spt-sh-siomay">Suhu Panel</th>
-                                    <th className="spt-sh-siomay">Suhu Produk</th>
+                                    <th className="spt-sh-siomay">No.<br/>Batch</th>
+                                    <th className="spt-sh-siomay">Suhu<br/>Panel</th>
+                                    <th className="spt-sh-siomay">Suhu<br/>Produk</th>
                                     <th className="spt-sh-siomay">Mulai</th>
                                     <th className="spt-sh-siomay">Rak</th>
                                     <th className="spt-sh-siomay">Loyang</th>
                                     {/* PENTOL 1 */}
-                                    <th className="spt-sh-pentol">No.Batch</th>
-                                    <th className="spt-sh-pentol">Suhu Panel</th>
-                                    <th className="spt-sh-pentol">Suhu Produk</th>
+                                    <th className="spt-sh-pentol">No.<br/>Batch</th>
+                                    <th className="spt-sh-pentol">Suhu<br/>Panel</th>
+                                    <th className="spt-sh-pentol">Suhu<br/>Produk</th>
                                     <th className="spt-sh-pentol">Mulai</th>
                                     <th className="spt-sh-pentol">Rak</th>
                                     <th className="spt-sh-pentol">Loyang</th>
                                     {/* PENTOL 2 */}
-                                    <th className="spt-sh-pentol">No.Batch</th>
-                                    <th className="spt-sh-pentol">Suhu Panel</th>
-                                    <th className="spt-sh-pentol">Suhu Produk</th>
+                                    <th className="spt-sh-pentol">No.<br/>Batch</th>
+                                    <th className="spt-sh-pentol">Suhu<br/>Panel</th>
+                                    <th className="spt-sh-pentol">Suhu<br/>Produk</th>
                                     <th className="spt-sh-pentol">Mulai</th>
                                     <th className="spt-sh-pentol">Rak</th>
                                     <th className="spt-sh-pentol">Loyang</th>
                                     {/* LUMPIA — tanpa Rak */}
-                                    <th className="spt-sh-lumpia">No.Batch</th>
-                                    <th className="spt-sh-lumpia">Suhu Panel</th>
-                                    <th className="spt-sh-lumpia">Suhu Produk</th>
+                                    <th className="spt-sh-lumpia">No.<br/>Batch</th>
+                                    <th className="spt-sh-lumpia">Suhu<br/>Panel</th>
+                                    <th className="spt-sh-lumpia">Suhu<br/>Produk</th>
                                     <th className="spt-sh-lumpia">Mulai</th>
                                     <th className="spt-sh-lumpia">Keranjang</th>
                                     {/* ADONAN PANGSIT — tanpa Rak */}
-                                    <th className="spt-sh-adonan">No.Batch</th>
-                                    <th className="spt-sh-adonan">Suhu Panel</th>
-                                    <th className="spt-sh-adonan">Suhu Produk</th>
+                                    <th className="spt-sh-adonan">No.<br/>Batch</th>
+                                    <th className="spt-sh-adonan">Suhu<br/>Panel</th>
+                                    <th className="spt-sh-adonan">Suhu<br/>Produk</th>
                                     <th className="spt-sh-adonan">Mulai</th>
                                     <th className="spt-sh-adonan">Keranjang</th>
                                 </tr>
@@ -1547,8 +1560,10 @@ export default function DataTable({ logsheets }) {
                                     <td colSpan={2} style={{fontWeight:900,color:'#6a1b9a'}}>
                                         {totAdonan > 0 ? `${totAdonan}` : '-'}
                                     </td>
-                                    {/* STOP */}
-                                    <td />
+                                    {/* STOP TOTAL */}
+                                    <td style={{fontWeight:900,color:'#b71c1c',fontSize:'6px',textAlign:'center'}}>
+                                        {totalUnplannedMins > 0 ? `Total: ${totalUnplannedMins} mnt` : '-'}
+                                    </td>
                                 </tr>
                             </tfoot>
                         </table>
