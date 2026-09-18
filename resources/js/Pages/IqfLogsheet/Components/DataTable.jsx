@@ -18,103 +18,124 @@ import * as XLSX from 'xlsx-js-style';
 ───────────────────────────────────────────── */
 const PRINT_STYLE = `
 @media print {
-  @page { size: A4 landscape; margin: 6mm 6mm; }
+  @page {
+    size: A4 landscape;
+    margin: 4mm 5mm;
+  }
+
+  html, body {
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
 
   body > *:not(#iqf-spt) { display: none !important; }
+
   #iqf-spt {
     display: block !important;
-    position: static !important;
-    width: 100%;
+    position: relative !important;
+    width: 100% !important;
+    max-height: 200mm !important;
     background: white;
     padding: 0;
-    font-family: Arial, sans-serif;
-    font-size: 7px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 6px;
+    box-sizing: border-box;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-before: avoid !important;
+    page-break-after: avoid !important;
   }
 
   /* === MAIN HEADER === */
   .spt-main-header {
     display: flex !important;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    border-bottom: 2px solid #222;
-    padding-bottom: 5px;
-    margin-bottom: 4px;
+    border-bottom: 1.5px solid #222;
+    padding-bottom: 2px;
+    margin-bottom: 2px;
     gap: 8px;
   }
-  .spt-title-block { flex: 1; text-align: center; padding-top: 4px; }
-  .spt-t1 { font-weight: 900; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; }
-  .spt-t2 { font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+  .spt-title-block { flex: 1; text-align: center; }
+  .spt-t1 { font-weight: 900; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; line-height: 1.1; }
+  .spt-t2 { font-weight: 700; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; line-height: 1.1; }
 
   /* Document info table — top right */
-  .spt-doc-table { border-collapse: collapse; font-size: 7px; }
-  .spt-doc-table td { border: 0.5px solid #444; padding: 2px 5px; white-space: nowrap; }
+  .spt-doc-table { border-collapse: collapse; font-size: 6px; }
+  .spt-doc-table td { border: 0.5px solid #444; padding: 1px 4px; white-space: nowrap; line-height: 1.1; }
   .spt-doc-label { font-weight: 700; background: #f0f0f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   /* === SUB-HEADER: Tanggal, PIC, IQF, Shift === */
   .spt-info-row {
     display: flex !important;
-    gap: 16px;
-    font-size: 8px;
+    gap: 14px;
+    font-size: 7.5px;
     border-bottom: 1px solid #ccc;
-    padding: 2px 0 3px;
-    margin-bottom: 3px;
+    padding: 1px 0 2px;
+    margin-bottom: 2px;
     flex-wrap: wrap;
+    line-height: 1.1;
   }
   .spt-info-row b { font-weight: 700; margin-right: 2px; }
 
-  .spt-printed { font-size: 6.5px; color: #888; text-align: right; font-style: italic; margin-bottom: 2px; }
+  .spt-printed { font-size: 6px; color: #666; text-align: right; font-style: italic; margin-bottom: 2px; line-height: 1.1; }
 
   /* === MATRIX DATA TABLE === */
   table.spt-tbl {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
-    page-break-inside: auto;
-    font-size: 6.5px;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    font-size: 6px;
+    line-height: 1.15;
   }
   table.spt-tbl thead { display: table-header-group; }
   table.spt-tbl tfoot { display: table-footer-group; }
-  table.spt-tbl tr { page-break-inside: avoid; }
+  table.spt-tbl tr { page-break-inside: avoid !important; break-inside: avoid !important; }
   table.spt-tbl th, table.spt-tbl td {
-    border: 0.5px solid #aaa;
-    padding: 1.5px 2px;
+    border: 0.5px solid #888;
+    padding: 0.8px 1px;
     text-align: center;
     vertical-align: middle;
     overflow: hidden;
     word-break: break-all;
+    height: 11px;
   }
 
   /* Group header colors (top row) */
-  .spt-gh-siomay { background: #e65100 !important; color: #fff !important; font-weight: 900; font-size: 7.5px; letter-spacing: 0.5px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-gh-pentol { background: #1565c0 !important; color: #fff !important; font-weight: 900; font-size: 7.5px; letter-spacing: 0.5px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-gh-lumpia { background: #2e7d32 !important; color: #fff !important; font-weight: 900; font-size: 7.5px; letter-spacing: 0.5px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-gh-adonan { background: #6a1b9a !important; color: #fff !important; font-weight: 900; font-size: 7.5px; letter-spacing: 0.5px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-gh-stop   { background: #b71c1c !important; color: #fff !important; font-weight: 900; font-size: 7.5px; letter-spacing: 0.5px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-gh-siomay { background: #e65100 !important; color: #fff !important; font-weight: 900; font-size: 6.5px; padding: 1px 1px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-gh-pentol { background: #1565c0 !important; color: #fff !important; font-weight: 900; font-size: 6.5px; padding: 1px 1px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-gh-lumpia { background: #2e7d32 !important; color: #fff !important; font-weight: 900; font-size: 6.5px; padding: 1px 1px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-gh-adonan { background: #6a1b9a !important; color: #fff !important; font-weight: 900; font-size: 6.5px; padding: 1px 1px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-gh-stop   { background: #b71c1c !important; color: #fff !important; font-weight: 900; font-size: 6.5px; padding: 1px 1px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   /* Sub-header row per product */
-  .spt-sh-siomay { background: #fff3e0 !important; font-weight: 700; font-size: 5.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-sh-pentol { background: #e3f2fd !important; font-weight: 700; font-size: 5.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-sh-lumpia { background: #e8f5e9 !important; font-weight: 700; font-size: 5.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-sh-adonan { background: #f3e5f5 !important; font-weight: 700; font-size: 5.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-sh-stop   { background: #ffebee !important; font-weight: 700; font-size: 5.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-sh-siomay { background: #fff3e0 !important; font-weight: 700; font-size: 5.5px; padding: 1px 1px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-sh-pentol { background: #e3f2fd !important; font-weight: 700; font-size: 5.5px; padding: 1px 1px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-sh-lumpia { background: #e8f5e9 !important; font-weight: 700; font-size: 5.5px; padding: 1px 1px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-sh-adonan { background: #f3e5f5 !important; font-weight: 700; font-size: 5.5px; padding: 1px 1px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-sh-stop   { background: #ffebee !important; font-weight: 700; font-size: 5.5px; padding: 1px 1px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   /* Data cell colors per product */
   .spt-d-siomay { background: #fff9f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .spt-d-pentol { background: #f0f7ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .spt-d-lumpia { background: #f0fff4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .spt-d-adonan { background: #faf0ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-d-stop   { background: #fff5f5 !important; vertical-align: top !important; text-align: left !important; padding: 3px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-d-stop   { background: #fff5f5 !important; vertical-align: top !important; text-align: left !important; padding: 1.5px 2px !important; font-size: 5px !important; line-height: 1.1 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   /* Column width classes (used on <col>) */
   .spt-c-batch { width: 13mm; }
-  .spt-c-suhu  { width: 9mm; }
-  .spt-c-time  { width: 12mm; }
-  .spt-c-rak   { width: 9mm; }
-  .spt-c-qty   { width: 10mm; }
+  .spt-c-suhu  { width: 8.5mm; }
+  .spt-c-time  { width: 11mm; }
+  .spt-c-rak   { width: 8.5mm; }
+  .spt-c-qty   { width: 9.5mm; }
   .spt-c-stop  { width: 22mm; }
 
   /* Total / footer rows */
-  .spt-total-row td { font-weight: 700; font-size: 7px; border-top: 1.5px solid #555 !important; }
+  .spt-total-row td { font-weight: 700; font-size: 6px; padding: 1px 2px; border-top: 1.5px solid #444 !important; }
 }
 `;
 
@@ -1324,7 +1345,7 @@ export default function DataTable({ logsheets }) {
 
                         {/* ── MAIN HEADER ── */}
                         <div className="spt-main-header">
-                            <img src="/images/ppa.jpg" alt="Logo PPA" style={{ height: '48px', objectFit: 'contain' }} />
+                            <img src="/images/ppa.jpg" alt="Logo PPA" style={{ height: '32px', objectFit: 'contain' }} />
                             <div className="spt-title-block">
                                 <div className="spt-t1">FORMULIR</div>
                                 <div className="spt-t2">INPUT IQF DAN FREEZING</div>
