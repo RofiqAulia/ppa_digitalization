@@ -127,12 +127,39 @@ const PRINT_STYLE = `
   .spt-d-stop   { background: #fff5f5 !important; vertical-align: top !important; text-align: left !important; padding: 1.5px 2px !important; font-size: 5px !important; line-height: 1.1 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   /* Column width classes (used on <col>) */
-  .spt-c-batch { width: 13mm; }
-  .spt-c-suhu  { width: 8.5mm; }
-  .spt-c-time  { width: 11mm; }
-  .spt-c-rak   { width: 8.5mm; }
-  .spt-c-qty   { width: 9.5mm; }
-  .spt-c-stop  { width: 22mm; }
+  .spt-c-batch { width: 10mm; }
+  .spt-c-suhu  { width: 7mm; }
+  .spt-c-time  { width: 9mm; }
+  .spt-c-rak   { width: 6.5mm; }
+  .spt-c-qty   { width: 7.5mm; }
+  .spt-c-stop  { width: 32mm; }
+
+  /* Header & Cell override for Stop */
+  .spt-gh-stop {
+    background: #b71c1c !important;
+    color: #fff !important;
+    font-weight: 900;
+    font-size: 6px;
+    padding: 1px 1px;
+    text-transform: uppercase;
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.1;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .spt-d-stop {
+    background: #fff5f5 !important;
+    vertical-align: top !important;
+    text-align: left !important;
+    padding: 1.5px 2.5px !important;
+    font-size: 5.5px !important;
+    line-height: 1.15 !important;
+    word-break: break-word !important;
+    white-space: pre-line !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 
   /* Total / footer rows */
   .spt-total-row td { font-weight: 700; font-size: 6px; padding: 1px 2px; border-top: 1.5px solid #444 !important; }
