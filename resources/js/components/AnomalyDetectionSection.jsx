@@ -80,7 +80,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                 </div>
 
                 <div className="flex items-center gap-2 bg-slate-800/80 p-1.5 rounded-2xl border border-slate-700/60 text-xs font-bold self-stretch md:self-auto justify-between md:justify-end">
-                    <span className="text-slate-300 px-2">Total Target: <strong className="text-white">{targetShift_minutes}m</strong></span>
+                    <span className="text-slate-300 px-2">Total Target: <strong className="text-white">{target_shift_minutes}m</strong></span>
                     <div className="h-4 w-px bg-slate-700"></div>
                     <span className="text-emerald-400 px-2">Ter-cover: <strong className="text-emerald-300">{total_recorded_minutes}m</strong></span>
                     <div className="h-4 w-px bg-slate-700"></div>
@@ -100,7 +100,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                                 🛑 TERDETEKSI ANOMALI DURASI JAM KERJA ({unaccounted_minutes} MENIT UNACCOUNTED / LOSS TIME)
                             </h4>
                             <p className="text-xs text-rose-800 font-medium leading-relaxed m-0">
-                                Total inputan aktif dimsum (<strong>{total_active_dimsum_mins} mnt</strong>) + total kendala downtime (<strong>{downtime_minutes} mnt</strong>) baru mencapai <strong>{total_recorded_minutes} menit</strong> dari total alokasi shift <strong>{targetShift_minutes} menit</strong>. Terdapat selisih <strong>{unaccounted_minutes} menit</strong> waktu belum ter-log oleh operator.
+                                Total inputan aktif dimsum (<strong>{total_active_dimsum_mins} mnt</strong>) + total kendala downtime (<strong>{downtime_minutes} mnt</strong>) baru mencapai <strong>{total_recorded_minutes} menit</strong> dari total alokasi shift <strong>{target_shift_minutes} menit</strong>. Terdapat selisih <strong>{unaccounted_minutes} menit</strong> waktu belum ter-log oleh operator.
                             </p>
                             {messages.length > 0 && (
                                 <ul className="mt-2 text-xs text-rose-700 font-semibold space-y-1 pl-4 list-disc m-0">
@@ -160,7 +160,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                     </div>
 
                     <div className="bg-slate-900 text-white rounded-2xl p-3.5 text-center border border-slate-800">
-                        <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider block">Total {targetShift_minutes} mnt</span>
+                        <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider block">Total {target_shift_minutes} mnt</span>
                         <span className="text-xl font-black text-white mt-1 block">{total_recorded_minutes} <span className="text-xs font-normal text-slate-300">mnt</span></span>
                     </div>
                 </div>
@@ -178,7 +178,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                                     <th className="py-3 px-4 border-r border-slate-400">Lumpia</th>
                                     <th className="py-3 px-4 border-r border-slate-400">Adonan Pangsit</th>
                                     <th className="py-3 px-4 border-r border-slate-400 bg-amber-300">DownTime</th>
-                                    <th className="py-3 px-4 bg-amber-400">Total {targetShift_minutes} menit</th>
+                                    <th className="py-3 px-4 bg-amber-400">Total {target_shift_minutes} menit</th>
                                 </tr>
                                 {/* Duration Sub-Header Row */}
                                 <tr className="bg-[#fef08a] text-slate-900 font-black border-b border-slate-400 text-xs">
