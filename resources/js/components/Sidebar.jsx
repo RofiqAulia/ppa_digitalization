@@ -180,7 +180,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) {
                             Perencanaan
                         </div>
                     )}
-                    <div className="space-y-1">
+                    {/* <div className="space-y-1">
                         <Link
                             href="/prepare-produksi"
                             onClick={handleItemClick}
@@ -197,7 +197,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) {
                             <Layers className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${isPrepareProduksiActive ? 'text-white' : 'text-emerald-400'}`} />
                             {!isCollapsed && <span className="truncate">Prepare Produksi</span>}
                         </Link>
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* ADMIN USER MANAGEMENT */}
