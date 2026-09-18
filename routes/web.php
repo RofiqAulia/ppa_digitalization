@@ -44,8 +44,15 @@ Route::middleware(\App\Http\Middleware\OperatorAuth::class)->group(function () {
 });
 
 // Operator can see logsheet today (admin view - kept for compatibility)
-
 Route::get('/logsheet-iqf', [\App\Http\Controllers\IqfLogsheetController::class, 'index'])->name('logsheet-iqf.index');
+
+// Direct aliases & redirects for logsheet URLs
+Route::get('/iqf-logsheet', [\App\Http\Controllers\IqfLogsheetController::class, 'index']);
+Route::get('/logsheet', function () {
+    return redirect()->route('logsheet-iqf.index');
+});
+Route::get('/refrezing-logsheet', [\App\Http\Controllers\RefrezingController::class, 'adminIndex']);
+Route::get('/refrezing/logsheet', [\App\Http\Controllers\RefrezingController::class, 'adminIndex'])->name('refrezing-logsheet.index');
 
 
 // ==========================================
@@ -107,8 +114,5 @@ Route::middleware('auth')->group(function () {
         Route::delete('/admin/users/{user}', [\App\Http\Controllers\AdminUserController::class, 'destroy'])->name('admin.users.destroy');
     });
 });
-
-// Refrezing Admin Routes (Public Index)
-Route::get('/refrezing/logsheet', [\App\Http\Controllers\RefrezingController::class, 'adminIndex'])->name('refrezing-logsheet.index');
 
 require __DIR__.'/auth.php';
