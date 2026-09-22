@@ -1069,7 +1069,7 @@ export default function DataTable({ logsheets }) {
                                             const printClass   = PRODUCT_PRINT_CLASS[pt] || '';
                                             const isRakAnomaly = rakAnomalyIds.has(row.id);
                                             return (
-                                                <tr key={row.id} title={isRakAnomaly ? `⚠️ Rak ${row.rak} tidak urut dari entri sebelumnya` : undefined} className={`transition-colors ${isRakAnomaly ? 'bg-red-50 hover:bg-red-100' : (PRODUCT_ROW_BG[pt] || 'hover:bg-slate-50')} ${printClass}`}>
+                                                <tr key={row.id} title={isRakAnomaly ? `⚠️ Rak ${row.rak} tidak urut dari entri sebelumnya` : undefined} className={`h-[56px] transition-colors ${isRakAnomaly ? 'bg-red-50 hover:bg-red-100' : (PRODUCT_ROW_BG[pt] || 'hover:bg-slate-50')} ${printClass}`}>
                                                     <td className="px-3 py-1.5 text-center text-slate-400 font-mono">{idx + 1}</td>
                                                     <td className="px-3 py-1.5 font-medium truncate max-w-[90px]">{row.pic}</td>
                                                     <td className="px-3 py-1.5 truncate max-w-[90px]">
@@ -1339,15 +1339,17 @@ export default function DataTable({ logsheets }) {
                 const lumpiaRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'lumpia'));
                 const adonanRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'adonan_pangsit'));
 
-                /* Pentol diisi penuh di Kolom 1 dulu (max 20 baris per kolom) baru melimpah ke Kolom 2 */
-                const PENTOL_MAX_PER_COL = 20;
-                const pentolCol1 = pentolRows.slice(0, PENTOL_MAX_PER_COL);
-                const pentolCol2 = pentolRows.slice(PENTOL_MAX_PER_COL);
+                /* Hitung kebutuhan tinggi baris minimum (minimal 20 baris agar kolom full walau kosong) */
+                const nonPentolMax = Math.max(siomayRows.length, lumpiaRows.length, adonanRows.length, 1);
+                const pentolCount = pentolRows.length;
+                /* Jika pentol > 20, bagi 2 kolom sehingga tinggi kolom = Math.ceil(pentolCount / 2) */
+                const pentolColHeightNeeded = pentolCount > 20 ? Math.ceil(pentolCount / 2) : pentolCount;
 
-                const maxRows = Math.max(
-                    siomayRows.length, pentolCol1.length, pentolCol2.length,
-                    lumpiaRows.length, adonanRows.length, 1
-                );
+                const maxRows = Math.max(nonPentolMax, pentolColHeightNeeded, 20);
+
+                /* Pentol diisi PENUH di Kolom 1 (kiri) terlebih dahulu sampai batas maxRows, baru sisa melimpah ke Kolom 2 (kanan) */
+                const pentolCol1 = pentolRows.slice(0, maxRows);
+                const pentolCol2 = pentolRows.slice(maxRows);
 
                 /* Totals */
                 const totSiomay = siomayRows.reduce((s, r) => s + (r.tray_count || 0), 0);
