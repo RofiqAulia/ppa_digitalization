@@ -70,7 +70,7 @@ export function SidebarAnomalyWidget({ isCollapsed }) {
     }
 
     return (
-        <div className="mx-2.5 my-2 p-3 rounded-2xl bg-[#222a42] border border-slate-700/80 text-white shadow-md space-y-2">
+        <div className="mx-2.5 my-2 p-3 rounded-2xl bg-[#161a38] border border-[#272b56] text-white shadow-md space-y-2">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                     <Activity className="w-3.5 h-3.5 text-indigo-400" />
@@ -88,12 +88,12 @@ export function SidebarAnomalyWidget({ isCollapsed }) {
             </div>
 
             {/* Micro Breakdown */}
-            <div className="grid grid-cols-2 gap-1 text-[10px] font-semibold text-slate-300 bg-[#161c2e] p-2 rounded-xl border border-slate-800">
+            <div className="grid grid-cols-2 gap-1 text-[10px] font-semibold text-slate-300 bg-[#0f1227] p-2 rounded-xl border border-[#22264c]">
                 <div>🧆 Pentol: <span className="text-amber-300 font-bold">{active_minutes_by_product.pentol ?? 0}m</span></div>
                 <div>🥟 Siomay: <span className="text-blue-300 font-bold">{active_minutes_by_product.siomay ?? 0}m</span></div>
                 <div>🥢 Lumpia: <span className="text-emerald-300 font-bold">{active_minutes_by_product.lumpia ?? 0}m</span></div>
                 <div>🫙 Adonan: <span className="text-purple-300 font-bold">{active_minutes_by_product.adonan_pangsit ?? 0}m</span></div>
-                <div className="col-span-2 pt-1 border-t border-slate-800/80 flex justify-between items-center text-slate-400">
+                <div className="col-span-2 pt-1 border-t border-[#22264c] flex justify-between items-center text-slate-400">
                     <span>🛑 Downtime: <strong className="text-rose-400">{downtime_minutes}m</strong></span>
                     <span>Total: <strong className="text-white">{total_recorded_minutes}/{target_shift_minutes}m</strong></span>
                 </div>
@@ -108,7 +108,7 @@ export function SidebarAnomalyWidget({ isCollapsed }) {
                         ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-sm shadow-rose-600/30'
                         : isWarning
                         ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-sm shadow-amber-600/30'
-                        : 'bg-indigo-600/80 hover:bg-indigo-600 text-white'
+                        : 'bg-[#584be2] hover:bg-indigo-600 text-white'
                 }`}
             >
                 <span className="truncate">
