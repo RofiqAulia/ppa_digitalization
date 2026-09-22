@@ -88,7 +88,6 @@ const PRINT_STYLE = `
 
   .spt-printed { font-size: 6px; color: #666; text-align: right; font-style: italic; margin-bottom: 2px; line-height: 1.1; flex-shrink: 0; }
 
-  /* === MATRIX DATA TABLE === */
   table.spt-tbl {
     width: 100%;
     flex: 1 !important;
@@ -103,13 +102,19 @@ const PRINT_STYLE = `
   table.spt-tbl thead { display: table-header-group; }
   table.spt-tbl tfoot { display: table-footer-group; }
   table.spt-tbl tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+  table.spt-tbl tbody tr {
+    height: 10px !important;
+    max-height: 10px !important;
+  }
   table.spt-tbl th, table.spt-tbl td {
     border: 0.5px solid #888;
-    padding: 0.5px 1px;
+    padding: 0 !important;
     text-align: center;
     vertical-align: middle;
     overflow: hidden;
     word-break: break-all;
+    box-sizing: border-box !important;
+    line-height: 1 !important;
   }
 
   /* Group header colors (top row) */
@@ -1386,9 +1391,9 @@ export default function DataTable({ logsheets }) {
                 const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 
                 /* Helpers */
-                const cv  = (row, f) => row ? (row[f] ?? '') : '';
-                const tc  = (row)    => row ? formatTime(row.time) : '';
-                const bold = (row)   => row ? 700 : 'normal';
+                const cv   = (row, f) => (row && row[f] !== undefined && row[f] !== null && row[f] !== '' && row[f] !== '-') ? row[f] : '\u00A0';
+                const tc   = (row)    => (row && row.time && row.time !== '-') ? formatTime(row.time) : '\u00A0';
+                const bold = (row)    => row ? 700 : 'normal';
 
                 return createPortal(
                     <div id="iqf-spt">
@@ -1508,33 +1513,33 @@ export default function DataTable({ logsheets }) {
                                             <td className="spt-d-siomay">{cv(s,'suhu_produk')}</td>
                                             <td className="spt-d-siomay">{tc(s)}</td>
                                             <td className="spt-d-siomay" style={{fontWeight:bold(s)}}>{cv(s,'rak')}</td>
-                                            <td className="spt-d-siomay" style={{fontWeight:bold(s)}}>{s ? s.tray_count : ''}</td>
+                                            <td className="spt-d-siomay" style={{fontWeight:bold(s)}}>{s && s.tray_count !== undefined && s.tray_count !== null ? s.tray_count : '\u00A0'}</td>
                                             {/* PENTOL 1 */}
                                             <td className="spt-d-pentol">{cv(p1,'batch_number')}</td>
                                             <td className="spt-d-pentol">{cv(p1,'suhu_panel')}</td>
                                             <td className="spt-d-pentol">{cv(p1,'suhu_produk')}</td>
                                             <td className="spt-d-pentol">{tc(p1)}</td>
                                             <td className="spt-d-pentol" style={{fontWeight:bold(p1)}}>{cv(p1,'rak')}</td>
-                                            <td className="spt-d-pentol" style={{fontWeight:bold(p1)}}>{p1 ? p1.tray_count : ''}</td>
+                                            <td className="spt-d-pentol" style={{fontWeight:bold(p1)}}>{p1 && p1.tray_count !== undefined && p1.tray_count !== null ? p1.tray_count : '\u00A0'}</td>
                                             {/* PENTOL 2 — lanjutan */}
                                             <td className="spt-d-pentol">{cv(p2,'batch_number')}</td>
                                             <td className="spt-d-pentol">{cv(p2,'suhu_panel')}</td>
                                             <td className="spt-d-pentol">{cv(p2,'suhu_produk')}</td>
                                             <td className="spt-d-pentol">{tc(p2)}</td>
                                             <td className="spt-d-pentol" style={{fontWeight:bold(p2)}}>{cv(p2,'rak')}</td>
-                                            <td className="spt-d-pentol" style={{fontWeight:bold(p2)}}>{p2 ? p2.tray_count : ''}</td>
+                                            <td className="spt-d-pentol" style={{fontWeight:bold(p2)}}>{p2 && p2.tray_count !== undefined && p2.tray_count !== null ? p2.tray_count : '\u00A0'}</td>
                                             {/* LUMPIA — tanpa kolom rak */}
                                             <td className="spt-d-lumpia">{cv(l,'batch_number')}</td>
                                             <td className="spt-d-lumpia">{cv(l,'suhu_panel')}</td>
                                             <td className="spt-d-lumpia">{cv(l,'suhu_produk')}</td>
                                             <td className="spt-d-lumpia">{tc(l)}</td>
-                                            <td className="spt-d-lumpia" style={{fontWeight:bold(l)}}>{l ? l.tray_count : ''}</td>
+                                            <td className="spt-d-lumpia" style={{fontWeight:bold(l)}}>{l && l.tray_count !== undefined && l.tray_count !== null ? l.tray_count : '\u00A0'}</td>
                                             {/* ADONAN PANGSIT — tanpa kolom rak */}
                                             <td className="spt-d-adonan">{cv(a,'batch_number')}</td>
                                             <td className="spt-d-adonan">{cv(a,'suhu_panel')}</td>
                                             <td className="spt-d-adonan">{cv(a,'suhu_produk')}</td>
                                             <td className="spt-d-adonan">{tc(a)}</td>
-                                            <td className="spt-d-adonan" style={{fontWeight:bold(a)}}>{a ? a.tray_count : ''}</td>
+                                            <td className="spt-d-adonan" style={{fontWeight:bold(a)}}>{a && a.tray_count !== undefined && a.tray_count !== null ? a.tray_count : '\u00A0'}</td>
                                             {/* UNPLANNED STOP — rowSpan, hanya pada baris pertama */}
                                             {i === 0 && (
                                                 <td rowSpan={maxRows} className="spt-d-stop" style={{whiteSpace:'pre-line'}}>
