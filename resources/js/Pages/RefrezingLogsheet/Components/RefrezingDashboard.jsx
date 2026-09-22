@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { RefreshCw, Clock, Activity, Users } from 'lucide-react';
+import { RefreshCw, Clock, Activity, Users, CheckCircle2 } from 'lucide-react';
 import AnomalyDetectionSection from '@/components/AnomalyDetectionSection';
 
 const PRODUCTS = [
@@ -9,32 +9,44 @@ const PRODUCTS = [
         label: 'Siomay',
         unit: 'Loyang',
         emoji: '🥟',
-        colorClass: 'text-amber-500',
-        bgClass: 'bg-amber-50',
+        badgeBg: 'bg-amber-500',
+        badgeText: 'text-amber-700 bg-amber-50 border-amber-200',
+        iconGrad: 'from-amber-400 to-amber-600 shadow-amber-500/20',
+        cardBg: 'from-amber-50/30 via-white to-white hover:border-amber-300',
+        barColor1: 'from-amber-500 to-amber-600',
     },
     {
         key: 'pentol',
         label: 'Pentol',
         unit: 'Loyang',
         emoji: '🧆',
-        colorClass: 'text-blue-500',
-        bgClass: 'bg-blue-50',
+        badgeBg: 'bg-blue-500',
+        badgeText: 'text-blue-700 bg-blue-50 border-blue-200',
+        iconGrad: 'from-blue-500 to-cyan-600 shadow-blue-500/20',
+        cardBg: 'from-blue-50/30 via-white to-white hover:border-blue-300',
+        barColor1: 'from-blue-500 to-cyan-600',
     },
     {
         key: 'lumpia',
         label: 'Lumpia',
         unit: 'Keranjang',
         emoji: '🥢',
-        colorClass: 'text-emerald-500',
-        bgClass: 'bg-emerald-50',
+        badgeBg: 'bg-emerald-500',
+        badgeText: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+        iconGrad: 'from-emerald-400 to-teal-600 shadow-emerald-500/20',
+        cardBg: 'from-emerald-50/30 via-white to-white hover:border-emerald-300',
+        barColor1: 'from-emerald-400 to-teal-600',
     },
     {
         key: 'adonan_pangsit',
-        label: 'Adonan',
+        label: 'Adonan Pangsit',
         unit: 'Keranjang',
         emoji: '🫙',
-        colorClass: 'text-purple-500',
-        bgClass: 'bg-purple-50',
+        badgeBg: 'bg-purple-500',
+        badgeText: 'text-purple-700 bg-purple-50 border-purple-200',
+        iconGrad: 'from-purple-500 to-indigo-600 shadow-purple-500/20',
+        cardBg: 'from-purple-50/30 via-white to-white hover:border-purple-300',
+        barColor1: 'from-purple-500 to-indigo-600',
     },
 ];
 
@@ -162,30 +174,41 @@ export default function RefrezingDashboard() {
     const machineNames = stats?.efficiency_by_machine ? Object.keys(stats.efficiency_by_machine) : ['Refrezing 1', 'Refrezing 2'];
 
     return (
-        <div className="space-y-6 select-none max-w-[1400px] mx-auto pb-10">
-            {/* HEADER - Dark Slate Container */}
-            <div className="bg-[#1a2035] text-white border border-slate-800 shadow-xl rounded-3xl p-4 sm:p-5 md:px-8">
-                <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 sm:gap-6">
-                    <div className="flex items-center gap-3 sm:gap-4 w-full lg:w-auto">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-500/25 shrink-0">
-                            <Activity className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+        <div className="space-y-6 select-none max-w-[1400px] mx-auto pb-12">
+            
+            {/* ── HEADER BANNER ─────────────────────────────────────────────── */}
+            <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 text-white rounded-3xl p-5 sm:p-6 md:p-8 shadow-2xl border border-slate-800">
+                {/* Glow ambient background accents */}
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                <div className="relative z-10 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6">
+                    {/* Title + Status */}
+                    <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-500/30 border border-white/20 shrink-0">
+                            <Activity className="w-7 h-7 text-white" />
                         </div>
                         <div>
-                            <h2 className="text-white text-lg sm:text-xl font-black tracking-tight m-0">Dashboard Produksi Refrezing</h2>
-                            <div className="flex items-center gap-2 mt-1">
-                                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                                <span className="text-cyan-200 text-xs sm:text-sm font-semibold flex items-center gap-1.5">
-                                    <Clock className="w-3.5 h-3.5 text-cyan-300" />
-                                    Live · <LiveClock />
+                            <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                    LIVE MONITORING
                                 </span>
                             </div>
+                            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white mt-1 mb-0">
+                                Dashboard Produksi Refrezing
+                            </h2>
+                            <p className="text-slate-400 text-xs sm:text-sm font-medium mt-0.5 flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                                Waktu WIB: <span className="text-cyan-200 font-bold"><LiveClock /></span>
+                            </p>
                         </div>
                     </div>
 
-                    {/* Filters */}
-                    <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 w-full lg:w-auto justify-start lg:justify-end">
+                    {/* Filter & Action Controls */}
+                    <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 w-full lg:w-auto justify-start lg:justify-end">
                         {/* Shift Presets */}
-                        <div className="grid grid-cols-4 sm:flex sm:items-center bg-[#272f48] p-1 rounded-xl w-full sm:w-auto border border-white/10">
+                        <div className="grid grid-cols-4 sm:flex sm:items-center bg-slate-800/80 p-1 rounded-2xl w-full sm:w-auto border border-white/10 backdrop-blur-md">
                             {SHIFT_PRESETS.map(p => {
                                 const isActive = activePreset === p.label;
                                 return (
@@ -193,10 +216,10 @@ export default function RefrezingDashboard() {
                                         key={p.label}
                                         type="button"
                                         onClick={() => applyPreset(p)}
-                                        className={`px-2 sm:px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all border-0 text-center ${
+                                        className={`px-3 py-2 text-xs sm:text-sm font-extrabold rounded-xl transition-all border-0 text-center ${
                                             isActive
-                                            ? 'bg-cyan-600 text-white shadow-md'
-                                            : 'text-cyan-200 hover:text-white hover:bg-white/10'
+                                            ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/40'
+                                            : 'text-slate-300 hover:text-white hover:bg-white/10'
                                         }`}
                                     >
                                         {p.label}
@@ -205,20 +228,20 @@ export default function RefrezingDashboard() {
                             })}
                         </div>
 
-                        {/* Custom Time Select */}
-                        <div className="flex items-center justify-between sm:justify-start gap-2 bg-[#272f48] rounded-xl px-3 py-2 border border-white/10 w-full sm:w-auto">
+                        {/* Custom Time Range Selector */}
+                        <div className="flex items-center justify-between sm:justify-start gap-2 bg-slate-800/80 rounded-2xl px-3.5 py-2 border border-white/10 backdrop-blur-md w-full sm:w-auto">
                             <select
                                 value={fromTime}
                                 onChange={e => { setFromTime(e.target.value); setActivePreset('Custom'); }}
-                                className="bg-transparent text-white text-xs sm:text-sm font-bold border-0 p-0 shadow-none cursor-pointer focus:outline-none"
+                                className="bg-transparent text-white text-xs sm:text-sm font-extrabold border-0 p-0 shadow-none cursor-pointer focus:outline-none"
                             >
                                 {HOURS.map(h => <option key={h} value={h} className="text-slate-900 bg-white">{h}</option>)}
                             </select>
-                            <span className="text-cyan-300 font-bold text-xs sm:text-sm">→</span>
+                            <span className="text-cyan-400 font-black text-xs sm:text-sm">→</span>
                             <select
                                 value={toTime}
                                 onChange={e => { setToTime(e.target.value); setActivePreset('Custom'); }}
-                                className="bg-transparent text-white text-xs sm:text-sm font-bold border-0 p-0 shadow-none cursor-pointer focus:outline-none"
+                                className="bg-transparent text-white text-xs sm:text-sm font-extrabold border-0 p-0 shadow-none cursor-pointer focus:outline-none"
                             >
                                 {HOURS.map(h => <option key={h} value={h} className="text-slate-900 bg-white">{h}</option>)}
                             </select>
@@ -229,8 +252,8 @@ export default function RefrezingDashboard() {
                             type="button"
                             onClick={fetchStats}
                             disabled={loading}
-                            title="Refresh Data"
-                            className="h-10 px-4 sm:px-0 sm:w-10 flex items-center justify-center rounded-xl bg-[#272f48] hover:bg-[#323b56] border border-white/10 text-cyan-200 hover:text-white transition-all cursor-pointer"
+                            title="Refresh Data Dashboard"
+                            className="h-10 px-4 sm:w-10 sm:px-0 flex items-center justify-center rounded-2xl bg-slate-800/80 hover:bg-cyan-600/80 border border-white/10 text-slate-200 hover:text-white transition-all cursor-pointer shadow-sm"
                         >
                             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                         </button>
@@ -238,19 +261,58 @@ export default function RefrezingDashboard() {
                 </div>
             </div>
 
-            {/* WORK TIME ANALYSIS SECTION */}
-            <div className="bg-white border border-slate-100 shadow-sm rounded-3xl overflow-hidden">
-                <div className="bg-white px-6 py-4 md:px-8 border-b border-slate-100 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500 to-emerald-500 flex items-center justify-center text-white shadow-md shadow-cyan-500/20 text-lg">
-                        ⏱️
-                    </div>
-                    <div>
-                        <h3 className="text-base md:text-lg font-extrabold text-slate-800 m-0">Analisis Jam Kerja Karyawan</h3>
-                        <p className="text-xs font-semibold text-slate-400 m-0">Rincian Durasi Input Aktif, Downtime Kendala, Pergantian Dimsum, & Loss Time per Mesin</p>
+            {/* ── TOP KPI SUMMARY GRID (4 Main Products Output) ─────────────── */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                {PRODUCTS.map(p => {
+                    const val = stats?.grand_total?.[p.key] ?? 0;
+                    return (
+                        <div
+                            key={p.key}
+                            className={`bg-gradient-to-b ${p.cardBg} border border-slate-200/90 shadow-sm rounded-3xl p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group`}
+                        >
+                            <div className="flex items-center justify-between mb-4">
+                                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${p.iconGrad} flex items-center justify-center text-white text-2xl shadow-md border border-white/30 shrink-0 group-hover:scale-110 transition-transform`}>
+                                    {p.emoji}
+                                </div>
+                                <span className={`px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider border ${p.badgeText}`}>
+                                    {p.unit}
+                                </span>
+                            </div>
+
+                            <div>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                                    Total {p.label}
+                                </p>
+                                <div className="flex items-baseline gap-2">
+                                    <h3 className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tight m-0">
+                                        <AnimatedNumber value={val} />
+                                    </h3>
+                                    <span className="text-xs font-semibold text-slate-400">
+                                        {p.unit}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* ── WORK TIME ANALYSIS SECTION (EMPLOYEE RUNTIME & EFFICIENCY) ── */}
+            <div className="bg-white border border-slate-200/80 shadow-sm rounded-3xl overflow-hidden">
+                <div className="bg-slate-50/80 px-6 py-4.5 border-b border-slate-200/80 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-600 to-blue-600 text-white flex items-center justify-center shadow-md shadow-cyan-500/20 text-lg font-bold">
+                            ⏱️
+                        </div>
+                        <div>
+                            <h3 className="text-base sm:text-lg font-black text-slate-800 m-0">Analisis Jam Kerja Karyawan (Refrezing)</h3>
+                            <p className="text-xs font-semibold text-slate-400 m-0">Breakdown Efisiensi Durasi Input Aktif, Downtime Kendala, Pergantian Dimsum & Loss Time per Mesin</p>
+                        </div>
                     </div>
                 </div>
-                <div className="p-6 md:p-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div className="p-5 sm:p-6 md:p-8 space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {machineNames.map(mName => {
                             const effData = stats?.efficiency_by_machine?.[mName] || {
                                 total_shift_minutes: 480,
@@ -261,40 +323,80 @@ export default function RefrezingDashboard() {
                                 loss_minutes: 0,
                             };
 
+                            const totalMins = effData.elapsed_shift_minutes && effData.elapsed_shift_minutes < effData.total_shift_minutes
+                                ? effData.elapsed_shift_minutes
+                                : effData.total_shift_minutes || 480;
+
+                            const activePct  = Math.min(100, Math.round((effData.active_minutes / totalMins) * 100)) || 0;
+                            const changePct  = Math.min(100, Math.round((effData.changeover_minutes / totalMins) * 100)) || 0;
+                            const stopPct    = Math.min(100, Math.round((effData.unplanned_minutes / totalMins) * 100)) || 0;
+                            const lossPct    = Math.max(0, 100 - (activePct + changePct + stopPct));
+
                             return (
-                                <div key={mName} className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-3 h-full">
+                                <div key={mName} className="bg-slate-50/60 border border-slate-200 rounded-3xl p-5 md:p-6 flex flex-col justify-between space-y-5 hover:border-cyan-300 transition-colors">
+                                    {/* Card Machine Title Header */}
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs font-black uppercase tracking-widest bg-cyan-100 text-cyan-800 border border-cyan-300 px-3.5 py-1.5 rounded-full inline-block shadow-2xs">
-                                            {mName}
+                                        <div className="flex items-center gap-2.5">
+                                            <span className="w-3 h-3 rounded-full bg-cyan-600 shadow" />
+                                            <h4 className="text-base font-black text-slate-800 uppercase tracking-wide m-0">{mName}</h4>
+                                        </div>
+                                        <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-cyan-100 text-cyan-800 border border-cyan-200">
+                                            {effData.elapsed_shift_minutes && effData.elapsed_shift_minutes < effData.total_shift_minutes
+                                                ? `Shift Berjalan: ${effData.elapsed_shift_minutes} / ${effData.total_shift_minutes} mnt`
+                                                : `Total Shift: ${effData.total_shift_minutes} mnt`}
                                         </span>
                                     </div>
 
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 pt-2 border-t border-slate-200/60 text-center">
-                                        <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase m-0">
-                                                {effData.elapsed_shift_minutes && effData.elapsed_shift_minutes < effData.total_shift_minutes ? 'Shift Berjalan' : 'Total Shift'}
+                                    {/* Visual Distribution Progress Bar */}
+                                    <div className="space-y-1.5">
+                                        <div className="flex justify-between items-center text-xs font-bold text-slate-500">
+                                            <span>Distribusi Durasi Shift</span>
+                                            <span className="text-emerald-600 font-extrabold">{activePct}% Efektif</span>
+                                        </div>
+                                        <div className="h-3 w-full bg-slate-200/80 rounded-full overflow-hidden flex p-0.5 gap-0.5">
+                                            <div style={{ width: `${activePct}%` }} title={`Input Aktif: ${effData.active_minutes} mnt (${activePct}%)`} className="bg-emerald-500 h-full rounded-l-full transition-all duration-500" />
+                                            <div style={{ width: `${changePct}%` }} title={`Pergantian Dimsum: ${effData.changeover_minutes} mnt (${changePct}%)`} className="bg-amber-500 h-full transition-all duration-500" />
+                                            <div style={{ width: `${stopPct}%` }} title={`Kendala: ${effData.unplanned_minutes} mnt (${stopPct}%)`} className="bg-rose-500 h-full transition-all duration-500" />
+                                            <div style={{ width: `${lossPct}%` }} title={`Loss Time (Idle): ${effData.loss_minutes ?? 0} mnt (${lossPct}%)`} className="bg-purple-500 h-full rounded-r-full transition-all duration-500" />
+                                        </div>
+                                    </div>
+
+                                    {/* Metric Badges Grid */}
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
+                                        <div className="bg-white p-3 rounded-2xl border border-slate-200/80 text-center shadow-2xs">
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase m-0 flex items-center justify-center gap-1">
+                                                <span className="w-2 h-2 rounded-full bg-emerald-500" /> Input Aktif
                                             </p>
-                                            <p className="text-xs font-black text-slate-700 mt-0.5 mb-0">
-                                                {effData.elapsed_shift_minutes && effData.elapsed_shift_minutes < effData.total_shift_minutes 
-                                                    ? `${effData.elapsed_shift_minutes}/${effData.total_shift_minutes}`
-                                                    : effData.total_shift_minutes} <span className="text-[9px] font-normal">mnt</span>
+                                            <p className="text-sm font-black text-emerald-600 mt-1 mb-0">
+                                                {effData.active_minutes} <span className="text-[10px] font-medium text-slate-400">mnt</span>
                                             </p>
                                         </div>
-                                        <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase m-0">Input Aktif</p>
-                                            <p className="text-xs font-black text-emerald-600 mt-0.5 mb-0">{effData.active_minutes} <span className="text-[9px] font-normal">mnt</span></p>
+
+                                        <div className="bg-white p-3 rounded-2xl border border-slate-200/80 text-center shadow-2xs">
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase m-0 flex items-center justify-center gap-1 truncate">
+                                                <span className="w-2 h-2 rounded-full bg-amber-500" /> Pergantian
+                                            </p>
+                                            <p className="text-sm font-black text-amber-600 mt-1 mb-0">
+                                                {effData.changeover_minutes} <span className="text-[10px] font-medium text-slate-400">mnt ({effData.changeover_count}x)</span>
+                                            </p>
                                         </div>
-                                        <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase m-0">Pergantian Dimsum</p>
-                                            <p className="text-xs font-black text-amber-600 mt-0.5 mb-0">{effData.changeover_minutes} <span className="text-[9px] font-normal">mnt ({effData.changeover_count}x)</span></p>
+
+                                        <div className="bg-white p-3 rounded-2xl border border-slate-200/80 text-center shadow-2xs">
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase m-0 flex items-center justify-center gap-1">
+                                                <span className="w-2 h-2 rounded-full bg-rose-500" /> Kendala
+                                            </p>
+                                            <p className="text-sm font-black text-rose-600 mt-1 mb-0">
+                                                {effData.unplanned_minutes} <span className="text-[10px] font-medium text-slate-400">mnt</span>
+                                            </p>
                                         </div>
-                                        <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase m-0">Kendala (Stop)</p>
-                                            <p className="text-xs font-black text-rose-600 mt-0.5 mb-0">{effData.unplanned_minutes} <span className="text-[9px] font-normal">mnt</span></p>
-                                        </div>
-                                        <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-2xs">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase m-0">Loss Time (Idle)</p>
-                                            <p className="text-xs font-black text-purple-600 mt-0.5 mb-0">{effData.loss_minutes ?? 0} <span className="text-[9px] font-normal">mnt</span></p>
+
+                                        <div className="bg-white p-3 rounded-2xl border border-slate-200/80 text-center shadow-2xs">
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase m-0 flex items-center justify-center gap-1">
+                                                <span className="w-2 h-2 rounded-full bg-purple-500" /> Loss Time
+                                            </p>
+                                            <p className="text-sm font-black text-purple-600 mt-1 mb-0">
+                                                {effData.loss_minutes ?? 0} <span className="text-[10px] font-medium text-slate-400">mnt</span>
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -304,37 +406,112 @@ export default function RefrezingDashboard() {
                 </div>
             </div>
 
-            {/* UNPLANNED STOPS SECTION */}
-            <div className="bg-white border border-slate-100 shadow-sm rounded-3xl overflow-hidden">
-                <div className="bg-white px-6 py-4 md:px-8 border-b border-slate-100 flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-lg bg-rose-100 text-rose-500 flex items-center justify-center text-base">🛑</span>
-                    <h3 className="text-base font-bold text-slate-800 m-0">Rekapan Kendala (Unplanned Stop)</h3>
+            {/* ── PYRAMID COMPARISON CHART (Refrezing 1 vs Refrezing 2) ─────────────────── */}
+            <div className="bg-white border border-slate-200/80 shadow-sm rounded-3xl p-6 sm:p-8">
+                <div className="text-center mb-8">
+                    <h3 className="text-lg font-black text-slate-800 m-0">Perbandingan Output Mesin Refrezing</h3>
+                    <p className="text-xs font-semibold text-slate-400 mt-1 mb-0">Visualisasi komparatif hasil produksi Refrezing 1 dan Refrezing 2</p>
+
+                    {/* Legend Indicator */}
+                    <div className="flex items-center justify-center gap-8 mt-5">
+                        <div className="flex items-center gap-2">
+                            <span className="w-3.5 h-3.5 rounded-md bg-gradient-to-r from-blue-500 to-cyan-600 shadow-xs" />
+                            <span className="font-extrabold text-cyan-900 text-xs sm:text-sm">{machineNames[0] || 'Refrezing 1'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="w-3.5 h-3.5 rounded-md bg-gradient-to-r from-emerald-400 to-teal-500 shadow-xs" />
+                            <span className="font-extrabold text-teal-800 text-xs sm:text-sm">{machineNames[1] || 'Refrezing 2'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Chart Rows */}
+                <div className="max-w-4xl mx-auto space-y-4">
+                    {PRODUCTS.map(p => {
+                        const val1 = stats?.by_machine?.[machineNames[0]]?.[p.key] ?? stats?.by_machine?.['IQF 1']?.[p.key] ?? 0;
+                        const val2 = stats?.by_machine?.[machineNames[1]]?.[p.key] ?? stats?.by_machine?.['IQF 2']?.[p.key] ?? 0;
+
+                        const pct1 = Math.max(0, Math.min(100, (val1 / maxMachineVal) * 100));
+                        const pct2 = Math.max(0, Math.min(100, (val2 / maxMachineVal) * 100));
+
+                        return (
+                            <div key={p.key} className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 p-2 rounded-2xl hover:bg-slate-50 transition-colors">
+                                {/* Left Side */}
+                                <div className="flex-1 w-full md:w-auto flex items-center justify-end gap-3 md:border-r-2 border-slate-200/80 pr-0 md:pr-6">
+                                    <span className="text-xs sm:text-sm font-black text-cyan-900 w-16 text-right font-mono">
+                                        <AnimatedNumber value={val1} />
+                                    </span>
+                                    <div className="flex-1 md:w-48 xl:w-64 flex justify-end h-8 bg-slate-100/80 rounded-r-md md:rounded-r-none md:rounded-l-lg overflow-hidden p-0.5">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-blue-500 to-cyan-600 rounded-l-md transition-all duration-700 ease-out shadow-xs"
+                                            style={{ width: `${pct1}%` }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Center Product Label */}
+                                <div className="w-full md:w-36 shrink-0 flex items-center justify-center gap-1.5 py-1 md:py-0">
+                                    <span className="text-base">{p.emoji}</span>
+                                    <span className="text-xs font-black text-slate-700 uppercase tracking-wide">{p.label}</span>
+                                </div>
+
+                                {/* Right Side */}
+                                <div className="flex-1 w-full md:w-auto flex items-center justify-start gap-3 md:border-l-2 border-slate-200/80 pl-0 md:pl-6">
+                                    <div className="flex-1 md:w-48 xl:w-64 h-8 bg-slate-100/80 rounded-l-md md:rounded-l-none md:rounded-r-lg overflow-hidden p-0.5">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-r-md transition-all duration-700 ease-out shadow-xs"
+                                            style={{ width: `${pct2}%` }}
+                                        />
+                                    </div>
+                                    <span className="text-xs sm:text-sm font-black text-teal-900 w-16 text-left font-mono">
+                                        <AnimatedNumber value={val2} />
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* ── UNPLANNED STOPS TABLE SECTION ─────────────────────────────── */}
+            <div className="bg-white border border-slate-200/80 shadow-sm rounded-3xl overflow-hidden">
+                <div className="bg-slate-50/80 px-6 py-4 border-b border-slate-200/80 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-base border border-rose-200">
+                            🛑
+                        </div>
+                        <h3 className="text-base font-black text-slate-800 m-0">Rekapan Kendala (Unplanned Stop)</h3>
+                    </div>
                     {stats?.unplanned_stops?.length > 0 && (
-                        <span className="ml-auto bg-rose-100 text-rose-700 text-xs font-black px-2.5 py-1 rounded-full border border-rose-200">
-                            {stats.unplanned_stops.length} kejadian
+                        <span className="bg-rose-100 text-rose-700 text-xs font-black px-3 py-1 rounded-full border border-rose-200">
+                            {stats.unplanned_stops.length} Kejadian
                         </span>
                     )}
                 </div>
+
                 <div className="p-0 overflow-x-auto">
                     {(!stats || !stats.unplanned_stops || stats.unplanned_stops.length === 0) ? (
-                        <div className="flex flex-col items-center justify-center py-8 text-center">
-                            <span className="text-3xl mb-2">✅</span>
-                            <p className="text-slate-400 font-semibold text-sm">Tidak ada kendala pada periode ini.</p>
+                        <div className="flex flex-col items-center justify-center py-10 text-center">
+                            <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-2xl mb-2 border border-emerald-200">
+                                <CheckCircle2 className="w-7 h-7 text-emerald-500" />
+                            </div>
+                            <p className="text-slate-700 font-extrabold text-sm mb-0">Tidak ada kendala pada periode ini.</p>
+                            <p className="text-slate-400 text-xs mt-0.5">Semua mesin berjalan normal tanpa hambatan.</p>
                         </div>
                     ) : (
-                        <table className="w-full text-left border-collapse text-sm">
+                        <table className="w-full text-left border-collapse text-xs sm:text-sm">
                             <thead>
-                                <tr className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider border-b border-slate-100">
-                                    <th className="px-5 py-3">#</th>
-                                    <th className="px-5 py-3">Jenis Kendala</th>
-                                    <th className="px-5 py-3">Mulai</th>
-                                    <th className="px-5 py-3">Mesin</th>
-                                    <th className="px-5 py-3">Shift</th>
-                                    <th className="px-5 py-3">PIC</th>
-                                    <th className="px-5 py-3">Durasi</th>
+                                <tr className="bg-slate-100/70 text-slate-500 text-[11px] font-black uppercase tracking-wider border-b border-slate-200">
+                                    <th className="px-5 py-3.5 w-12 text-center">#</th>
+                                    <th className="px-5 py-3.5">Jenis Kendala</th>
+                                    <th className="px-5 py-3.5">Mulai</th>
+                                    <th className="px-5 py-3.5">Mesin</th>
+                                    <th className="px-5 py-3.5">Shift</th>
+                                    <th className="px-5 py-3.5">PIC</th>
+                                    <th className="px-5 py-3.5 text-right">Durasi</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-slate-100 text-slate-700">
                                 {stats.unplanned_stops.map((stop, idx) => {
                                     let timeString = "-";
                                     let descString = stop.text;
@@ -345,33 +522,23 @@ export default function RefrezingDashboard() {
                                     }
                                     const isUnfinished = stop.duration === 'Belum Selesai';
                                     return (
-                                        <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                                            <td className="px-5 py-3.5 text-slate-400 font-bold">{idx + 1}</td>
-                                            <td className="px-5 py-3.5 font-semibold text-slate-800">{descString}</td>
+                                        <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                                            <td className="px-5 py-3.5 text-center text-slate-400 font-bold font-mono">{idx + 1}</td>
+                                            <td className="px-5 py-3.5 font-bold text-slate-800">{descString}</td>
+                                            <td className="px-5 py-3.5 font-mono text-slate-600 font-bold">{timeString}</td>
                                             <td className="px-5 py-3.5">
-                                                <span className="flex items-center gap-1.5 font-semibold text-slate-600">
-                                                    <Clock className="w-3.5 h-3.5 text-slate-400" />
-                                                    {timeString}
-                                                </span>
-                                            </td>
-                                            <td className="px-5 py-3.5">
-                                                <span className="text-[11px] font-black uppercase tracking-wider bg-cyan-50 text-cyan-700 border border-cyan-200 px-2.5 py-1 rounded-full inline-block">
+                                                <span className="text-[10px] font-black uppercase tracking-wider bg-cyan-50 text-cyan-800 border border-cyan-200 px-2.5 py-1 rounded-full">
                                                     {stop.machine}
                                                 </span>
                                             </td>
                                             <td className="px-5 py-3.5">
-                                                <span className="text-[11px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full inline-block">
+                                                <span className="text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1 rounded-full">
                                                     Shift {stop.shift}
                                                 </span>
                                             </td>
-                                            <td className="px-5 py-3.5">
-                                                <span className="flex items-center gap-1.5 text-slate-700 font-medium">
-                                                    <Users className="w-3.5 h-3.5 text-slate-400" />
-                                                    {stop.pic}
-                                                </span>
-                                            </td>
-                                            <td className="px-5 py-3.5">
-                                                <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${isUnfinished ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`}>
+                                            <td className="px-5 py-3.5 font-medium text-slate-700">{stop.pic}</td>
+                                            <td className="px-5 py-3.5 text-right">
+                                                <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-full ${isUnfinished ? 'bg-rose-100 text-rose-700 border border-rose-200 animate-pulse' : 'bg-amber-100 text-amber-700 border border-amber-200'}`}>
                                                     {isUnfinished ? '🔴' : '⏱'} {stop.duration}
                                                 </span>
                                             </td>
@@ -384,115 +551,12 @@ export default function RefrezingDashboard() {
                 </div>
             </div>
 
-            {/* GRAND TOTAL CARDS (4 Squares) */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {PRODUCTS.map(p => {
-                    const val = stats?.grand_total?.[p.key] ?? 0;
-                    return (
-                        <div key={p.key} className="bg-white border border-slate-100 shadow-sm rounded-3xl p-6 hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start mb-6">
-                                <div className={`w-12 h-12 rounded-2xl ${p.bgClass} flex items-center justify-center text-2xl`}>
-                                    {p.emoji}
-                                </div>
-                                <div className={`w-2 h-2 rounded-full ${p.bgClass.replace('50', '400')}`} />
-                            </div>
-                            <div>
-                                <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">
-                                    Total {p.label}
-                                </p>
-                                <div className="flex items-baseline gap-2">
-                                    <h3 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight m-0">
-                                        <AnimatedNumber value={val} />
-                                    </h3>
-                                    <span className="text-sm font-semibold text-slate-400">
-                                        {p.unit}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* PYRAMID CHART - Refrezing 1 vs Refrezing 2 */}
-            <div className="bg-white border border-slate-100 shadow-sm rounded-3xl p-6 md:p-8">
-                <div className="text-center mb-8">
-                    <h3 className="text-lg font-bold text-slate-800 m-0">Perbandingan Mesin Produksi Refrezing</h3>
-                    <div className="flex items-center justify-center gap-12 mt-6">
-                        <div className="flex items-center gap-2">
-                            <div className="font-black text-cyan-600 text-sm">Refrezing 1</div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="font-black text-blue-500 text-sm">Refrezing 2</div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Chart Area */}
-                <div className="max-w-4xl mx-auto space-y-6 md:space-y-4">
-                    {PRODUCTS.map(p => {
-                        const m1Name = machineNames[0] || 'Refrezing 1';
-                        const m2Name = machineNames[1] || 'Refrezing 2';
-                        const val1 = stats?.by_machine?.[m1Name]?.[p.key] ?? 0;
-                        const val2 = stats?.by_machine?.[m2Name]?.[p.key] ?? 0;
-                        
-                        const pct1 = Math.max(0, Math.min(100, (val1 / maxMachineVal) * 100));
-                        const pct2 = Math.max(0, Math.min(100, (val2 / maxMachineVal) * 100));
-
-                        return (
-                            <div key={p.key} className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 group relative">
-                                <div className="absolute inset-0 bg-slate-50 opacity-0 group-hover:opacity-100 rounded-xl transition-opacity -z-10 -m-2" />
-
-                                {/* Left Side */}
-                                <div className="flex-1 w-full md:w-auto flex items-center justify-end gap-3 md:border-r-2 border-slate-100 pr-0 md:pr-6">
-                                    <span className="text-sm font-bold text-slate-500 w-12 text-right">
-                                        <AnimatedNumber value={val1} />
-                                    </span>
-                                    <div className="flex-1 md:w-48 xl:w-64 flex justify-end h-7 md:h-10 bg-slate-50 md:bg-transparent rounded-r-md md:rounded-r-none md:rounded-l-sm overflow-hidden">
-                                        <div 
-                                            className="h-full bg-cyan-600 transition-all duration-1000 ease-out" 
-                                            style={{ width: `${pct1}%` }} 
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Center (Product Label) */}
-                                <div className="w-full md:w-32 shrink-0 flex flex-col items-center justify-center py-2 md:py-0">
-                                    <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">{p.label}</span>
-                                </div>
-
-                                {/* Right Side */}
-                                <div className="flex-1 w-full md:w-auto flex items-center justify-start gap-3 md:border-l-2 border-slate-100 pl-0 md:pl-6">
-                                    <div className="flex-1 md:w-48 xl:w-64 h-7 md:h-10 bg-slate-50 md:bg-transparent rounded-l-md md:rounded-l-none md:rounded-r-sm overflow-hidden">
-                                        <div 
-                                            className="h-full bg-blue-500 transition-all duration-1000 ease-out" 
-                                            style={{ width: `${pct2}%` }} 
-                                        />
-                                    </div>
-                                    <span className="text-sm font-bold text-slate-500 w-12 text-left">
-                                        <AnimatedNumber value={val2} />
-                                    </span>
-                                </div>
-                            </div>
-                        );
-                    })}
-
-                    <div className="hidden md:flex justify-between items-center text-xs font-bold text-slate-300 border-t border-slate-100 pt-4 mt-8 px-8">
-                        <span>100%</span>
-                        <span>50%</span>
-                        <span>0</span>
-                        <span>50%</span>
-                        <span>100%</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* DETEKSI ANOMALI SECTION */}
-            <AnomalyDetectionSection 
-                anomalyData={stats?.anomaly_detection} 
-                title="Deteksi Anomali & Rekap Shift Refrezing" 
+            {/* ── ANOMALY DETECTION & SHIFT RECAP SECTION ─────────────────── */}
+            <AnomalyDetectionSection
+                anomalyData={stats?.anomaly_detection}
+                title="Deteksi Anomali & Rekap Shift Refrezing"
             />
+
         </div>
     );
 }
-
