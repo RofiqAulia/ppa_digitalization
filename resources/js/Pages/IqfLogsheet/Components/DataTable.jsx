@@ -1346,17 +1346,22 @@ export default function DataTable({ logsheets }) {
                 const lumpiaRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'lumpia'));
                 const adonanRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'adonan_pangsit'));
 
-                /* Hitung kebutuhan tinggi baris minimum (minimal 20 baris agar kolom full walau kosong) */
-                const nonPentolMax = Math.max(siomayRows.length, lumpiaRows.length, adonanRows.length, 1);
-                const pentolCount = pentolRows.length;
-                /* Jika pentol > 20, bagi 2 kolom sehingga tinggi kolom = Math.ceil(pentolCount / 2) */
-                const pentolColHeightNeeded = pentolCount > 20 ? Math.ceil(pentolCount / 2) : pentolCount;
+                /* Kunci grid tetap 25 baris per kolom (total kapasitas 50 record Pentol per lembar halaman) */
+                const PENTOL_CAPACITY_PER_COL = 25;
 
-                const maxRows = Math.max(nonPentolMax, pentolColHeightNeeded, 20);
+                /* Pentol diisi PENUH di Kolom 1 (kiri) max 25 baris terlebih dahulu, baru melimpah ke Kolom 2 (kanan) max 25 baris */
+                const pentolCol1 = pentolRows.slice(0, PENTOL_CAPACITY_PER_COL);
+                const pentolCol2 = pentolRows.slice(PENTOL_CAPACITY_PER_COL, PENTOL_CAPACITY_PER_COL * 2);
 
-                /* Pentol diisi PENUH di Kolom 1 (kiri) terlebih dahulu sampai batas maxRows, baru sisa melimpah ke Kolom 2 (kanan) */
-                const pentolCol1 = pentolRows.slice(0, maxRows);
-                const pentolCol2 = pentolRows.slice(maxRows);
+                /* Jumlah baris dikunci tetap 25 baris agar tinggi baris 100% konsisten & identik di semua shift */
+                const maxRows = Math.max(
+                    siomayRows.length,
+                    pentolCol1.length,
+                    pentolCol2.length,
+                    lumpiaRows.length,
+                    adonanRows.length,
+                    25
+                );
 
                 /* Totals */
                 const totSiomay = siomayRows.reduce((s, r) => s + (r.tray_count || 0), 0);
