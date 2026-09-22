@@ -177,38 +177,34 @@ export default function RefrezingDashboard() {
         <div className="space-y-6 select-none max-w-[1400px] mx-auto pb-12">
             
             {/* ── HEADER BANNER ─────────────────────────────────────────────── */}
-            <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 text-white rounded-3xl p-5 sm:p-6 md:p-8 shadow-2xl border border-slate-800">
-                {/* Glow ambient background accents */}
-                <div className="absolute -top-24 -right-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-
-                <div className="relative z-10 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6">
+            <div className="relative overflow-hidden bg-[#131538] text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 shadow-xl border border-[#232759]">
+                <div className="relative z-10 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-5">
                     {/* Title + Status */}
                     <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-500/30 border border-white/20 shrink-0">
-                            <Activity className="w-7 h-7 text-white" />
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-tr from-[#0284c7] via-[#0369a1] to-[#38bdf8] rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-600/25 border border-white/20 shrink-0">
+                            <Activity className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider bg-[#0f2c24] text-[#2be29c] border border-[#1a5b48]">
+                                    <span className="w-2 h-2 rounded-full bg-[#2be29c] animate-pulse" />
                                     LIVE MONITORING
                                 </span>
                             </div>
-                            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white mt-1 mb-0">
+                            <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white mt-1 mb-0">
                                 Dashboard Produksi Refrezing
                             </h2>
                             <p className="text-slate-400 text-xs sm:text-sm font-medium mt-0.5 flex items-center gap-1.5">
                                 <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                                Waktu WIB: <span className="text-cyan-200 font-bold"><LiveClock /></span>
+                                Waktu WIB: <span className="text-white font-bold"><LiveClock /></span>
                             </p>
                         </div>
                     </div>
 
                     {/* Filter & Action Controls */}
-                    <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 w-full lg:w-auto justify-start lg:justify-end">
-                        {/* Shift Presets */}
-                        <div className="grid grid-cols-4 sm:flex sm:items-center bg-slate-800/80 p-1 rounded-2xl w-full sm:w-auto border border-white/10 backdrop-blur-md">
+                    <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 w-full lg:w-auto justify-start lg:justify-end">
+                        {/* Shift Presets Pill */}
+                        <div className="grid grid-cols-4 sm:flex sm:items-center bg-[#191c44] p-1 rounded-full w-full sm:w-auto border border-[#2e3366]">
                             {SHIFT_PRESETS.map(p => {
                                 const isActive = activePreset === p.label;
                                 return (
@@ -216,10 +212,10 @@ export default function RefrezingDashboard() {
                                         key={p.label}
                                         type="button"
                                         onClick={() => applyPreset(p)}
-                                        className={`px-3 py-2 text-xs sm:text-sm font-extrabold rounded-xl transition-all border-0 text-center ${
+                                        className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all border-0 text-center ${
                                             isActive
-                                            ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/40'
-                                            : 'text-slate-300 hover:text-white hover:bg-white/10'
+                                            ? 'bg-[#0284c7] text-white shadow-md shadow-cyan-600/30'
+                                            : 'text-slate-300 hover:text-white hover:bg-white/5'
                                         }`}
                                     >
                                         {p.label}
@@ -228,20 +224,20 @@ export default function RefrezingDashboard() {
                             })}
                         </div>
 
-                        {/* Custom Time Range Selector */}
-                        <div className="flex items-center justify-between sm:justify-start gap-2 bg-slate-800/80 rounded-2xl px-3.5 py-2 border border-white/10 backdrop-blur-md w-full sm:w-auto">
+                        {/* Custom Time Range Selector Pill */}
+                        <div className="flex items-center justify-between sm:justify-start gap-2 bg-[#191c44] rounded-full px-4 py-1.5 border border-[#2e3366] w-full sm:w-auto text-xs font-semibold">
                             <select
                                 value={fromTime}
                                 onChange={e => { setFromTime(e.target.value); setActivePreset('Custom'); }}
-                                className="bg-transparent text-white text-xs sm:text-sm font-extrabold border-0 p-0 shadow-none cursor-pointer focus:outline-none"
+                                className="bg-transparent text-white text-xs font-bold border-0 p-0 shadow-none cursor-pointer focus:outline-none"
                             >
                                 {HOURS.map(h => <option key={h} value={h} className="text-slate-900 bg-white">{h}</option>)}
                             </select>
-                            <span className="text-cyan-400 font-black text-xs sm:text-sm">→</span>
+                            <span className="text-cyan-400 font-bold">→</span>
                             <select
                                 value={toTime}
                                 onChange={e => { setToTime(e.target.value); setActivePreset('Custom'); }}
-                                className="bg-transparent text-white text-xs sm:text-sm font-extrabold border-0 p-0 shadow-none cursor-pointer focus:outline-none"
+                                className="bg-transparent text-white text-xs font-bold border-0 p-0 shadow-none cursor-pointer focus:outline-none"
                             >
                                 {HOURS.map(h => <option key={h} value={h} className="text-slate-900 bg-white">{h}</option>)}
                             </select>
@@ -253,7 +249,7 @@ export default function RefrezingDashboard() {
                             onClick={fetchStats}
                             disabled={loading}
                             title="Refresh Data Dashboard"
-                            className="h-10 px-4 sm:w-10 sm:px-0 flex items-center justify-center rounded-2xl bg-slate-800/80 hover:bg-cyan-600/80 border border-white/10 text-slate-200 hover:text-white transition-all cursor-pointer shadow-sm"
+                            className="h-9 px-4 sm:w-9 sm:px-0 flex items-center justify-center rounded-full bg-[#191c44] hover:bg-[#0284c7] border border-[#2e3366] text-slate-300 hover:text-white transition-all cursor-pointer shadow-xs shrink-0"
                         >
                             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                         </button>
