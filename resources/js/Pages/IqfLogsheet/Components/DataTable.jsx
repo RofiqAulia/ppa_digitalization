@@ -20,11 +20,12 @@ const PRINT_STYLE = `
 @media print {
   @page {
     size: A4 landscape;
-    margin: 4mm 5mm;
+    margin: 0;
   }
 
   html, body {
     height: 100% !important;
+    width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     overflow: hidden !important;
@@ -33,19 +34,22 @@ const PRINT_STYLE = `
   body > *:not(#iqf-spt) { display: none !important; }
 
   #iqf-spt {
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
     position: relative !important;
-    width: 100% !important;
-    max-height: 200mm !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
     background: white;
-    padding: 0;
+    padding: 4mm 6mm !important;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 6px;
-    box-sizing: border-box;
+    box-sizing: border-box !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     page-break-before: avoid !important;
     page-break-after: avoid !important;
+    overflow: hidden !important;
   }
 
   /* === MAIN HEADER === */
@@ -57,6 +61,7 @@ const PRINT_STYLE = `
     padding-bottom: 2px;
     margin-bottom: 2px;
     gap: 8px;
+    flex-shrink: 0;
   }
   .spt-title-block { flex: 1; text-align: center; }
   .spt-t1 { font-weight: 900; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; line-height: 1.1; }
@@ -77,14 +82,17 @@ const PRINT_STYLE = `
     margin-bottom: 2px;
     flex-wrap: wrap;
     line-height: 1.1;
+    flex-shrink: 0;
   }
   .spt-info-row b { font-weight: 700; margin-right: 2px; }
 
-  .spt-printed { font-size: 6px; color: #666; text-align: right; font-style: italic; margin-bottom: 2px; line-height: 1.1; }
+  .spt-printed { font-size: 6px; color: #666; text-align: right; font-style: italic; margin-bottom: 2px; line-height: 1.1; flex-shrink: 0; }
 
   /* === MATRIX DATA TABLE === */
   table.spt-tbl {
     width: 100%;
+    flex: 1 !important;
+    height: 100% !important;
     border-collapse: collapse;
     table-layout: fixed;
     page-break-inside: avoid !important;
@@ -97,12 +105,11 @@ const PRINT_STYLE = `
   table.spt-tbl tr { page-break-inside: avoid !important; break-inside: avoid !important; }
   table.spt-tbl th, table.spt-tbl td {
     border: 0.5px solid #888;
-    padding: 0.8px 1px;
+    padding: 0.5px 1px;
     text-align: center;
     vertical-align: middle;
     overflow: hidden;
     word-break: break-all;
-    height: 24px;
   }
 
   /* Group header colors (top row) */
