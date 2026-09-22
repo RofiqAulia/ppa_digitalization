@@ -102,7 +102,7 @@ const PRINT_STYLE = `
     vertical-align: middle;
     overflow: hidden;
     word-break: break-all;
-    height: 11px;
+    height: 24px;
   }
 
   /* Group header colors (top row) */
