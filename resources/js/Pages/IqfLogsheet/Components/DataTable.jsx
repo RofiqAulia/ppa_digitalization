@@ -214,16 +214,16 @@ export default function DataTable({ logsheets }) {
     const PRODUCT_ORDER  = ['siomay', 'pentol', 'lumpia', 'adonan_pangsit'];
     const PRODUCT_LABELS = { siomay: 'Siomay', pentol: 'Pentol', lumpia: 'Lumpia', adonan_pangsit: 'Adonan Pangsit' };
     const PRODUCT_BADGE  = {
-        siomay:         { bg: 'bg-yellow-100',  text: 'text-yellow-800',  border: 'border-yellow-300'  },
-        pentol:         { bg: 'bg-blue-100',    text: 'text-blue-800',    border: 'border-blue-300'    },
-        lumpia:         { bg: 'bg-green-100',   text: 'text-green-800',   border: 'border-green-300'   },
-        adonan_pangsit: { bg: 'bg-purple-100',  text: 'text-purple-800',  border: 'border-purple-300'  },
+        siomay:         { bg: 'bg-[#fef7e0]',  text: 'text-[#b06000]',  border: 'border-[#feefc3]'  },
+        pentol:         { bg: 'bg-[#e8f0fe]',  text: 'text-[#1a73e8]',  border: 'border-[#d2e3fc]'  },
+        lumpia:         { bg: 'bg-[#e6f4ea]',  text: 'text-[#1e7e34]',  border: 'border-[#ceead6]'  },
+        adonan_pangsit: { bg: 'bg-[#f3e8fd]',  text: 'text-[#9333ea]',  border: 'border-[#e9d5ff]'  },
     };
     const PRODUCT_ROW_BG = {
-        siomay:         'hover:bg-yellow-50/60',
-        pentol:         'hover:bg-blue-50/60',
-        lumpia:         'hover:bg-green-50/60',
-        adonan_pangsit: 'hover:bg-purple-50/60',
+        siomay:         'hover:bg-[#fffdf5]',
+        pentol:         'hover:bg-[#f8faff]',
+        lumpia:         'hover:bg-[#f5fbf7]',
+        adonan_pangsit: 'hover:bg-[#faf5ff]',
     };
     const PRODUCT_PRINT_CLASS = {
         siomay:         'product-row-siomay',
@@ -464,18 +464,21 @@ export default function DataTable({ logsheets }) {
     };
 
     const getSortIcon = col => {
-        if (sortConfig.key !== col) return <ArrowUpDown className="w-3 h-3 ml-1 opacity-40 group-hover:opacity-100" />;
+        if (sortConfig.key !== col) return <span className="ml-1 text-slate-400 text-[11px]">⇅</span>;
         return sortConfig.direction === 'asc'
-            ? <ArrowUp   className="w-3 h-3 ml-1 text-indigo-500" />
-            : <ArrowDown className="w-3 h-3 ml-1 text-indigo-500" />;
+            ? <span className="ml-1 text-indigo-300 text-xs font-black">↑</span>
+            : <span className="ml-1 text-indigo-300 text-xs font-black">↓</span>;
     };
 
     const SortableHeader = ({ columnKey, children, className }) => (
         <th
-            className={`px-3 py-2.5 text-xs font-bold text-white bg-[#1e3a5f] border-b border-[#152d4a] cursor-pointer group hover:bg-[#2a4f80] transition-colors select-none ${className || ''}`}
+            className={`px-3.5 py-3 text-xs font-bold text-white bg-[#1e293b] border-b border-[#0f172a] cursor-pointer group hover:bg-[#334155] transition-colors select-none ${className || ''}`}
             onClick={() => handleSort(columnKey)}
         >
-            <div className="flex items-center">{children}{getSortIcon(columnKey)}</div>
+            <div className="flex items-center justify-between gap-1">
+                <span>{children}</span>
+                {getSortIcon(columnKey)}
+            </div>
         </th>
     );
 
@@ -665,8 +668,8 @@ export default function DataTable({ logsheets }) {
         const HEADER_ROW = 1, DATA_START = 2;
         const COL_LETTERS = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N'];
         const COL_KEYS = ['No','PIC','Tanggal','Shift','Mesin','Produk','No Batch',
-                          'Suhu Panel','Suhu Produk','Jam (Mulai)','Rak / Rongga',
-                          'Jumlah (Loyang/Pack)','Total','Unplanned Stop'];
+                          'Suhu Panel','Suhu Produk','Jam (Mulai)','Rak / Rongga / Solid',
+                          'Jumlah (Loyang/Keranjang)','Total','Unplanned Stop'];
         const HEADER_STYLE = {
             fill: { fgColor: { rgb: '1E3A5F' } },
             font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 10 },
@@ -691,8 +694,8 @@ export default function DataTable({ logsheets }) {
                 'No': i + 1, 'PIC': row.pic, 'Tanggal': formatDate(row.date),
                 'Shift': row.shift, 'Mesin': row.machine, 'Produk': formatProduct(row.product_type),
                 'No Batch': row.batch_number, 'Suhu Panel': row.suhu_panel, 'Suhu Produk': row.suhu_produk,
-                'Jam (Mulai)': formatTime(row.time), 'Rak / Rongga': row.rak,
-                'Jumlah (Loyang/Pack)': row.tray_count, 'Total': '',
+                'Jam (Mulai)': formatTime(row.time), 'Rak / Rongga / Solid': row.rak,
+                'Jumlah (Loyang/Keranjang)': row.tray_count, 'Total': '',
                 'Unplanned Stop': row.unplanned_stop !== '-' ? row.unplanned_stop : '',
             }));
 
@@ -901,7 +904,7 @@ export default function DataTable({ logsheets }) {
             <div className="no-print grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 shrink-0">
                 {[
                     { icon: <Layers className="w-4 h-4" />, label: 'Total Grup', value: stats.groups, color: 'from-indigo-500 to-indigo-600' },
-                    { icon: <BarChart2 className="w-4 h-4" />, label: 'Total Loyang/Pack', value: stats.totalLoyang, color: 'from-emerald-500 to-emerald-600' },
+                    { icon: <BarChart2 className="w-4 h-4" />, label: 'Total Loyang/Keranjang', value: stats.totalLoyang, color: 'from-emerald-500 to-emerald-600' },
                     { icon: <Calendar className="w-4 h-4" />, label: 'Rentang Tanggal',
                       value: stats.dateRange.length === 0 ? '-'
                            : stats.dateRange.length === 1 ? formatDate(stats.dateRange[0])
@@ -964,24 +967,24 @@ export default function DataTable({ logsheets }) {
                                 className="no-print w-full flex items-center justify-between px-5 py-3 border-b border-slate-100 hover:bg-slate-50/60 transition-colors text-left"
                                 onClick={() => toggleGroup(group.key)}
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-2.5 h-2.5 rounded-full ${group.machine === 'IQF 1' ? 'bg-indigo-500' : 'bg-purple-500'} shadow`} />
-                                    <span className="font-bold text-slate-800 text-sm">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[#6366f1] shadow-sm" />
+                                    <span className="font-extrabold text-slate-800 text-sm">
                                         {group.machine}
                                     </span>
-                                    <span className="text-slate-400 text-xs">|</span>
+                                    <span className="text-slate-300 text-xs">|</span>
                                     <span className="text-slate-600 text-xs font-medium">{formatDate(group.date)}</span>
-                                    <span className="text-slate-400 text-xs">|</span>
-                                    <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">Shift {group.shift}</span>
-                                    <span className="text-xs text-slate-400 ml-1">{group.rows.length} entri</span>
+                                    <span className="text-slate-300 text-xs">|</span>
+                                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">Shift {group.shift}</span>
+                                    <span className="text-xs text-slate-400 ml-1 font-normal">{group.rows.length} entri</span>
                                 </div>
 
-                                <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                <div className="flex items-center gap-2 flex-wrap justify-end">
                                     {/* Total Time badge */}
                                     {(() => {
                                         const tm = calculateGroupTimeMetrics(group.rows);
                                         return (
-                                            <span className="text-[10px] px-2 py-0.5 rounded border font-bold bg-indigo-50 text-indigo-700 border-indigo-200">
+                                            <span className="text-xs px-2.5 py-1 rounded-lg font-semibold bg-[#eef2ff] text-[#4338ca] border border-[#e0e7ff] flex items-center gap-1 shadow-2xs">
                                                 ⏱️ {tm.totalWorkMinutes} mnt
                                             </span>
                                         );
@@ -989,18 +992,15 @@ export default function DataTable({ logsheets }) {
 
                                     {/* Product badges */}
                                     {[
-                                        { pt: 'siomay',         val: group.totals.siomay, unit: 'L' },
-                                        { pt: 'pentol',         val: group.totals.pentol, unit: 'L' },
-                                        { pt: 'lumpia',         val: group.totals.lumpia, unit: 'K' },
-                                        { pt: 'adonan_pangsit', val: group.totals.adonan, unit: 'K' },
-                                    ].filter(b => b.val > 0).map(({ pt, val, unit }) => {
-                                        const bc = PRODUCT_BADGE[pt];
-                                        return (
-                                            <span key={pt} className={`text-[10px] px-1.5 py-0.5 rounded border font-bold ${bc.bg} ${bc.text} ${bc.border}`}>
-                                                {PRODUCT_LABELS[pt].slice(0,3)}: {val}{unit}
-                                            </span>
-                                        );
-                                    })}
+                                        { pt: 'siomay',         val: group.totals.siomay, unit: 'L', bg: 'bg-[#fef7e0]', text: 'text-[#b06000]' },
+                                        { pt: 'pentol',         val: group.totals.pentol, unit: 'L', bg: 'bg-[#e0f2fe]', text: 'text-[#0369a1]' },
+                                        { pt: 'lumpia',         val: group.totals.lumpia, unit: 'K', bg: 'bg-[#dcfce7]', text: 'text-[#15803d]' },
+                                        { pt: 'adonan_pangsit', val: group.totals.adonan, unit: 'K', bg: 'bg-[#f3e8fd]', text: 'text-[#7e22ce]' },
+                                    ].filter(b => b.val > 0).map(({ pt, val, unit, bg, text }) => (
+                                        <span key={pt} className={`text-xs px-2.5 py-1 rounded-lg font-extrabold ${bg} ${text}`}>
+                                            {PRODUCT_LABELS[pt].slice(0,3)}: {val}{unit}
+                                        </span>
+                                    ))}
 
                                     {/* Divider */}
                                     <span className="w-px h-4 bg-slate-200 mx-0.5" />
@@ -1009,16 +1009,16 @@ export default function DataTable({ logsheets }) {
                                     <button
                                         title={`Print ${group.machine} | ${formatDate(group.date)} | Shift ${group.shift}`}
                                         onClick={(e) => { e.stopPropagation(); handlePrintGroup(group.key); }}
-                                        className="h-6 w-6 rounded-md flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-200 transition-colors"
+                                        className="p-1.5 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 transition-colors"
                                     >
                                         <Printer className="w-3.5 h-3.5" />
                                     </button>
 
                                     {/* Toggle chevron */}
-                                    <div className="w-5 h-5 flex items-center justify-center">
+                                    <div className="w-5 h-5 flex items-center justify-center text-slate-400">
                                         {isExpanded
-                                            ? <ChevronUp   className="w-4 h-4 text-slate-400" />
-                                            : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                                            ? <ChevronUp   className="w-4 h-4" />
+                                            : <ChevronDown className="w-4 h-4" />}
                                     </div>
                                 </div>
                             </button>
@@ -1028,7 +1028,7 @@ export default function DataTable({ logsheets }) {
                                 <table className="w-full min-w-full text-left border-collapse whitespace-normal sm:whitespace-nowrap break-words text-xs table-auto">
                                     <thead>
                                         <tr>
-                                            <th className="px-3 py-2.5 text-xs font-bold text-white bg-[#1e3a5f] border-b border-[#152d4a] w-10 text-center">#</th>
+                                            <th className="px-3.5 py-3 text-xs font-bold text-white bg-[#1e293b] border-b border-[#0f172a] w-10 text-center">#</th>
                                             <SortableHeader columnKey="pic">PIC</SortableHeader>
                                             <SortableHeader columnKey="product_type">Jenis Produk</SortableHeader>
                                             <SortableHeader columnKey="batch_number">No Batch</SortableHeader>
@@ -1037,10 +1037,10 @@ export default function DataTable({ logsheets }) {
                                             <SortableHeader columnKey="time">Waktu</SortableHeader>
                                             <SortableHeader columnKey="rak">Rak/Rongga</SortableHeader>
                                             <SortableHeader columnKey="tray_count">Jumlah (Loyang/Keranjang)</SortableHeader>
-                                            <th className="px-3 py-2.5 text-xs font-bold text-emerald-100 bg-emerald-700 border-b border-emerald-800 text-center">Total</th>
+                                            <th className="px-3.5 py-3 text-xs font-bold text-white bg-[#059669] border-b border-[#047857] text-center">Total</th>
                                             <SortableHeader columnKey="unplanned_stop">Unplanned Stop</SortableHeader>
                                             {!isReadOnly && (
-                                                <th className="no-print px-3 py-2.5 text-xs font-bold text-white bg-[#1e3a5f] border-b border-[#152d4a] text-center w-14">Aksi</th>
+                                                <th className="no-print px-3.5 py-3 text-xs font-bold text-white bg-[#1e293b] border-b border-[#0f172a] text-center w-14">Aksi</th>
                                             )}
                                         </tr>
                                     </thead>
@@ -1081,69 +1081,98 @@ export default function DataTable({ logsheets }) {
                                             const pt           = basePt;
                                             const printClass   = PRODUCT_PRINT_CLASS[pt] || '';
                                             const isRakAnomaly = rakAnomalyIds.has(row.id);
+
+                                            /* Render Rak / Rongga / Solid cell content */
+                                            const renderRakRonggaCell = () => {
+                                                if (pt === 'lumpia') {
+                                                    if (row.rak && row.rak !== '-' && row.rak !== 0 && row.rak !== '0') {
+                                                        return <span className="font-semibold text-slate-700">Rongga {row.rak}</span>;
+                                                    }
+                                                    return <span className="text-slate-300">-</span>;
+                                                }
+                                                if (pt === 'adonan_pangsit') {
+                                                    if (row.rak && row.rak !== '-' && row.rak !== 0 && row.rak !== '0') {
+                                                        return <span className="font-semibold text-slate-700">Solid {row.rak}</span>;
+                                                    }
+                                                    return <span className="text-slate-300">-</span>;
+                                                }
+                                                // Pentol & Siomay
+                                                if (isRakAnomaly) {
+                                                    return (
+                                                        <span className="inline-flex items-center justify-center gap-1 bg-[#ffe4e6] text-[#e11d48] border border-[#fecdd3] px-2.5 py-1 rounded-md font-extrabold text-xs shadow-2xs">
+                                                            <span className="font-black text-red-600">!</span> {row.rak}
+                                                        </span>
+                                                    );
+                                                }
+                                                if (row.rak && row.rak !== '-') {
+                                                    return <span className="font-semibold text-slate-700">{row.rak}</span>;
+                                                }
+                                                return <span className="text-slate-300">-</span>;
+                                            };
+
                                             return (
-                                                <tr key={row.id} title={isRakAnomaly ? `⚠️ Rak ${row.rak} tidak urut dari entri sebelumnya` : undefined} className={`h-[56px] transition-colors ${isRakAnomaly ? 'bg-red-50 hover:bg-red-100' : (PRODUCT_ROW_BG[pt] || 'hover:bg-slate-50')} ${printClass}`}>
-                                                    <td className="px-3 py-1.5 text-center text-slate-400 font-mono">{idx + 1}</td>
-                                                    <td className="px-3 py-1.5 font-medium truncate max-w-[90px]">{row.pic}</td>
-                                                    <td className="px-3 py-1.5 truncate max-w-[90px]">
-                                                        <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold border ${PRODUCT_BADGE[pt]?.bg} ${PRODUCT_BADGE[pt]?.text} ${PRODUCT_BADGE[pt]?.border}`}>
+                                                <tr
+                                                    key={row.id}
+                                                    title={isRakAnomaly ? `⚠️ Rak ${row.rak} tidak urut dari entri sebelumnya` : undefined}
+                                                    className={`h-[52px] transition-colors border-b border-slate-100/80 ${
+                                                        isRakAnomaly
+                                                            ? 'bg-[#fff1f2] hover:bg-[#ffe4e6]'
+                                                            : (PRODUCT_ROW_BG[pt] || 'hover:bg-slate-50/70')
+                                                    } ${printClass}`}
+                                                >
+                                                    <td className="px-3.5 py-2.5 text-center text-slate-400 font-medium text-xs">{idx + 1}</td>
+                                                    <td className="px-3.5 py-2.5 font-medium text-slate-800 text-xs truncate max-w-[100px]">{row.pic}</td>
+                                                    <td className="px-3.5 py-2.5 truncate max-w-[120px]">
+                                                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold border ${PRODUCT_BADGE[pt]?.bg} ${PRODUCT_BADGE[pt]?.text} ${PRODUCT_BADGE[pt]?.border}`}>
                                                             {formatProduct(row.product_type)}
                                                         </span>
                                                     </td>
-                                                    <td className="px-3 py-1.5 font-mono text-slate-600 truncate max-w-[90px]">{row.batch_number}</td>
-                                                    <td className="px-3 py-1.5 font-mono text-slate-600">{row.suhu_panel}</td>
-                                                    <td className="px-3 py-1.5 font-mono text-slate-600">{row.suhu_produk}</td>
-                                                    <td className="px-3 py-1.5 font-mono text-indigo-700 font-bold">{formatTime(row.time)}</td>
-                                                    <td className={`px-3 py-1.5 text-center font-bold ${isRakAnomaly ? 'text-red-600 bg-red-100' : 'text-slate-700'}`}>
-                                                        {['lumpia','adonan_pangsit'].includes(pt)
-                                                            ? <span className="text-slate-300">-</span>
-                                                            : (
-                                                                <span className={`inline-flex items-center gap-1 ${ isRakAnomaly ? 'text-red-600' : ''}`}>
-                                                                    {isRakAnomaly && <span title="Rak tidak urut" className="text-red-500 font-black">!</span>}
-                                                                    {row.rak}
-                                                                </span>
-                                                            )
-                                                        }
+                                                    <td className="px-3.5 py-2.5 font-mono text-xs text-slate-700 font-medium truncate max-w-[90px]">{row.batch_number}</td>
+                                                    <td className="px-3.5 py-2.5 font-mono text-xs text-slate-400">{row.suhu_panel}</td>
+                                                    <td className="px-3.5 py-2.5 font-mono text-xs text-slate-400">{row.suhu_produk}</td>
+                                                    <td className="px-3.5 py-2.5 font-mono text-xs text-[#4338ca] font-bold">{formatTime(row.time)}</td>
+                                                    <td className="px-3.5 py-2.5 text-center text-xs">
+                                                        {renderRakRonggaCell()}
                                                     </td>
-                                                    <td className="px-3 py-1.5 text-center">
-                                                        <span className="inline-flex px-1.5 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded font-black text-[10px]">
+                                                    <td className="px-3.5 py-2.5 text-center">
+                                                        <span className="inline-flex items-center justify-center px-2.5 py-0.5 bg-[#f0f3ff] text-[#4338ca] border border-[#e0e7ff] rounded-lg font-bold text-xs min-w-[28px]">
                                                             {row.tray_count}
                                                         </span>
                                                     </td>
-                                                    <td className="px-3 py-1.5 text-center bg-emerald-50/30">
+                                                    <td className="px-3.5 py-2.5 text-center bg-emerald-50/20">
                                                         {isLastOfProd ? (
-                                                            <span className="inline-flex items-center gap-0.5 px-1.5 py-1 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded font-black text-[10px]">
-                                                                {rowTotal}<span className="font-normal text-emerald-600">{unitLabel(pt)}</span>
+                                                            <span className="inline-flex items-center justify-center gap-0.5 px-2.5 py-0.5 bg-[#dcfce7] text-[#15803d] border border-[#bbf7d0] rounded-lg font-extrabold text-xs shadow-2xs">
+                                                                {rowTotal}<span className="text-[10px] font-semibold text-[#16a34a]">{unitLabel(pt)}</span>
                                                             </span>
-                                                        ) : <span className="text-slate-200">—</span>}
+                                                        ) : <span className="text-slate-300 text-xs">—</span>}
                                                     </td>
-                                                    <td className="px-3 py-1.5 text-xs">
+                                                    <td className="px-3.5 py-2.5 text-xs">
                                                         {row.unplanned_stop !== '-' ? (
-                                                            <span className={`inline-flex px-1.5 py-0.5 rounded font-bold text-[10px] ${
+                                                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium ${
                                                                 row.unplanned_stop.includes('Pergantian Dimsum') && !row.unplanned_stop.includes('Temperatur') && !row.unplanned_stop.includes('Macet')
-                                                                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                                                                    : 'bg-rose-100 text-rose-700'
+                                                                    ? 'bg-[#fef3c7] text-[#b45309] border border-[#fde68a]'
+                                                                    : 'bg-[#ffe4e6] text-[#e11d48] border border-[#fecdd3]'
                                                             }`}>
                                                                 {row.unplanned_stop}
                                                             </span>
-                                                        ) : <span className="text-slate-300">-</span>}
+                                                        ) : <span className="text-slate-300 text-xs">-</span>}
                                                     </td>
                                                     {!isReadOnly && (
-                                                        <td className="no-print px-3 py-1.5 text-center">
-                                                            <div className="flex items-center justify-center gap-1.5">
+                                                        <td className="no-print px-3.5 py-2.5 text-center">
+                                                            <div className="flex items-center justify-center gap-1">
                                                                 <button
-                                                                    className="h-6 w-6 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors flex items-center justify-center"
+                                                                    className="h-7 w-7 rounded-md text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors flex items-center justify-center"
                                                                     onClick={() => openEditModal(row)}
                                                                     title="Edit"
                                                                 >
-                                                                    <Edit2 className="w-3 h-3" />
+                                                                    <Edit2 className="w-3.5 h-3.5" />
                                                                 </button>
                                                                 <button
-                                                                    className="h-6 w-6 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors flex items-center justify-center"
+                                                                    className="h-7 w-7 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors flex items-center justify-center"
                                                                     onClick={() => handleDeleteDetail(row.id)}
                                                                     title="Hapus"
                                                                 >
-                                                                    <Trash2 className="w-3 h-3" />
+                                                                    <Trash2 className="w-3.5 h-3.5" />
                                                                 </button>
                                                             </div>
                                                         </td>
@@ -1289,7 +1318,7 @@ export default function DataTable({ logsheets }) {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <Label>Rak / Rongga</Label>
+                                    <Label>Rak / Rongga / Solid</Label>
                                     <Input type="number" name="rak" value={editData.rak} onChange={handleEditChange} />
                                 </div>
                                 <div className="space-y-1">
