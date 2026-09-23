@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { AlertTriangle, CheckCircle2, ShieldAlert, Clock, Layers, Printer, Activity, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ShieldAlert, Clock, Layers, Printer, Activity } from 'lucide-react';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { ColumnGroup } from 'primereact/columngroup';
+import { Row } from 'primereact/row';
+import 'primereact/resources/primereact.min.css';
 
 export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi Anomali & Rekap Shift IQF" }) {
     const [selectedTab, setSelectedTab] = useState('ALL'); // 'ALL', 'IQF 1', 'IQF 2'
-    const [sortConfig, setSortConfig] = useState({ col: null, dir: 'asc' });
 
     if (!anomalyData) {
         return (
@@ -20,24 +24,6 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
 
     const handlePrintAnomaly = () => {
         window.print();
-    };
-
-    const handleSort = (columnKey) => {
-        setSortConfig(prev => {
-            if (prev.col === columnKey) {
-                return { col: columnKey, dir: prev.dir === 'asc' ? 'desc' : 'asc' };
-            }
-            return { col: columnKey, dir: 'asc' };
-        });
-    };
-
-    const getSortIcon = (columnKey) => {
-        if (sortConfig.col !== columnKey) {
-            return <ArrowUpDown className="w-3.5 h-3.5 ml-1 opacity-40 inline-block" />;
-        }
-        return sortConfig.dir === 'asc' 
-            ? <ArrowUp className="w-3.5 h-3.5 ml-1 text-white inline-block font-bold" />
-            : <ArrowDown className="w-3.5 h-3.5 ml-1 text-white inline-block font-bold" />;
     };
 
     const renderMachineCard = (mName, mData) => {
@@ -72,22 +58,6 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
         let adonanRows = [...matrix_rows.filter(r => r.product_type === 'adonan_pangsit')];
         let sortedDowntime = [...downtime_entries];
 
-        // Apply sorting based on selected column header without modifying data logic
-        if (sortConfig.col) {
-            const dirMultiplier = sortConfig.dir === 'asc' ? 1 : -1;
-            if (sortConfig.col === 'siomay') {
-                siomayRows.sort((a, b) => (a.time || '').localeCompare(b.time || '') * dirMultiplier);
-            } else if (sortConfig.col === 'pentol') {
-                pentolRows.sort((a, b) => (a.time || '').localeCompare(b.time || '') * dirMultiplier);
-            } else if (sortConfig.col === 'lumpia') {
-                lumpiaRows.sort((a, b) => (a.time || '').localeCompare(b.time || '') * dirMultiplier);
-            } else if (sortConfig.col === 'adonan') {
-                adonanRows.sort((a, b) => (a.time || '').localeCompare(b.time || '') * dirMultiplier);
-            } else if (sortConfig.col === 'downtime') {
-                sortedDowntime.sort((a, b) => ((a.dur_mins ?? 0) - (b.dur_mins ?? 0)) * dirMultiplier);
-            }
-        }
-
         const maxRowsCount = Math.max(
             siomayRows.length,
             pentolRows.length,
@@ -99,6 +69,67 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
 
         const isAnomaly = status === 'anomaly' || unaccounted_minutes > 30;
         const isWarning = status === 'warning' || (unaccounted_minutes > 0 && unaccounted_minutes <= 30);
+
+        // Prepare structured table data array for PrimeReact DataTable
+        const tableValue = Array.from({ length: maxRowsCount }).map((_, idx) => {
+            const siomayItem  = siomayRows[idx];
+            const pentolItem  = pentolRows[idx];
+            const lumpiaItem  = lumpiaRows[idx];
+            const adonanItem  = adonanRows[idx];
+            const dtItem      = sortedDowntime[idx];
+
+            return {
+                id: idx + 1,
+                index: idx + 1,
+                siomay: siomayItem ? `${siomayItem.time} (${siomayItem.tray_count ?? 0} L)` : '-',
+                pentol: pentolItem ? `${pentolItem.time} (${pentolItem.tray_count ?? 0} L)` : '-',
+                lumpia: lumpiaItem ? `${lumpiaItem.time} (${lumpiaItem.tray_count ?? 0} K)` : '-',
+                adonan: adonanItem ? `${adonanItem.time} (${adonanItem.tray_count ?? 0} K)` : '-',
+                downtime: dtItem ? `${dtItem.text} (⏱ ${dtItem.dur_mins ?? 0}m)` : '-',
+            };
+        });
+
+        // Define PrimeReact ColumnGroup Header
+        const headerGroup = (
+            <ColumnGroup>
+                <Row>
+                    <Column header="#" sortable field="index" headerStyle={{ backgroundColor: '#1e293b', color: '#ffffff', fontWeight: 'bold', width: '3.5rem', textAlign: 'center', borderRight: '1px solid #334155' }} />
+                    <Column header="SIOMAY" sortable field="siomay" headerStyle={{ backgroundColor: '#0284c7', color: '#ffffff', fontWeight: '900', textAlign: 'center', letterSpacing: '0.05em' }} />
+                    <Column header="PENTOL" sortable field="pentol" headerStyle={{ backgroundColor: '#e11d48', color: '#ffffff', fontWeight: '900', textAlign: 'center', letterSpacing: '0.05em' }} />
+                    <Column header="LUMPIA" sortable field="lumpia" headerStyle={{ backgroundColor: '#0d9488', color: '#ffffff', fontWeight: '900', textAlign: 'center', letterSpacing: '0.05em' }} />
+                    <Column header="ADONAN PANGSIT" sortable field="adonan" headerStyle={{ backgroundColor: '#9333ea', color: '#ffffff', fontWeight: '900', textAlign: 'center', letterSpacing: '0.05em' }} />
+                    <Column header="UNPLANNED STOP" sortable field="downtime" headerStyle={{ backgroundColor: '#b71c1c', color: '#ffffff', fontWeight: '900', textAlign: 'center', letterSpacing: '0.05em' }} />
+                </Row>
+                <Row>
+                    <Column header="Jumlah Menit" headerStyle={{ backgroundColor: '#f1f5f9', color: '#475569', fontWeight: 'bold', fontStyle: 'italic', textAlign: 'left' }} />
+                    <Column header={`${siomayMins} menit`} headerStyle={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={`${pentolMins} menit`} headerStyle={{ backgroundColor: '#ffe4e6', color: '#be123c', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={`${lumpiaMins} menit`} headerStyle={{ backgroundColor: '#ecfeff', color: '#0891b2', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={`${adonanMins} menit`} headerStyle={{ backgroundColor: '#fdf4ff', color: '#a21caf', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={`${downtime_minutes} menit (${sortedDowntime.length} kendala)`} headerStyle={{ backgroundColor: '#fef2f2', color: '#b71c1c', fontWeight: '900', textAlign: 'center' }} />
+                </Row>
+            </ColumnGroup>
+        );
+
+        // Body templates for customized cell rendering
+        const indexBodyTemplate = (rowData) => (
+            <span className="font-mono font-bold text-slate-400">{rowData.index}</span>
+        );
+        const siomayBodyTemplate = (rowData) => (
+            <span className="font-mono text-cyan-900 font-bold">{rowData.siomay}</span>
+        );
+        const pentolBodyTemplate = (rowData) => (
+            <span className="font-mono text-rose-900 font-bold">{rowData.pentol}</span>
+        );
+        const lumpiaBodyTemplate = (rowData) => (
+            <span className="font-mono text-teal-900 font-bold">{rowData.lumpia}</span>
+        );
+        const adonanBodyTemplate = (rowData) => (
+            <span className="font-mono text-purple-900 font-bold">{rowData.adonan}</span>
+        );
+        const downtimeBodyTemplate = (rowData) => (
+            <span className="text-rose-700 font-semibold text-left block">{rowData.downtime}</span>
+        );
 
         return (
             <div key={mName} className="bg-white border border-slate-200/80 shadow-xs rounded-3xl overflow-hidden print-machine-block">
@@ -221,139 +252,40 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                                 <span className="text-lg font-black text-[#7f1d1d] block mt-0.5">
                                     {downtime_minutes} <span className="text-xs font-medium text-slate-600">mnt</span>
                                 </span>
-                                <span className="text-[10px] text-rose-700 font-semibold block mt-0.5">
+                                <span className="text-[10px] text-[#b71c1c] font-semibold block mt-0.5">
                                     {sortedDowntime.length} kejadian
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    {/* DATATABLE MATRIX SPREADSHEET LOGSHEET TEMPLATE WITH SORTING */}
+                    {/* PRIMEREACT DATATABLE SPREADSHEET LOGSHEET TEMPLATE WITH SORTING */}
                     <div className="space-y-2 pt-2">
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider block">
-                                📊 Matriks Logsheet & Rekap Menit Produk ({mName})
+                                📊 Matriks Logsheet PrimeReact DataTable ({mName})
                             </span>
                             <span className="text-[11px] text-slate-400 font-medium italic">
-                                Klik header kolom untuk mengurutkan (Sort Data)
+                                PrimeReact DataTable dengan ColumnGroup & Interaktif Sorting
                             </span>
                         </div>
 
-                        <div className="border border-slate-300 rounded-2xl overflow-hidden shadow-2xs bg-white">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-center border-collapse text-xs md:text-sm">
-                                    <thead>
-                                        {/* Header Utama Blok Produk dengan Sorting */}
-                                        <tr className="text-white font-extrabold text-xs uppercase border-b border-slate-300 select-none">
-                                            <th 
-                                                className="py-2.5 px-3 bg-slate-800 border-r border-slate-700 text-left w-12 cursor-pointer hover:bg-slate-700 transition-colors"
-                                                onClick={() => handleSort('index')}
-                                                title="Urutkan No Baris"
-                                            >
-                                                # {getSortIcon('index')}
-                                            </th>
-                                            <th 
-                                                className="py-2.5 px-3 border-r border-cyan-700 font-black tracking-wide cursor-pointer hover:brightness-110 transition-all" 
-                                                style={{ backgroundColor: '#0284c7' }}
-                                                onClick={() => handleSort('siomay')}
-                                                title="Urutkan Data Siomay"
-                                            >
-                                                SIOMAY {getSortIcon('siomay')}
-                                            </th>
-                                            <th 
-                                                className="py-2.5 px-3 border-r border-rose-700 font-black tracking-wide cursor-pointer hover:brightness-110 transition-all" 
-                                                style={{ backgroundColor: '#e11d48' }}
-                                                onClick={() => handleSort('pentol')}
-                                                title="Urutkan Data Pentol"
-                                            >
-                                                PENTOL {getSortIcon('pentol')}
-                                            </th>
-                                            <th 
-                                                className="py-2.5 px-3 border-r border-teal-700 font-black tracking-wide cursor-pointer hover:brightness-110 transition-all" 
-                                                style={{ backgroundColor: '#0d9488' }}
-                                                onClick={() => handleSort('lumpia')}
-                                                title="Urutkan Data Lumpia"
-                                            >
-                                                LUMPIA {getSortIcon('lumpia')}
-                                            </th>
-                                            <th 
-                                                className="py-2.5 px-3 border-r border-purple-700 font-black tracking-wide cursor-pointer hover:brightness-110 transition-all" 
-                                                style={{ backgroundColor: '#9333ea' }}
-                                                onClick={() => handleSort('adonan')}
-                                                title="Urutkan Data Adonan Pangsit"
-                                            >
-                                                ADONAN PANGSIT {getSortIcon('adonan')}
-                                            </th>
-                                            <th 
-                                                className="py-2.5 px-3 font-black tracking-wide cursor-pointer hover:brightness-110 transition-all" 
-                                                style={{ backgroundColor: '#b71c1c' }}
-                                                onClick={() => handleSort('downtime')}
-                                                title="Urutkan Data Unplanned Stop"
-                                            >
-                                                UNPLANNED STOP {getSortIcon('downtime')}
-                                            </th>
-                                        </tr>
-
-                                        {/* Baris Paling Atas: Jumlah Menit Masing-Masing Kolom */}
-                                        <tr className="text-slate-900 font-black border-b border-slate-300 text-xs">
-                                            <td className="py-2.5 px-3 border-r border-slate-300 text-left font-bold italic bg-slate-100 text-slate-600">
-                                                Jumlah Menit
-                                            </td>
-                                            <td className="py-2.5 px-3 border-r border-slate-300 text-[#0369a1] font-black bg-[#e0f2fe]">
-                                                {siomayMins} menit
-                                            </td>
-                                            <td className="py-2.5 px-3 border-r border-slate-300 text-[#be123c] font-black bg-[#ffe4e6]">
-                                                {pentolMins} menit
-                                            </td>
-                                            <td className="py-2.5 px-3 border-r border-slate-300 text-[#0891b2] font-black bg-[#ecfeff]">
-                                                {lumpiaMins} menit
-                                            </td>
-                                            <td className="py-2.5 px-3 border-r border-slate-300 text-[#a21caf] font-black bg-[#fdf4ff]">
-                                                {adonanMins} menit
-                                            </td>
-                                            <td className="py-2.5 px-3 text-[#b71c1c] font-black bg-[#fef2f2]">
-                                                {downtime_minutes} menit ({sortedDowntime.length} kendala)
-                                            </td>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-200 bg-white font-medium text-slate-700">
-                                        {Array.from({ length: maxRowsCount }).map((_, idx) => {
-                                            const rowIdx = sortConfig.col === 'index' && sortConfig.dir === 'desc'
-                                                ? maxRowsCount - 1 - idx
-                                                : idx;
-
-                                            const siomayItem  = siomayRows[rowIdx];
-                                            const pentolItem  = pentolRows[rowIdx];
-                                            const lumpiaItem  = lumpiaRows[rowIdx];
-                                            const adonanItem  = adonanRows[rowIdx];
-                                            const dtItem      = sortedDowntime[rowIdx];
-
-                                            return (
-                                                <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                                                    <td className="py-2 px-3 border-r border-slate-200 text-left font-mono font-bold text-slate-400 bg-slate-50/50">
-                                                        {rowIdx + 1}
-                                                    </td>
-                                                    <td className="py-2 px-3 border-r border-slate-200 font-mono text-cyan-900 bg-cyan-50/20 font-bold">
-                                                        {siomayItem ? `${siomayItem.time} (${siomayItem.tray_count ?? 0} tray)` : '-'}
-                                                    </td>
-                                                    <td className="py-2 px-3 border-r border-slate-200 font-mono text-rose-900 bg-rose-50/20 font-bold">
-                                                        {pentolItem ? `${pentolItem.time} (${pentolItem.tray_count ?? 0} tray)` : '-'}
-                                                    </td>
-                                                    <td className="py-2 px-3 border-r border-slate-200 font-mono text-teal-900 bg-teal-50/20 font-bold">
-                                                        {lumpiaItem ? `${lumpiaItem.time} (${lumpiaItem.tray_count ?? 0} pack)` : '-'}
-                                                    </td>
-                                                    <td className="py-2 px-3 border-r border-slate-200 font-mono text-purple-900 bg-purple-50/20 font-bold">
-                                                        {adonanItem ? `${adonanItem.time} (${adonanItem.tray_count ?? 0} pack)` : '-'}
-                                                    </td>
-                                                    <td className="py-2 px-3 text-rose-700 font-semibold bg-rose-50/40 text-left">
-                                                        {dtItem ? `${dtItem.text} (⏱ ${dtItem.dur_mins ?? 0}m)` : '-'}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
+                        <div className="border border-slate-300 rounded-2xl overflow-hidden shadow-2xs bg-white p-1">
+                            <DataTable
+                                value={tableValue}
+                                headerColumnGroup={headerGroup}
+                                responsiveLayout="scroll"
+                                stripedRows
+                                showGridlines
+                                className="p-datatable-sm text-xs font-sans border-0"
+                            >
+                                <Column field="index" body={indexBodyTemplate} style={{ width: '3.5rem', textAlign: 'center', backgroundColor: '#f8fafc' }} />
+                                <Column field="siomay" body={siomayBodyTemplate} style={{ textAlign: 'center', backgroundColor: 'rgba(224, 242, 254, 0.2)' }} />
+                                <Column field="pentol" body={pentolBodyTemplate} style={{ textAlign: 'center', backgroundColor: 'rgba(255, 228, 230, 0.2)' }} />
+                                <Column field="lumpia" body={lumpiaBodyTemplate} style={{ textAlign: 'center', backgroundColor: 'rgba(236, 254, 255, 0.2)' }} />
+                                <Column field="adonan" body={adonanBodyTemplate} style={{ textAlign: 'center', backgroundColor: 'rgba(253, 244, 255, 0.2)' }} />
+                                <Column field="downtime" body={downtimeBodyTemplate} style={{ backgroundColor: 'rgba(254, 242, 242, 0.4)' }} />
+                            </DataTable>
                         </div>
                     </div>
                 </div>
@@ -378,6 +310,17 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                     }
                     .no-print-anomaly { display: none !important; }
                     .print-machine-block { page-break-inside: avoid !important; margin-bottom: 20px !important; }
+                }
+                .p-datatable .p-datatable-thead > tr > th {
+                    padding: 0.6rem 0.75rem !important;
+                    font-size: 0.75rem !important;
+                }
+                .p-datatable .p-datatable-tbody > tr > td {
+                    padding: 0.5rem 0.75rem !important;
+                    font-size: 0.75rem !important;
+                }
+                .p-column-header-content {
+                    justify-content: center !important;
                 }
             `}</style>
 
