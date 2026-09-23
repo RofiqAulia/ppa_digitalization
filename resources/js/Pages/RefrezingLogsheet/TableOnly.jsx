@@ -1,21 +1,60 @@
-import React, { useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import React, { useState, useMemo } from 'react';
+import { Head } from '@inertiajs/react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 export default function TableOnly({ logsheets }) {
     const [search, setSearch] = useState('');
     const [rows, setRows] = useState('10');
+    const [sortField, setSortField] = useState('date');
+    const [sortDirection, setSortDirection] = useState('desc');
 
-    // Simple client-side filtering for demo
-    const filtered = logsheets ? logsheets.filter(s => 
-        s.date.includes(search) || 
-        s.machine.toLowerCase().includes(search.toLowerCase()) || 
-        s.product_type.toLowerCase().includes(search.toLowerCase())
-    ).slice(0, parseInt(rows)) : [];
+    const handleSort = (field) => {
+        if (sortField === field) {
+            setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    };
+
+    const getSortIcon = (field) => {
+        if (sortField !== field) {
+            return <ArrowUpDown className="w-3.5 h-3.5 ml-1 opacity-40 inline-block" />;
+        }
+        return sortDirection === 'asc' 
+            ? <ArrowUp className="w-3.5 h-3.5 ml-1 text-cyan-600 inline-block font-bold" />
+            : <ArrowDown className="w-3.5 h-3.5 ml-1 text-cyan-600 inline-block font-bold" />;
+    };
+
+    // Client-side filtering and sorting without modifying underlying logic
+    const filtered = useMemo(() => {
+        if (!logsheets) return [];
+
+        let list = logsheets.filter(s => 
+            (s.date && s.date.includes(search)) || 
+            (s.machine && s.machine.toLowerCase().includes(search.toLowerCase())) || 
+            (s.product_type && s.product_type.toLowerCase().includes(search.toLowerCase())) ||
+            (s.status && s.status.toLowerCase().includes(search.toLowerCase()))
+        );
+
+        list.sort((a, b) => {
+            let valA = a[sortField] ?? '';
+            let valB = b[sortField] ?? '';
+
+            if (typeof valA === 'string') valA = valA.toLowerCase();
+            if (typeof valB === 'string') valB = valB.toLowerCase();
+
+            if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+            if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        return list.slice(0, parseInt(rows));
+    }, [logsheets, search, rows, sortField, sortDirection]);
 
     return (
         <div className="p-6 bg-white min-h-screen">
@@ -53,28 +92,53 @@ export default function TableOnly({ logsheets }) {
                 </div>
             </div>
 
-            <div className="border rounded-md">
+            <div className="border rounded-md overflow-hidden">
                 <Table>
-                    <TableHeader className="bg-slate-50">
+                    <TableHeader className="bg-slate-100">
                         <TableRow>
-                            <TableHead>No</TableHead>
-                            <TableHead>Tanggal</TableHead>
-                            <TableHead>Shift</TableHead>
-                            <TableHead>Produk</TableHead>
-                            <TableHead>Mesin</TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead className="w-12 text-center font-bold">No</TableHead>
+                            <TableHead 
+                                className="cursor-pointer select-none font-bold hover:bg-slate-200 transition-colors"
+                                onClick={() => handleSort('date')}
+                            >
+                                Tanggal {getSortIcon('date')}
+                            </TableHead>
+                            <TableHead 
+                                className="cursor-pointer select-none font-bold hover:bg-slate-200 transition-colors"
+                                onClick={() => handleSort('shift')}
+                            >
+                                Shift {getSortIcon('shift')}
+                            </TableHead>
+                            <TableHead 
+                                className="cursor-pointer select-none font-bold hover:bg-slate-200 transition-colors"
+                                onClick={() => handleSort('product_type')}
+                            >
+                                Produk {getSortIcon('product_type')}
+                            </TableHead>
+                            <TableHead 
+                                className="cursor-pointer select-none font-bold hover:bg-slate-200 transition-colors"
+                                onClick={() => handleSort('machine')}
+                            >
+                                Mesin {getSortIcon('machine')}
+                            </TableHead>
+                            <TableHead 
+                                className="cursor-pointer select-none font-bold hover:bg-slate-200 transition-colors"
+                                onClick={() => handleSort('status')}
+                            >
+                                Status {getSortIcon('status')}
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {filtered.length > 0 ? filtered.map((row, i) => (
-                            <TableRow key={row.id}>
-                                <TableCell>{i + 1}</TableCell>
+                            <TableRow key={row.id} className="hover:bg-slate-50">
+                                <TableCell className="text-center font-mono text-xs text-slate-400">{i + 1}</TableCell>
                                 <TableCell className="font-medium">{row.date}</TableCell>
                                 <TableCell>Shift {row.shift}</TableCell>
                                 <TableCell className="capitalize">{row.product_type.replace('_', ' ')}</TableCell>
                                 <TableCell>{row.machine}</TableCell>
                                 <TableCell>
-                                    <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-semibold">
+                                    <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs rounded-full font-semibold">
                                         {row.status}
                                     </span>
                                 </TableCell>

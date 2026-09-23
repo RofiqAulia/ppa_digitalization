@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { AlertTriangle, CheckCircle2, ShieldAlert, Clock, Layers, Printer, Activity } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ShieldAlert, Clock, Layers, Printer, Activity, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi Anomali & Rekap Shift IQF" }) {
     const [selectedTab, setSelectedTab] = useState('ALL'); // 'ALL', 'IQF 1', 'IQF 2'
+    const [sortConfig, setSortConfig] = useState({ col: null, dir: 'asc' });
 
     if (!anomalyData) {
         return (
@@ -19,6 +20,24 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
 
     const handlePrintAnomaly = () => {
         window.print();
+    };
+
+    const handleSort = (columnKey) => {
+        setSortConfig(prev => {
+            if (prev.col === columnKey) {
+                return { col: columnKey, dir: prev.dir === 'asc' ? 'desc' : 'asc' };
+            }
+            return { col: columnKey, dir: 'asc' };
+        });
+    };
+
+    const getSortIcon = (columnKey) => {
+        if (sortConfig.col !== columnKey) {
+            return <ArrowUpDown className="w-3.5 h-3.5 ml-1 opacity-40 inline-block" />;
+        }
+        return sortConfig.dir === 'asc' 
+            ? <ArrowUp className="w-3.5 h-3.5 ml-1 text-white inline-block font-bold" />
+            : <ArrowDown className="w-3.5 h-3.5 ml-1 text-white inline-block font-bold" />;
     };
 
     const renderMachineCard = (mName, mData) => {
@@ -47,17 +66,34 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
         const lumpiaMins = active_minutes_by_product.lumpia ?? 0;
         const adonanMins = active_minutes_by_product.adonan_pangsit ?? 0;
 
-        const pentolRows = matrix_rows.filter(r => r.product_type === 'pentol');
-        const siomayRows = matrix_rows.filter(r => r.product_type === 'siomay');
-        const lumpiaRows = matrix_rows.filter(r => r.product_type === 'lumpia');
-        const adonanRows = matrix_rows.filter(r => r.product_type === 'adonan_pangsit');
+        let pentolRows = [...matrix_rows.filter(r => r.product_type === 'pentol')];
+        let siomayRows = [...matrix_rows.filter(r => r.product_type === 'siomay')];
+        let lumpiaRows = [...matrix_rows.filter(r => r.product_type === 'lumpia')];
+        let adonanRows = [...matrix_rows.filter(r => r.product_type === 'adonan_pangsit')];
+        let sortedDowntime = [...downtime_entries];
+
+        // Apply sorting based on selected column header without modifying data logic
+        if (sortConfig.col) {
+            const dirMultiplier = sortConfig.dir === 'asc' ? 1 : -1;
+            if (sortConfig.col === 'siomay') {
+                siomayRows.sort((a, b) => (a.time || '').localeCompare(b.time || '') * dirMultiplier);
+            } else if (sortConfig.col === 'pentol') {
+                pentolRows.sort((a, b) => (a.time || '').localeCompare(b.time || '') * dirMultiplier);
+            } else if (sortConfig.col === 'lumpia') {
+                lumpiaRows.sort((a, b) => (a.time || '').localeCompare(b.time || '') * dirMultiplier);
+            } else if (sortConfig.col === 'adonan') {
+                adonanRows.sort((a, b) => (a.time || '').localeCompare(b.time || '') * dirMultiplier);
+            } else if (sortConfig.col === 'downtime') {
+                sortedDowntime.sort((a, b) => ((a.dur_mins ?? 0) - (b.dur_mins ?? 0)) * dirMultiplier);
+            }
+        }
 
         const maxRowsCount = Math.max(
             siomayRows.length,
             pentolRows.length,
             lumpiaRows.length,
             adonanRows.length,
-            downtime_entries.length,
+            sortedDowntime.length,
             1
         );
 
@@ -186,39 +222,75 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                                     {downtime_minutes} <span className="text-xs font-medium text-slate-600">mnt</span>
                                 </span>
                                 <span className="text-[10px] text-rose-700 font-semibold block mt-0.5">
-                                    {downtime_entries.length} kejadian
+                                    {sortedDowntime.length} kejadian
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    {/* DATATABLE MATRIX SPREADSHEET LOGSHEET TEMPLATE (Sesuai Permintaan) */}
+                    {/* DATATABLE MATRIX SPREADSHEET LOGSHEET TEMPLATE WITH SORTING */}
                     <div className="space-y-2 pt-2">
-                        <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider block">
-                            📊 Matriks Logsheet & Rekap Menit Produk ({mName})
-                        </span>
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider block">
+                                📊 Matriks Logsheet & Rekap Menit Produk ({mName})
+                            </span>
+                            <span className="text-[11px] text-slate-400 font-medium italic">
+                                Klik header kolom untuk mengurutkan (Sort Data)
+                            </span>
+                        </div>
 
                         <div className="border border-slate-300 rounded-2xl overflow-hidden shadow-2xs bg-white">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-center border-collapse text-xs md:text-sm">
                                     <thead>
-                                        {/* Header Utama Blok Produk */}
-                                        <tr className="text-white font-extrabold text-xs uppercase border-b border-slate-300">
-                                            <th className="py-2.5 px-3 bg-slate-800 border-r border-slate-700 text-left w-12">#</th>
-                                            <th className="py-2.5 px-3 border-r border-cyan-700 font-black tracking-wide" style={{ backgroundColor: '#0284c7' }}>
-                                                SIOMAY
+                                        {/* Header Utama Blok Produk dengan Sorting */}
+                                        <tr className="text-white font-extrabold text-xs uppercase border-b border-slate-300 select-none">
+                                            <th 
+                                                className="py-2.5 px-3 bg-slate-800 border-r border-slate-700 text-left w-12 cursor-pointer hover:bg-slate-700 transition-colors"
+                                                onClick={() => handleSort('index')}
+                                                title="Urutkan No Baris"
+                                            >
+                                                # {getSortIcon('index')}
                                             </th>
-                                            <th className="py-2.5 px-3 border-r border-rose-700 font-black tracking-wide" style={{ backgroundColor: '#e11d48' }}>
-                                                PENTOL
+                                            <th 
+                                                className="py-2.5 px-3 border-r border-cyan-700 font-black tracking-wide cursor-pointer hover:brightness-110 transition-all" 
+                                                style={{ backgroundColor: '#0284c7' }}
+                                                onClick={() => handleSort('siomay')}
+                                                title="Urutkan Data Siomay"
+                                            >
+                                                SIOMAY {getSortIcon('siomay')}
                                             </th>
-                                            <th className="py-2.5 px-3 border-r border-teal-700 font-black tracking-wide" style={{ backgroundColor: '#0d9488' }}>
-                                                LUMPIA
+                                            <th 
+                                                className="py-2.5 px-3 border-r border-rose-700 font-black tracking-wide cursor-pointer hover:brightness-110 transition-all" 
+                                                style={{ backgroundColor: '#e11d48' }}
+                                                onClick={() => handleSort('pentol')}
+                                                title="Urutkan Data Pentol"
+                                            >
+                                                PENTOL {getSortIcon('pentol')}
                                             </th>
-                                            <th className="py-2.5 px-3 border-r border-purple-700 font-black tracking-wide" style={{ backgroundColor: '#9333ea' }}>
-                                                ADONAN PANGSIT
+                                            <th 
+                                                className="py-2.5 px-3 border-r border-teal-700 font-black tracking-wide cursor-pointer hover:brightness-110 transition-all" 
+                                                style={{ backgroundColor: '#0d9488' }}
+                                                onClick={() => handleSort('lumpia')}
+                                                title="Urutkan Data Lumpia"
+                                            >
+                                                LUMPIA {getSortIcon('lumpia')}
                                             </th>
-                                            <th className="py-2.5 px-3 font-black tracking-wide" style={{ backgroundColor: '#b71c1c' }}>
-                                                UNPLANNED STOP
+                                            <th 
+                                                className="py-2.5 px-3 border-r border-purple-700 font-black tracking-wide cursor-pointer hover:brightness-110 transition-all" 
+                                                style={{ backgroundColor: '#9333ea' }}
+                                                onClick={() => handleSort('adonan')}
+                                                title="Urutkan Data Adonan Pangsit"
+                                            >
+                                                ADONAN PANGSIT {getSortIcon('adonan')}
+                                            </th>
+                                            <th 
+                                                className="py-2.5 px-3 font-black tracking-wide cursor-pointer hover:brightness-110 transition-all" 
+                                                style={{ backgroundColor: '#b71c1c' }}
+                                                onClick={() => handleSort('downtime')}
+                                                title="Urutkan Data Unplanned Stop"
+                                            >
+                                                UNPLANNED STOP {getSortIcon('downtime')}
                                             </th>
                                         </tr>
 
@@ -240,22 +312,26 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                                                 {adonanMins} menit
                                             </td>
                                             <td className="py-2.5 px-3 text-[#b71c1c] font-black bg-[#fef2f2]">
-                                                {downtime_minutes} menit ({downtime_entries.length} kendala)
+                                                {downtime_minutes} menit ({sortedDowntime.length} kendala)
                                             </td>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-200 bg-white font-medium text-slate-700">
                                         {Array.from({ length: maxRowsCount }).map((_, idx) => {
-                                            const siomayItem  = siomayRows[idx];
-                                            const pentolItem  = pentolRows[idx];
-                                            const lumpiaItem  = lumpiaRows[idx];
-                                            const adonanItem  = adonanRows[idx];
-                                            const dtItem      = downtime_entries[idx];
+                                            const rowIdx = sortConfig.col === 'index' && sortConfig.dir === 'desc'
+                                                ? maxRowsCount - 1 - idx
+                                                : idx;
+
+                                            const siomayItem  = siomayRows[rowIdx];
+                                            const pentolItem  = pentolRows[rowIdx];
+                                            const lumpiaItem  = lumpiaRows[rowIdx];
+                                            const adonanItem  = adonanRows[rowIdx];
+                                            const dtItem      = sortedDowntime[rowIdx];
 
                                             return (
                                                 <tr key={idx} className="hover:bg-slate-50 transition-colors">
                                                     <td className="py-2 px-3 border-r border-slate-200 text-left font-mono font-bold text-slate-400 bg-slate-50/50">
-                                                        {idx + 1}
+                                                        {rowIdx + 1}
                                                     </td>
                                                     <td className="py-2 px-3 border-r border-slate-200 font-mono text-cyan-900 bg-cyan-50/20 font-bold">
                                                         {siomayItem ? `${siomayItem.time} (${siomayItem.tray_count ?? 0} tray)` : '-'}
