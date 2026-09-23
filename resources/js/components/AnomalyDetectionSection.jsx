@@ -52,6 +52,15 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
         const lumpiaRows = matrix_rows.filter(r => r.product_type === 'lumpia');
         const adonanRows = matrix_rows.filter(r => r.product_type === 'adonan_pangsit');
 
+        const maxRowsCount = Math.max(
+            siomayRows.length,
+            pentolRows.length,
+            lumpiaRows.length,
+            adonanRows.length,
+            downtime_entries.length,
+            1
+        );
+
         const isAnomaly = status === 'anomaly' || unaccounted_minutes > 30;
         const isWarning = status === 'warning' || (unaccounted_minutes > 0 && unaccounted_minutes <= 30);
 
@@ -125,56 +134,56 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                         </div>
                     )}
 
-                    {/* Ringkasan Menit per Produk & Downtime (Fokus Utama) */}
+                    {/* Ringkasan Menit per Produk & Downtime (KPI Cards) */}
                     <div>
                         <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider block mb-2">
-                            ⏱️ Menit Input Aktif per Produk & Downtime ({mName})
+                            ⏱️ Ringkasan Durasi Menit per Produk & Downtime ({mName})
                         </span>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                            <div className="bg-amber-50/90 border border-amber-200/90 rounded-2xl p-3 text-center shadow-2xs">
-                                <span className="text-[11px] font-black text-amber-800 block">🧆 PENTOL</span>
-                                <span className="text-lg font-black text-amber-950 block mt-0.5">
-                                    {pentolMins} <span className="text-xs font-medium text-slate-500">mnt</span>
+                            <div className="bg-[#e0f2fe] border border-[#0284c7]/30 rounded-2xl p-3 text-center shadow-2xs">
+                                <span className="text-[11px] font-black text-[#0369a1] block">🥟 SIOMAY</span>
+                                <span className="text-lg font-black text-[#0c4a6e] block mt-0.5">
+                                    {siomayMins} <span className="text-xs font-medium text-slate-600">mnt</span>
                                 </span>
-                                <span className="text-[10px] text-amber-700 font-semibold block mt-0.5">
-                                    {pentolRows.length} kali input
-                                </span>
-                            </div>
-
-                            <div className="bg-blue-50/90 border border-blue-200/90 rounded-2xl p-3 text-center shadow-2xs">
-                                <span className="text-[11px] font-black text-blue-800 block">🥟 SIOMAY</span>
-                                <span className="text-lg font-black text-blue-950 block mt-0.5">
-                                    {siomayMins} <span className="text-xs font-medium text-slate-500">mnt</span>
-                                </span>
-                                <span className="text-[10px] text-blue-700 font-semibold block mt-0.5">
+                                <span className="text-[10px] text-[#0369a1] font-semibold block mt-0.5">
                                     {siomayRows.length} kali input
                                 </span>
                             </div>
 
-                            <div className="bg-emerald-50/90 border border-emerald-200/90 rounded-2xl p-3 text-center shadow-2xs">
-                                <span className="text-[11px] font-black text-emerald-800 block">🥢 LUMPIA</span>
-                                <span className="text-lg font-black text-emerald-950 block mt-0.5">
-                                    {lumpiaMins} <span className="text-xs font-medium text-slate-500">mnt</span>
+                            <div className="bg-[#ffe4e6] border border-[#f43f5e]/30 rounded-2xl p-3 text-center shadow-2xs">
+                                <span className="text-[11px] font-black text-[#be123c] block">🧆 PENTOL</span>
+                                <span className="text-lg font-black text-[#881337] block mt-0.5">
+                                    {pentolMins} <span className="text-xs font-medium text-slate-600">mnt</span>
                                 </span>
-                                <span className="text-[10px] text-emerald-700 font-semibold block mt-0.5">
+                                <span className="text-[10px] text-[#be123c] font-semibold block mt-0.5">
+                                    {pentolRows.length} kali input
+                                </span>
+                            </div>
+
+                            <div className="bg-[#ecfeff] border border-[#06b6d4]/30 rounded-2xl p-3 text-center shadow-2xs">
+                                <span className="text-[11px] font-black text-[#0891b2] block">🥢 LUMPIA</span>
+                                <span className="text-lg font-black text-[#155e75] block mt-0.5">
+                                    {lumpiaMins} <span className="text-xs font-medium text-slate-600">mnt</span>
+                                </span>
+                                <span className="text-[10px] text-[#0891b2] font-semibold block mt-0.5">
                                     {lumpiaRows.length} kali input
                                 </span>
                             </div>
 
-                            <div className="bg-purple-50/90 border border-purple-200/90 rounded-2xl p-3 text-center shadow-2xs">
-                                <span className="text-[11px] font-black text-purple-800 block">🫙 ADONAN PANGSIT</span>
-                                <span className="text-lg font-black text-purple-950 block mt-0.5">
-                                    {adonanMins} <span className="text-xs font-medium text-slate-500">mnt</span>
+                            <div className="bg-[#fdf4ff] border border-[#d946ef]/30 rounded-2xl p-3 text-center shadow-2xs">
+                                <span className="text-[11px] font-black text-[#a21caf] block">🫙 ADONAN PANGSIT</span>
+                                <span className="text-lg font-black text-[#701a75] block mt-0.5">
+                                    {adonanMins} <span className="text-xs font-medium text-slate-600">mnt</span>
                                 </span>
-                                <span className="text-[10px] text-purple-700 font-semibold block mt-0.5">
+                                <span className="text-[10px] text-[#a21caf] font-semibold block mt-0.5">
                                     {adonanRows.length} kali input
                                 </span>
                             </div>
 
-                            <div className="bg-rose-50/90 border border-rose-200/90 rounded-2xl p-3 text-center shadow-2xs col-span-2 sm:col-span-1">
-                                <span className="text-[11px] font-black text-rose-800 block">🛑 DOWNTIME KENDALA</span>
-                                <span className="text-lg font-black text-rose-950 block mt-0.5">
-                                    {downtime_minutes} <span className="text-xs font-medium text-slate-500">mnt</span>
+                            <div className="bg-[#fef2f2] border border-rose-300 rounded-2xl p-3 text-center shadow-2xs col-span-2 sm:col-span-1">
+                                <span className="text-[11px] font-black text-[#b71c1c] block">🛑 UNPLANNED STOP</span>
+                                <span className="text-lg font-black text-[#7f1d1d] block mt-0.5">
+                                    {downtime_minutes} <span className="text-xs font-medium text-slate-600">mnt</span>
                                 </span>
                                 <span className="text-[10px] text-rose-700 font-semibold block mt-0.5">
                                     {downtime_entries.length} kejadian
@@ -183,24 +192,94 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                         </div>
                     </div>
 
-                    {/* Rincian DownTime Kendala Unplanned Stop (jika ada) */}
-                    {downtime_entries.length > 0 && (
-                        <div className="bg-rose-50/60 border border-rose-200/80 rounded-2xl p-4 space-y-2">
-                            <h5 className="text-xs font-black text-rose-900 uppercase tracking-wide m-0 flex items-center gap-1.5">
-                                <span>🛑 Rekapan Kendala Unplanned Stop ({mName})</span>
-                            </h5>
-                            <div className="divide-y divide-rose-200/60 text-xs">
-                                {downtime_entries.map((dt, idx) => (
-                                    <div key={idx} className="py-2 flex items-center justify-between text-rose-950">
-                                        <span className="font-semibold">{dt.text}</span>
-                                        <span className="font-extrabold bg-rose-100 border border-rose-200 px-2.5 py-0.5 rounded-full text-rose-800">
-                                            ⏱ {dt.dur_mins ?? 0} menit ({dt.duration})
-                                        </span>
-                                    </div>
-                                ))}
+                    {/* DATATABLE MATRIX SPREADSHEET LOGSHEET TEMPLATE (Sesuai Permintaan) */}
+                    <div className="space-y-2 pt-2">
+                        <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider block">
+                            📊 Matriks Logsheet & Rekap Menit Produk ({mName})
+                        </span>
+
+                        <div className="border border-slate-300 rounded-2xl overflow-hidden shadow-2xs bg-white">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-center border-collapse text-xs md:text-sm">
+                                    <thead>
+                                        {/* Header Utama Blok Produk */}
+                                        <tr className="text-white font-extrabold text-xs uppercase border-b border-slate-300">
+                                            <th className="py-2.5 px-3 bg-slate-800 border-r border-slate-700 text-left w-12">#</th>
+                                            <th className="py-2.5 px-3 border-r border-cyan-700 font-black tracking-wide" style={{ backgroundColor: '#0284c7' }}>
+                                                SIOMAY
+                                            </th>
+                                            <th className="py-2.5 px-3 border-r border-rose-700 font-black tracking-wide" style={{ backgroundColor: '#e11d48' }}>
+                                                PENTOL
+                                            </th>
+                                            <th className="py-2.5 px-3 border-r border-teal-700 font-black tracking-wide" style={{ backgroundColor: '#0d9488' }}>
+                                                LUMPIA
+                                            </th>
+                                            <th className="py-2.5 px-3 border-r border-purple-700 font-black tracking-wide" style={{ backgroundColor: '#9333ea' }}>
+                                                ADONAN PANGSIT
+                                            </th>
+                                            <th className="py-2.5 px-3 font-black tracking-wide" style={{ backgroundColor: '#b71c1c' }}>
+                                                UNPLANNED STOP
+                                            </th>
+                                        </tr>
+
+                                        {/* Baris Paling Atas: Jumlah Menit Masing-Masing Kolom */}
+                                        <tr className="text-slate-900 font-black border-b border-slate-300 text-xs">
+                                            <td className="py-2.5 px-3 border-r border-slate-300 text-left font-bold italic bg-slate-100 text-slate-600">
+                                                Jumlah Menit
+                                            </td>
+                                            <td className="py-2.5 px-3 border-r border-slate-300 text-[#0369a1] font-black bg-[#e0f2fe]">
+                                                {siomayMins} menit
+                                            </td>
+                                            <td className="py-2.5 px-3 border-r border-slate-300 text-[#be123c] font-black bg-[#ffe4e6]">
+                                                {pentolMins} menit
+                                            </td>
+                                            <td className="py-2.5 px-3 border-r border-slate-300 text-[#0891b2] font-black bg-[#ecfeff]">
+                                                {lumpiaMins} menit
+                                            </td>
+                                            <td className="py-2.5 px-3 border-r border-slate-300 text-[#a21caf] font-black bg-[#fdf4ff]">
+                                                {adonanMins} menit
+                                            </td>
+                                            <td className="py-2.5 px-3 text-[#b71c1c] font-black bg-[#fef2f2]">
+                                                {downtime_minutes} menit ({downtime_entries.length} kendala)
+                                            </td>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-200 bg-white font-medium text-slate-700">
+                                        {Array.from({ length: maxRowsCount }).map((_, idx) => {
+                                            const siomayItem  = siomayRows[idx];
+                                            const pentolItem  = pentolRows[idx];
+                                            const lumpiaItem  = lumpiaRows[idx];
+                                            const adonanItem  = adonanRows[idx];
+                                            const dtItem      = downtime_entries[idx];
+
+                                            return (
+                                                <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                                                    <td className="py-2 px-3 border-r border-slate-200 text-left font-mono font-bold text-slate-400 bg-slate-50/50">
+                                                        {idx + 1}
+                                                    </td>
+                                                    <td className="py-2 px-3 border-r border-slate-200 font-mono text-cyan-900 bg-cyan-50/20 font-bold">
+                                                        {siomayItem ? `${siomayItem.time} (${siomayItem.tray_count ?? 0} tray)` : '-'}
+                                                    </td>
+                                                    <td className="py-2 px-3 border-r border-slate-200 font-mono text-rose-900 bg-rose-50/20 font-bold">
+                                                        {pentolItem ? `${pentolItem.time} (${pentolItem.tray_count ?? 0} tray)` : '-'}
+                                                    </td>
+                                                    <td className="py-2 px-3 border-r border-slate-200 font-mono text-teal-900 bg-teal-50/20 font-bold">
+                                                        {lumpiaItem ? `${lumpiaItem.time} (${lumpiaItem.tray_count ?? 0} pack)` : '-'}
+                                                    </td>
+                                                    <td className="py-2 px-3 border-r border-slate-200 font-mono text-purple-900 bg-purple-50/20 font-bold">
+                                                        {adonanItem ? `${adonanItem.time} (${adonanItem.tray_count ?? 0} pack)` : '-'}
+                                                    </td>
+                                                    <td className="py-2 px-3 text-rose-700 font-semibold bg-rose-50/40 text-left">
+                                                        {dtItem ? `${dtItem.text} (⏱ ${dtItem.dur_mins ?? 0}m)` : '-'}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
         );
