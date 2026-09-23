@@ -137,7 +137,7 @@ const PRINT_STYLE = `
   .spt-d-pentol { background: #f0f7ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .spt-d-lumpia { background: #f0fff4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .spt-d-adonan { background: #faf0ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-d-stop   { background: #fff5f5 !important; vertical-align: top !important; text-align: left !important; padding: 1.5px 2px !important; font-size: 5px !important; line-height: 1.1 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-d-stop   { background: #fff5f5 !important; vertical-align: top !important; text-align: left !important; padding: 3px 4px !important; font-size: 5.5px !important; line-height: 1.5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   /* Column width classes (used on <col>) */
   .spt-c-batch { width: 9.5mm; }
@@ -153,11 +153,11 @@ const PRINT_STYLE = `
     color: #fff !important;
     font-weight: 900;
     font-size: 6px;
-    padding: 1px 1px;
+    padding: 2px 2px;
     text-transform: uppercase;
     white-space: normal !important;
     word-break: break-word !important;
-    line-height: 1.1;
+    line-height: 1.5 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -165,9 +165,9 @@ const PRINT_STYLE = `
     background: #fff5f5 !important;
     vertical-align: top !important;
     text-align: left !important;
-    padding: 1.5px 2.5px !important;
+    padding: 3px 4px !important;
     font-size: 5.5px !important;
-    line-height: 1.15 !important;
+    line-height: 1.5 !important;
     word-break: break-word !important;
     white-space: pre-line !important;
     -webkit-print-color-adjust: exact;
@@ -1381,21 +1381,21 @@ export default function DataTable({ logsheets }) {
                 const lumpiaRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'lumpia'));
                 const adonanRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'adonan_pangsit'));
 
-                /* Kunci grid tetap 50 baris per kolom */
-                const PENTOL_CAPACITY_PER_COL = 50;
+                /* Kunci grid tetap 40 baris per kolom */
+                const PENTOL_CAPACITY_PER_COL = 40;
 
-                /* Pentol diisi PENUH di Kolom 1 (kiri) max 50 baris terlebih dahulu, baru melimpah ke Kolom 2 (kanan) max 50 baris */
+                /* Pentol diisi PENUH di Kolom 1 (kiri) max 40 baris terlebih dahulu, baru melimpah ke Kolom 2 (kanan) max 40 baris */
                 const pentolCol1 = pentolRows.slice(0, PENTOL_CAPACITY_PER_COL);
                 const pentolCol2 = pentolRows.slice(PENTOL_CAPACITY_PER_COL, PENTOL_CAPACITY_PER_COL * 2);
 
-                /* Jumlah baris dikunci tetap 50 baris agar tinggi baris 100% konsisten & identik di semua shift */
+                /* Jumlah baris dikunci tetap 40 baris agar tinggi baris 100% konsisten & identik di semua shift */
                 const maxRows = Math.max(
                     siomayRows.length,
                     pentolCol1.length,
                     pentolCol2.length,
                     lumpiaRows.length,
                     adonanRows.length,
-                    50
+                    40
                 );
 
                 /* Totals */
@@ -1576,7 +1576,7 @@ export default function DataTable({ logsheets }) {
                                             <td className="spt-d-adonan" style={{fontWeight:bold(a)}}>{a && a.tray_count !== undefined && a.tray_count !== null ? a.tray_count : '\u00A0'}</td>
                                             {/* UNPLANNED STOP — rowSpan, hanya pada baris pertama */}
                                             {i === 0 && (
-                                                <td rowSpan={maxRows} className="spt-d-stop" style={{whiteSpace:'pre-line'}}>
+                                                <td rowSpan={maxRows} className="spt-d-stop" style={{whiteSpace:'pre-line', lineHeight:'1.5'}}>
                                                     {unplannedStops}
                                                 </td>
                                             )}

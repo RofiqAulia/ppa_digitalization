@@ -128,7 +128,9 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
             <span className="font-mono text-purple-900 font-bold">{rowData.adonan}</span>
         );
         const downtimeBodyTemplate = (rowData) => (
-            <span className="text-rose-700 font-semibold text-left block">{rowData.downtime}</span>
+            <span className="text-rose-700 font-semibold text-left block leading-relaxed whitespace-pre-line" style={{ lineHeight: '1.5' }}>
+                {rowData.downtime}
+            </span>
         );
 
         return (
