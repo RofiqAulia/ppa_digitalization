@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { AlertTriangle, CheckCircle2, ShieldAlert, ChevronRight, Activity } from 'lucide-react';
+import { AlertCircle, ChevronRight, Activity, Bell } from 'lucide-react';
 
 export function SidebarAnomalyWidget({ isCollapsed }) {
     const [anomalyData, setAnomalyData] = useState(null);
@@ -55,66 +55,60 @@ export function SidebarAnomalyWidget({ isCollapsed }) {
                     type="button"
                     onClick={scrollToAnomalySection}
                     title={`Deteksi Anomali Shift: ${unaccounted_minutes}m Selisih`}
-                    className={`w-full h-10 rounded-xl flex items-center justify-center transition-all ${
+                    className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all shadow-xs ${
                         isAnomaly 
-                            ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse' 
+                            ? 'bg-rose-500 text-white animate-pulse' 
                             : isWarning 
-                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' 
-                            : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                            ? 'bg-amber-500 text-white' 
+                            : 'bg-emerald-500 text-white'
                     }`}
                 >
-                    {isAnomaly ? '⚠️' : isWarning ? '⚡' : '✅'}
+                    <Bell className="w-4 h-4" />
                 </button>
             </div>
         );
     }
 
     return (
-        <div className="mx-2.5 my-2 p-3 rounded-2xl bg-[#161a38] border border-[#272b56] text-white shadow-md space-y-2">
+        <div className="mx-3 my-2 p-3.5 rounded-2xl bg-rose-50/90 border border-rose-200/80 text-rose-950 shadow-2xs space-y-2.5">
+            {/* Top Row: Title & Red Badge Count (Matching Gambar 1) */}
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                    <Activity className="w-3.5 h-3.5 text-indigo-400" />
-                    <span className="text-xs font-extrabold tracking-tight text-slate-100">Deteksi Anomali</span>
+                <div className="flex items-center gap-1.5 font-black text-xs text-rose-700">
+                    <Bell className="w-3.5 h-3.5 text-rose-600 fill-rose-100" />
+                    <span>Perhatian Anomali!</span>
                 </div>
-                <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${
-                    isAnomaly 
-                        ? 'bg-rose-500/20 text-rose-300 border-rose-500/50' 
-                        : isWarning 
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/50' 
-                        : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50'
-                }`}>
-                    {isAnomaly ? 'Anomali' : isWarning ? 'Perhatian' : 'Normal'}
+                <span className="text-[11px] font-black bg-rose-500 text-white px-2 py-0.5 rounded-full shadow-2xs">
+                    {unaccounted_minutes > 0 ? `${unaccounted_minutes}m` : '0'}
                 </span>
             </div>
 
-            {/* Micro Breakdown */}
-            <div className="grid grid-cols-2 gap-1 text-[10px] font-semibold text-slate-300 bg-[#0f1227] p-2 rounded-xl border border-[#22264c]">
-                <div>🧆 Pentol: <span className="text-amber-300 font-bold">{active_minutes_by_product.pentol ?? 0}m</span></div>
-                <div>🥟 Siomay: <span className="text-blue-300 font-bold">{active_minutes_by_product.siomay ?? 0}m</span></div>
-                <div>🥢 Lumpia: <span className="text-emerald-300 font-bold">{active_minutes_by_product.lumpia ?? 0}m</span></div>
-                <div>🫙 Adonan: <span className="text-purple-300 font-bold">{active_minutes_by_product.adonan_pangsit ?? 0}m</span></div>
-                <div className="col-span-2 pt-1 border-t border-[#22264c] flex justify-between items-center text-slate-400">
-                    <span>🛑 Downtime: <strong className="text-rose-400">{downtime_minutes}m</strong></span>
-                    <span>Total: <strong className="text-white">{total_recorded_minutes}/{target_shift_minutes}m</strong></span>
+            {/* Subtitle Message */}
+            <p className="text-[11px] text-rose-800 font-medium leading-tight">
+                {unaccounted_minutes > 0 
+                    ? `Terdapat selisih ${unaccounted_minutes} menit waktu belum teridentifikasi.` 
+                    : `Semua aktivitas jam kerja shift ini berjalan normal.`}
+            </p>
+
+            {/* Micro Breakdown Pill Table */}
+            <div className="grid grid-cols-2 gap-1 text-[10px] font-semibold text-rose-900 bg-white/70 p-2 rounded-xl border border-rose-200/60 shadow-2xs">
+                <div>🧆 Pentol: <span className="font-extrabold text-amber-700">{active_minutes_by_product.pentol ?? 0}m</span></div>
+                <div>🥟 Siomay: <span className="font-extrabold text-blue-700">{active_minutes_by_product.siomay ?? 0}m</span></div>
+                <div>🥢 Lumpia: <span className="font-extrabold text-emerald-700">{active_minutes_by_product.lumpia ?? 0}m</span></div>
+                <div>🫙 Adonan: <span className="font-extrabold text-purple-700">{active_minutes_by_product.adonan_pangsit ?? 0}m</span></div>
+                <div className="col-span-2 pt-1 border-t border-rose-200/60 flex justify-between items-center text-slate-600">
+                    <span>🛑 Downtime: <strong className="text-rose-600">{downtime_minutes}m</strong></span>
+                    <span>Total: <strong className="text-slate-800">{total_recorded_minutes}/{target_shift_minutes}m</strong></span>
                 </div>
             </div>
 
-            {/* Anomaly Result Tag & Action */}
+            {/* Red Action Button (Matching "Buka Deteksi Stok" in Gambar 1) */}
             <button
                 type="button"
                 onClick={scrollToAnomalySection}
-                className={`w-full py-1.5 px-2.5 rounded-xl text-[11px] font-bold flex items-center justify-between transition-all cursor-pointer border-0 ${
-                    isAnomaly
-                        ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-sm shadow-rose-600/30'
-                        : isWarning
-                        ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-sm shadow-amber-600/30'
-                        : 'bg-[#584be2] hover:bg-indigo-600 text-white'
-                }`}
+                className="w-full py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white shadow-xs transition-all cursor-pointer border-0"
             >
-                <span className="truncate">
-                    {isAnomaly ? `🛑 ${unaccounted_minutes}m Loss Time` : isWarning ? `⚠️ ${unaccounted_minutes}m Selisih` : `✅ Shift Ter-cover 100%`}
-                </span>
-                <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-80" />
+                <span>Buka Deteksi Anomali</span>
+                <ChevronRight className="w-3.5 h-3.5" />
             </button>
         </div>
     );

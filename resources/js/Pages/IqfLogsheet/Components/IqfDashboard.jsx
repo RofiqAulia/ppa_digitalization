@@ -174,35 +174,35 @@ export default function IqfDashboard() {
     return (
         <div className="space-y-6 select-none max-w-[1400px] mx-auto pb-12">
             
-            {/* ── HEADER BANNER ─────────────────────────────────────────────── */}
-            <div className="relative overflow-hidden bg-[#131538] text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 shadow-xl border border-[#232759]">
+            {/* ── HEADER BANNER (Matching Gambar 1) ─────────────────────────────── */}
+            <div className="relative overflow-hidden bg-white text-slate-800 rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200/80">
                 <div className="relative z-10 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-5">
-                    {/* Title + Status */}
+                    {/* Title + Status Badge */}
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-tr from-[#584be2] via-[#6355ee] to-[#786cf7] rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-600/25 border border-white/20 shrink-0">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-[#0284c7] rounded-2xl flex items-center justify-center text-white shadow-xs shrink-0">
                             <Activity className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider bg-[#0f2c24] text-[#2be29c] border border-[#1a5b48]">
-                                    <span className="w-2 h-2 rounded-full bg-[#2be29c] animate-pulse" />
-                                    LIVE MONITORING
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider bg-cyan-50 text-cyan-700 border border-cyan-200/80">
+                                    <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
+                                    IQF PRODUCTION • Live Monitoring
                                 </span>
                             </div>
-                            <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white mt-1 mb-0">
+                            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 mt-1 mb-0">
                                 Dashboard Produksi IQF
                             </h2>
-                            <p className="text-slate-400 text-xs sm:text-sm font-medium mt-0.5 flex items-center gap-1.5">
-                                <Clock className="w-3.5 h-3.5 text-indigo-400" />
-                                Waktu WIB: <span className="text-white font-bold"><LiveClock /></span>
+                            <p className="text-slate-500 text-xs sm:text-sm font-medium mt-0.5 flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5 text-cyan-600" />
+                                Kelola seluruh logsheet harian, durasi shift, pencarian data, dan deteksi anomali real-time.
                             </p>
                         </div>
                     </div>
 
-                    {/* Filter & Action Controls */}
+                    {/* Filter & Action Controls (Matching Gambar 1 Pill Group) */}
                     <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 w-full lg:w-auto justify-start lg:justify-end">
                         {/* Shift Presets Pill */}
-                        <div className="grid grid-cols-4 sm:flex sm:items-center bg-[#191c44] p-1 rounded-full w-full sm:w-auto border border-[#2e3366]">
+                        <div className="grid grid-cols-4 sm:flex sm:items-center bg-slate-100 p-1 rounded-full w-full sm:w-auto border border-slate-200">
                             {SHIFT_PRESETS.map(p => {
                                 const isActive = activePreset === p.label;
                                 return (
@@ -210,10 +210,10 @@ export default function IqfDashboard() {
                                         key={p.label}
                                         type="button"
                                         onClick={() => applyPreset(p)}
-                                        className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all border-0 text-center ${
+                                        className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition-all border-0 text-center ${
                                             isActive
-                                            ? 'bg-[#584be2] text-white shadow-md shadow-indigo-600/30'
-                                            : 'text-slate-300 hover:text-white hover:bg-white/5'
+                                            ? 'bg-[#0284c7] text-white shadow-2xs font-extrabold'
+                                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                                         }`}
                                     >
                                         {p.label}
@@ -223,34 +223,50 @@ export default function IqfDashboard() {
                         </div>
 
                         {/* Custom Time Range Selector Pill */}
-                        <div className="flex items-center justify-between sm:justify-start gap-2 bg-[#191c44] rounded-full px-4 py-1.5 border border-[#2e3366] w-full sm:w-auto text-xs font-semibold">
+                        <div className="flex items-center justify-between sm:justify-start gap-2 bg-slate-100 rounded-full px-4 py-1.5 border border-slate-200 w-full sm:w-auto text-xs font-bold text-slate-700">
                             <select
                                 value={fromTime}
                                 onChange={e => { setFromTime(e.target.value); setActivePreset('Custom'); }}
-                                className="bg-transparent text-white text-xs font-bold border-0 p-0 shadow-none cursor-pointer focus:outline-none"
+                                className="bg-transparent text-slate-900 text-xs font-bold border-0 p-0 shadow-none cursor-pointer focus:outline-none"
                             >
                                 {HOURS.map(h => <option key={h} value={h} className="text-slate-900 bg-white">{h}</option>)}
                             </select>
-                            <span className="text-indigo-400 font-bold">→</span>
+                            <span className="text-cyan-600 font-bold">→</span>
                             <select
                                 value={toTime}
                                 onChange={e => { setToTime(e.target.value); setActivePreset('Custom'); }}
-                                className="bg-transparent text-white text-xs font-bold border-0 p-0 shadow-none cursor-pointer focus:outline-none"
+                                className="bg-transparent text-slate-900 text-xs font-bold border-0 p-0 shadow-none cursor-pointer focus:outline-none"
                             >
                                 {HOURS.map(h => <option key={h} value={h} className="text-slate-900 bg-white">{h}</option>)}
                             </select>
                         </div>
 
-                        {/* Refresh Button */}
+                        {/* Refresh Button Pill (Gambar 1 style) */}
                         <button
                             type="button"
                             onClick={fetchStats}
                             disabled={loading}
                             title="Refresh Data Dashboard"
-                            className="h-9 px-4 sm:w-9 sm:px-0 flex items-center justify-center rounded-full bg-[#191c44] hover:bg-[#584be2] border border-[#2e3366] text-slate-300 hover:text-white transition-all cursor-pointer shadow-xs shrink-0"
+                            className="h-9 px-3.5 flex items-center justify-center gap-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-bold text-xs transition-all cursor-pointer shadow-2xs shrink-0"
                         >
-                            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                            <span>Refresh</span>
                         </button>
+
+                        {/* Action Pill Buttons (+ Input Logsheet & Cetak Laporan) */}
+                        <a
+                            href="/logsheet-iqf"
+                            className="h-9 px-4 flex items-center justify-center gap-1.5 rounded-full bg-[#0284c7] hover:bg-cyan-700 text-white font-bold text-xs shadow-xs transition-all text-decoration-none shrink-0"
+                        >
+                            <span>+ Input Logsheet</span>
+                        </a>
+
+                        <a
+                            href="/iqf-logsheet/export-excel"
+                            className="h-9 px-4 flex items-center justify-center gap-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-all text-decoration-none shrink-0"
+                        >
+                            <span>Cetak Laporan</span>
+                        </a>
                     </div>
                 </div>
             </div>

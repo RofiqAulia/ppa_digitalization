@@ -10,8 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.3" type="text/javascript"></script>
     <style>
         .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
             background: #f1f5f9;
@@ -26,130 +26,133 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased overflow-hidden" x-data="{ sidebarOpen: false }">
+<body class="bg-[#f0f4f9] text-slate-800 font-sans antialiased overflow-hidden" x-data="{ sidebarOpen: false }">
 
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex flex-col h-screen overflow-hidden">
 
-        <!-- Sidebar Backdrop (Mobile) -->
-        <div x-show="sidebarOpen" 
-             x-transition.opacity 
-             @click="sidebarOpen = false"
-             class="fixed inset-0 z-20 bg-slate-900/50 lg:hidden backdrop-blur-sm"></div>
-
-        <!-- Sidebar -->
-        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-               class="fixed inset-y-0 left-0 z-30 w-72 bg-slate-900 text-slate-300 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto flex flex-col shadow-2xl">
-            
-            <!-- Sidebar Header -->
-            <div class="flex items-center justify-center h-20 border-b border-slate-800 bg-slate-950/50 px-6 shrink-0">
+        <!-- Top Header Bar (Matching Gambar 1) -->
+        <header class="h-16 bg-white border-b border-slate-200/80 px-4 md:px-6 shadow-2xs z-30 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-3">
+                <button @click="sidebarOpen = true" class="lg:hidden text-slate-600 hover:text-slate-900 p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                    </svg>
+                </button>
+                
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-cyan to-blue-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-primary-cyan/20">
-                        P
+                    <div className="w-9 h-9 rounded-2xl bg-[#0284c7] flex items-center justify-center text-white font-black text-lg shadow-2xs shrink-0">
+                        <img src="/images/ppa.jpg" alt="PPA" class="w-6 h-6 object-contain rounded-md" onerror="this.style.display='none'">
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-white font-extrabold text-lg tracking-tight uppercase leading-tight">Admin<span class="text-primary-cyan">Panel</span></span>
-                        <span class="text-[10px] font-medium text-slate-400 uppercase tracking-widest">PPA Digitalization</span>
+                        <span class="font-black text-slate-900 text-sm tracking-tight uppercase leading-none">
+                            PPA <span class="text-cyan-600">Digitalization</span>
+                        </span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                            Production Systems
+                        </span>
                     </div>
                 </div>
             </div>
 
-            <!-- Sidebar Navigation -->
-            <nav class="flex-1 overflow-y-auto custom-scrollbar py-6 px-4 space-y-1.5">
-                
-                <div class="px-3 mb-2 mt-4 text-[10px] font-black tracking-widest text-slate-500 uppercase">Produksi</div>
-                
-                <a href="{{ route('admin.iqf-logsheet.index') }}" 
-                   class="{{ request()->routeIs('admin.iqf-logsheet.index') ? 'bg-primary-cyan/10 text-primary-cyan' : 'hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200">
-                    <svg class="mr-3 h-5 w-5 {{ request()->routeIs('admin.iqf-logsheet.index') ? 'text-primary-cyan' : 'text-slate-500 group-hover:text-slate-300' }}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                    </svg>
-                    IQF Logsheet
-                </a>
-                
-                <a href="{{ route('admin.iqf-logsheet.history') }}" 
-                   class="{{ request()->routeIs('admin.iqf-logsheet.history') ? 'bg-primary-cyan/10 text-primary-cyan' : 'hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200">
-                    <svg class="mr-3 h-5 w-5 {{ request()->routeIs('admin.iqf-logsheet.history') ? 'text-primary-cyan' : 'text-slate-500 group-hover:text-slate-300' }}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    History Data
+            <!-- Right Action Pill Buttons -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <a href="{{ route('dashboard') }}" class="hidden sm:inline-flex items-center gap-1.5 bg-[#0284c7] hover:bg-cyan-700 text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-2xs transition-all text-decoration-none">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    <span>Admin Panel</span>
                 </a>
 
-                <div class="px-3 mb-2 mt-8 text-[10px] font-black tracking-widest text-slate-500 uppercase">Operator</div>
+                <a href="{{ route('iqf-logsheet.index') }}" class="hidden md:inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-2xs transition-all text-decoration-none">
+                    <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                    <span>Ambil Barang</span>
+                </a>
 
-                <a href="{{ route('iqf-logsheet.kiosk') }}" target="_blank"
-                   class="hover:bg-slate-800 hover:text-white group flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200">
-                    <svg class="mr-3 h-5 w-5 text-slate-500 group-hover:text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    Terminal Kiosk
-                    <svg class="ml-auto h-4 w-4 text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                </a>
-                
-                <a href="{{ route('iqf-logsheet.index') }}" target="_blank"
-                   class="hover:bg-slate-800 hover:text-white group flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200">
-                    <svg class="mr-3 h-5 w-5 text-slate-500 group-hover:text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                    </svg>
-                    Public View
-                    <svg class="ml-auto h-4 w-4 text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                </a>
-            </nav>
-            
-            <!-- Sidebar Footer -->
-            <div class="p-4 border-t border-slate-800 bg-slate-950/30">
-                <div class="flex items-center gap-3">
-                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff" alt="User" class="w-9 h-9 rounded-full shadow-md">
-                    <div class="flex flex-col">
-                        <span class="text-sm font-bold text-white">Administrator</span>
-                        <span class="text-[10px] font-medium text-slate-400">admin@ppa.com</span>
+                <div class="inline-flex items-center gap-1 bg-amber-50 text-amber-800 border border-amber-200/80 px-3 py-1.5 rounded-full text-xs font-bold">
+                    <svg class="w-3.5 h-3.5 text-amber-500 fill-amber-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z" clip-rule="evenodd"/></svg>
+                    <span class="hidden sm:inline">Mode: Siang</span>
+                </div>
+
+                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200/80 p-1 pr-3 rounded-full shadow-2xs">
+                    <div class="w-7 h-7 rounded-full bg-[#0284c7] text-white font-extrabold text-xs flex items-center justify-center shrink-0">
+                        MR
+                    </div>
+                    <div class="flex flex-col text-left leading-tight hidden lg:flex">
+                        <span class="text-xs font-extrabold text-slate-800 truncate">M Rofiq</span>
+                        <span class="text-[9px] font-black text-cyan-600 uppercase">ADMIN</span>
                     </div>
                 </div>
+
+                <form method="POST" action="{{ route('logout') }}" class="inline">
+                    @csrf
+                    <button type="submit" class="w-8 h-8 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white border border-rose-200/70 flex items-center justify-center transition-all shadow-2xs cursor-pointer" title="Logout">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    </button>
+                </form>
             </div>
-        </aside>
+        </header>
 
-        <!-- Main Content Wrapper -->
-        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-            
-            <!-- Top Header -->
-            <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 shrink-0 shadow-sm z-10">
+        <!-- Body Layout (Padded Floating Sidebar & Main) -->
+        <div class="flex flex-1 overflow-hidden p-3 gap-3">
+
+            <!-- Mobile Backdrop -->
+            <div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false" class="fixed inset-0 z-20 bg-slate-900/40 lg:hidden backdrop-blur-xs"></div>
+
+            <!-- Floating White Card Sidebar -->
+            <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed inset-y-0 left-0 z-30 w-64 bg-white rounded-3xl border border-slate-200/80 text-slate-700 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto flex flex-col shadow-2xs overflow-hidden shrink-0">
                 
-                <div class="flex items-center gap-4">
-                    <button @click="sidebarOpen = true" class="lg:hidden text-slate-500 hover:text-slate-700 focus:outline-none p-2 rounded-xl hover:bg-slate-100 transition-colors">
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
-                        </svg>
-                    </button>
-                    
-                    <h2 class="text-lg font-black text-slate-800 tracking-tight hidden sm:block">
-                        @yield('header_title', 'Dashboard')
-                    </h2>
+                <div class="p-4 border-b border-slate-100 bg-slate-50/50 shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-[#0284c7] text-white font-black text-lg flex items-center justify-center shadow-2xs">
+                            P
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-black text-slate-900 text-sm tracking-tight">Master Data</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Control Panel</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex items-center gap-4 sm:gap-6">
-                    <!-- Clock/Date Widget -->
-                    <div class="hidden md:flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100">
-                        <svg class="w-4 h-4 text-primary-cyan" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span class="text-xs font-bold text-slate-600">{{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}</span>
-                    </div>
+                <!-- Navigation List -->
+                <nav class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-1.5">
+                    <div class="px-2 mb-1 text-[10px] font-black tracking-widest text-slate-400 uppercase">Produksi</div>
+
+                    <a href="{{ route('logsheet-iqf.index') }}" class="group flex items-center px-3.5 py-2.5 text-xs font-bold rounded-2xl transition-all {{ request()->routeIs('logsheet-iqf.index') ? 'bg-[#0284c7] text-white shadow-2xs font-extrabold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                        <svg class="mr-3 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        IQF Logsheet
+                    </a>
                     
-                    <!-- Notifications -->
-                    <button class="relative p-2 text-slate-400 hover:text-primary-cyan transition-colors rounded-full hover:bg-cyan-50">
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                        </svg>
-                        <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
-                    </button>
+                    <a href="{{ route('iqf-logsheet.history') }}" class="group flex items-center px-3.5 py-2.5 text-xs font-bold rounded-2xl transition-all {{ request()->routeIs('iqf-logsheet.history') ? 'bg-[#0284c7] text-white shadow-2xs font-extrabold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                        <svg class="mr-3 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        History Data
+                    </a>
+
+                    <div class="px-2 mb-1 mt-4 text-[10px] font-black tracking-widest text-slate-400 uppercase">Operator</div>
+
+                    <a href="{{ route('iqf-logsheet.kiosk') }}" target="_blank" class="group flex items-center px-3.5 py-2.5 text-xs font-bold rounded-2xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all">
+                        <svg class="mr-3 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        Terminal Kiosk
+                    </a>
+                </nav>
+                
+                <!-- Bottom Pink Callout Alert Card (Gambar 1 style) -->
+                <div class="m-3 p-3.5 rounded-2xl bg-rose-50/90 border border-rose-200/80 text-rose-950 shadow-2xs space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-1.5 font-black text-xs text-rose-700">
+                            <svg class="w-4 h-4 text-rose-600" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+                            <span>Perhatian Stok!</span>
+                        </div>
+                        <span class="text-[11px] font-black bg-rose-500 text-white px-2 py-0.5 rounded-full">226</span>
+                    </div>
+                    <p class="text-[11px] text-rose-800 font-medium leading-tight">
+                        Terdapat 226 item stok menipis.
+                    </p>
+                    <a href="{{ route('dashboard') }}#deteksi-anomali-section" class="w-full py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1 bg-rose-600 hover:bg-rose-700 text-white shadow-2xs transition-all text-decoration-none">
+                        <span>Buka Deteksi Stok</span>
+                    </a>
                 </div>
-            </header>
+            </aside>
 
             <!-- Main Content Area -->
-            <main class="flex-1 overflow-auto custom-scrollbar p-4 sm:p-6 lg:p-8 relative">
+            <main class="flex-1 overflow-auto custom-scrollbar rounded-3xl bg-transparent">
                 @yield('content')
             </main>
             
