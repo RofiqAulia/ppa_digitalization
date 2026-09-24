@@ -98,7 +98,11 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                 pentol: pentolItem ? `${pentolItem.time} (${pentolItem.tray_count ?? 0} L)` : '-',
                 lumpia: lumpiaItem ? `${lumpiaItem.time} (${lumpiaItem.tray_count ?? 0} K)` : '-',
                 adonan: adonanItem ? `${adonanItem.time} (${adonanItem.tray_count ?? 0} S)` : '-',
-                downtime: dtItem ? `${dtItem.text} (⏱ ${dtItem.dur_mins ?? 0}m)` : '-',
+                downtime: dtItem ? (
+                    (dtItem.dur_mins && dtItem.dur_mins > 0)
+                        ? `${dtItem.text} (⏱ ${dtItem.dur_mins}m)`
+                        : `${dtItem.text} (⏱ Belum Selesai)`
+                ) : '-',
             };
         });
 

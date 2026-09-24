@@ -128,10 +128,12 @@ class IqfLogsheetController extends Controller
                         if (empty($d->time) || $d->time === '-') continue;
                         [$th, $tm] = explode(':', substr($d->time, 0, 5));
                         $dMin = (int)$th * 60 + (int)$tm;
-                        $diff = $dMin >= $stopMin ? $dMin - $stopMin : $dMin + 1440 - $stopMin;
-                        if ($diff > 0 && $diff < 720 && $diff < $minDiff) {
-                            $minDiff = $diff;
-                            $nextDetail = $d;
+                        if ($dMin > $stopMin) {
+                            $diff = $dMin - $stopMin;
+                            if ($diff < 720 && $diff < $minDiff) {
+                                $minDiff = $diff;
+                                $nextDetail = $d;
+                            }
                         }
                     }
 
@@ -141,10 +143,8 @@ class IqfLogsheetController extends Controller
                         $durMins = $minDiff;
                         $duration = $durMins . ' menit';
                     } else {
-                        $nowWib = now('Asia/Jakarta');
-                        $nowMins = (int)$nowWib->format('H') * 60 + (int)$nowWib->format('i');
-                        $durMins = $nowMins >= $stopMin ? $nowMins - $stopMin : $nowMins + 1440 - $stopMin;
-                        $duration = $durMins . ' menit - Belum Selesai';
+                        $durMins = 0;
+                        $duration = 'Belum Selesai';
                     }
 
                     $pic = 'Unknown';
@@ -164,6 +164,7 @@ class IqfLogsheetController extends Controller
                         'pic'           => $pic,
                         'text'          => $stopText,
                         'duration'      => $duration,
+                        'dur_mins'      => $durMins,
                         'duration_mins' => $durMins,
                     ];
                 }

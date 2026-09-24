@@ -64,21 +64,20 @@ const parseUnplannedStop = (ls, logsheets, nowMinutes) => {
         relevantDetails.forEach(d => {
             const dmTime = timeToMinutes(d.time);
             if (dmTime === null) return;
-            const diff = calcDurationMinutes(stopMin, dmTime);
-            if (diff > 0 && diff < 720 && diff < minDiff) {
-                minDiff = diff;
-                nextDetail = d;
+            if (dmTime > stopMin) {
+                const diff = dmTime - stopMin;
+                if (diff < 720 && diff < minDiff) {
+                    minDiff = diff;
+                    nextDetail = d;
+                }
             }
         });
 
         if (nextDetail) {
             const duration = minDiff;
             return `${st} (⏱ ${duration} menit)`;
-        } else if (nowMinutes !== undefined && nowMinutes !== null) {
-            const runningDuration = calcDurationMinutes(stopMin, nowMinutes);
-            return `${st} (⏱ ${runningDuration} menit - Belum Selesai)`;
         } else {
-            return `${st} (🔴 Belum Selesai)`;
+            return `${st} (⏱ Belum Selesai)`;
         }
     }).join(', ');
 };

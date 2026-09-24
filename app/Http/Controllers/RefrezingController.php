@@ -171,20 +171,20 @@ class RefrezingController extends Controller
                         $parts = explode(':', substr($d->time, 0, 5));
                         if (count($parts) < 2) continue;
                         $dMin = (int)$parts[0] * 60 + (int)$parts[1];
-                        $diff = $dMin >= $stopMin ? $dMin - $stopMin : $dMin + 1440 - $stopMin;
-                        if ($diff > 0 && $diff < 720 && $diff < $minDiff) {
-                            $minDiff = $diff;
-                            $nextDetail = $d;
+                        if ($dMin > $stopMin) {
+                            $diff = $dMin - $stopMin;
+                            if ($diff < 720 && $diff < $minDiff) {
+                                $minDiff = $diff;
+                                $nextDetail = $d;
+                            }
                         }
                     }
                     if ($nextDetail) {
                         $durMins = $minDiff;
                         $durationStr = $durMins . ' menit';
                     } else {
-                        $nowWib = now('Asia/Jakarta');
-                        $nowMins = (int)$nowWib->format('H') * 60 + (int)$nowWib->format('i');
-                        $durMins = $nowMins >= $stopMin ? $nowMins - $stopMin : $nowMins + 1440 - $stopMin;
-                        $durationStr = $durMins . ' menit - Belum Selesai';
+                        $durMins = 0;
+                        $durationStr = 'Belum Selesai';
                     }
                 }
                 
@@ -205,6 +205,7 @@ class RefrezingController extends Controller
                     'shift'         => $ls->shift,
                     'pic'           => $pic,
                     'duration'      => $durationStr,
+                    'dur_mins'      => $durMins,
                     'duration_mins' => $durMins,
                 ];
             }

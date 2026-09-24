@@ -733,10 +733,12 @@ class SyncIqfToGoogleSheets extends Command
                     $timeParts = explode(':', $d->time);
                     if (count($timeParts) < 2) continue;
                     $dmTime = (int)$timeParts[0] * 60 + (int)$timeParts[1];
-                    $diff = $dmTime >= $stopMin ? $dmTime - $stopMin : $dmTime + 1440 - $stopMin;
-                    if ($diff > 0 && $diff < 720 && $diff < $minDiff) {
-                        $minDiff = $diff;
-                        $nextDetail = $d;
+                    if ($dmTime > $stopMin) {
+                        $diff = $dmTime - $stopMin;
+                        if ($diff < 720 && $diff < $minDiff) {
+                            $minDiff = $diff;
+                            $nextDetail = $d;
+                        }
                     }
                 }
 

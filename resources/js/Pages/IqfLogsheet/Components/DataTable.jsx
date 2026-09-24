@@ -308,10 +308,12 @@ export default function DataTable({ logsheets }) {
             relevantDetails.forEach(d => {
                 const dmTime = timeToMinutes(d.time);
                 if (dmTime === null) return;
-                const diff = calcDurationMinutes(stopMin, dmTime);
-                if (diff > 0 && diff < 720 && diff < minDiff) {
-                    minDiff = diff;
-                    nextDetail = d;
+                if (dmTime > stopMin) {
+                    const diff = dmTime - stopMin;
+                    if (diff < 720 && diff < minDiff) {
+                        minDiff = diff;
+                        nextDetail = d;
+                    }
                 }
             });
 
@@ -319,8 +321,7 @@ export default function DataTable({ logsheets }) {
                 const duration = minDiff;
                 return `${st} (⏱ ${duration} menit)`;
             } else {
-                const runningDuration = calcDurationMinutes(stopMin, nowMinutes);
-                return `${st} (⏱ ${runningDuration} menit - Belum Selesai)`;
+                return `${st} (⏱ Belum Selesai)`;
             }
         }).join(', ');
     };
