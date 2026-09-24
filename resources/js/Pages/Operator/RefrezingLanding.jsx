@@ -291,8 +291,8 @@ export default function Landing({ latestEntries }) {
                     <div className="bg-white/95 backdrop-blur-md rounded-2xl md:rounded-[2.5rem] border-2 border-cyan-400 shadow-xl shadow-cyan-500/20 p-3 md:p-8 flex flex-col items-center transform transition-all hover:-translate-y-1 md:hover:-translate-y-2 hover:shadow-2xl hover:shadow-cyan-500/40 relative overflow-hidden group">
                         <label className="text-slate-500 font-black uppercase text-[9px] md:text-xs mb-2 md:mb-6 tracking-widest md:tracking-[0.2em] flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center leading-tight">
                             <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-cyan-500 animate-pulse"></span>
-                            Jml <span className="hidden md:inline"> {isPackItem ? 'Keranjang' : 'Loyang'}</span>
-                            <span className="md:hidden"> {isPackItem ? 'Pack' : 'Loyng'}</span>
+                            Jml <span className="hidden md:inline"> {product === 'adonan_pangsit' ? 'Solid' : product === 'lumpia' ? 'Keranjang' : 'Loyang'}</span>
+                            <span className="md:hidden"> {product === 'adonan_pangsit' ? 'Solid' : product === 'lumpia' ? 'Pack' : 'Loyng'}</span>
                         </label>
                         <input
                             type="number"

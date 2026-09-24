@@ -96,7 +96,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                 siomay: siomayItem ? `${siomayItem.time} (${siomayItem.tray_count ?? 0} L)` : '-',
                 pentol: pentolItem ? `${pentolItem.time} (${pentolItem.tray_count ?? 0} L)` : '-',
                 lumpia: lumpiaItem ? `${lumpiaItem.time} (${lumpiaItem.tray_count ?? 0} K)` : '-',
-                adonan: adonanItem ? `${adonanItem.time} (${adonanItem.tray_count ?? 0} K)` : '-',
+                adonan: adonanItem ? `${adonanItem.time} (${adonanItem.tray_count ?? 0} S)` : '-',
                 downtime: dtItem ? `${dtItem.text} (⏱ ${dtItem.dur_mins ?? 0}m)` : '-',
             };
         });

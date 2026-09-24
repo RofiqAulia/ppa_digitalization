@@ -404,10 +404,10 @@ export default function Kiosk({ latestEntries }) {
                                     </div>
                                     )}
 
-                                    {/* Jml Loyang/Keranjang — emerald */}
+                                    {/* Jml Loyang/Keranjang/Solid — emerald */}
                                     <div className="flex flex-col">
                                         <div className="h-12 flex flex-col justify-center">
-                                            <label className="block text-slate-500 font-bold uppercase text-xs text-center leading-tight">Jumlah {isPack ? 'Keranjang' : 'Loyang'}</label>
+                                            <label className="block text-slate-500 font-bold uppercase text-xs text-center leading-tight">Jumlah {product === 'adonan_pangsit' ? 'Solid' : product === 'lumpia' ? 'Keranjang' : 'Loyang'}</label>
                                         </div>
                                         <input
                                             type="number"
@@ -430,13 +430,13 @@ export default function Kiosk({ latestEntries }) {
 
                         {totalsByProduct !== null && (
                             <div className="mt-4 bg-white/90 backdrop-blur-md rounded-2xl border shadow-lg p-5 animate-in fade-in">
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4 text-center">Total Shift Ini (Loyang / Keranjang)</p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4 text-center">Total Shift Ini (Loyang / Keranjang / Solid)</p>
                                 <div className="grid grid-cols-2 gap-3">
                                     {[
                                         { key: 'siomay', label: 'Siomay', unit: 'L', color: 'bg-pink-50 border-pink-200 text-pink-700' },
                                         { key: 'pentol', label: 'Pentol', unit: 'L', color: 'bg-blue-50 border-blue-200 text-blue-700' },
                                         { key: 'lumpia', label: 'Lumpia', unit: 'K', color: 'bg-amber-50 border-amber-200 text-amber-700' },
-                                        { key: 'adonan_pangsit', label: 'Adonan Pangsit', unit: 'K', color: 'bg-purple-50 border-purple-200 text-purple-700' },
+                                        { key: 'adonan_pangsit', label: 'Adonan Pangsit', unit: 'S', color: 'bg-purple-50 border-purple-200 text-purple-700' },
                                     ].map(({ key, label, unit, color }) => (
                                         <div key={key} className={`rounded-xl border p-3 flex flex-col items-center ${color}`}>
                                             <span className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-70">{label}</span>
