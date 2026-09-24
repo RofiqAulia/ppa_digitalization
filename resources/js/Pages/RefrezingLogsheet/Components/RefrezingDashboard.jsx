@@ -40,7 +40,7 @@ const PRODUCTS = [
     {
         key: 'adonan_pangsit',
         label: 'Adonan Pangsit',
-        unit: 'Keranjang',
+        unit: 'Solid (S)',
         emoji: '🫙',
         badgeBg: 'bg-purple-500',
         badgeText: 'text-purple-700 bg-purple-50 border-purple-200',

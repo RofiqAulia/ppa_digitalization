@@ -995,7 +995,7 @@ export default function DataTable({ logsheets }) {
                                         { pt: 'siomay',         val: group.totals.siomay, unit: 'L', bg: 'bg-[#fef7e0]', text: 'text-[#b06000]' },
                                         { pt: 'pentol',         val: group.totals.pentol, unit: 'L', bg: 'bg-[#e0f2fe]', text: 'text-[#0369a1]' },
                                         { pt: 'lumpia',         val: group.totals.lumpia, unit: 'K', bg: 'bg-[#dcfce7]', text: 'text-[#15803d]' },
-                                        { pt: 'adonan_pangsit', val: group.totals.adonan, unit: 'K', bg: 'bg-[#f3e8fd]', text: 'text-[#7e22ce]' },
+                                        { pt: 'adonan_pangsit', val: group.totals.adonan, unit: 'S', bg: 'bg-[#f3e8fd]', text: 'text-[#7e22ce]' },
                                     ].filter(b => b.val > 0).map(({ pt, val, unit, bg, text }) => (
                                         <span key={pt} className={`text-xs px-2.5 py-1 rounded-lg font-extrabold ${bg} ${text}`}>
                                             {PRODUCT_LABELS[pt].slice(0,3)}: {val}{unit}
@@ -1528,7 +1528,7 @@ export default function DataTable({ logsheets }) {
                                     <th className="spt-sh-adonan">Suhu<br/>Panel</th>
                                     <th className="spt-sh-adonan">Suhu<br/>Produk</th>
                                     <th className="spt-sh-adonan">Mulai</th>
-                                    <th className="spt-sh-adonan">Keranjang</th>
+                                    <th className="spt-sh-adonan">Solid (S)</th>
                                 </tr>
                             </thead>
 

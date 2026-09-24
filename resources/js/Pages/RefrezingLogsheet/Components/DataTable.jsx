@@ -989,7 +989,7 @@ export default function DataTable({ logsheets }) {
                                         { pt: 'siomay',         val: group.totals.siomay, unit: 'L' },
                                         { pt: 'pentol',         val: group.totals.pentol, unit: 'L' },
                                         { pt: 'lumpia',         val: group.totals.lumpia, unit: 'K' },
-                                        { pt: 'adonan_pangsit', val: group.totals.adonan, unit: 'K' },
+                                        { pt: 'adonan_pangsit', val: group.totals.adonan, unit: 'S' },
                                     ].filter(b => b.val > 0).map(({ pt, val, unit }) => {
                                         const bc = PRODUCT_BADGE[pt];
                                         return (
@@ -1494,7 +1494,7 @@ export default function DataTable({ logsheets }) {
                                     <th className="spt-sh-adonan">Suhu<br/>Panel</th>
                                     <th className="spt-sh-adonan">Suhu<br/>Produk</th>
                                     <th className="spt-sh-adonan">Mulai</th>
-                                    <th className="spt-sh-adonan">Keranjang</th>
+                                    <th className="spt-sh-adonan">Solid (S)</th>
                                 </tr>
                             </thead>
 

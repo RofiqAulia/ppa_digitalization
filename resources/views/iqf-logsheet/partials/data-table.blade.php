@@ -202,7 +202,7 @@
                                             <td class="px-3 py-3 border-b border-slate-100 font-bold text-slate-800">{{ $a_detail ? $rak : '' }}</td>
                                             <td class="px-3 py-3 border-b border-slate-100 border-r border-r-slate-200">
                                                 @if($a_detail)
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-extrabold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200/60">{{ $a_detail->tray_count }} Keranjang</span>
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-extrabold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200/60">{{ $a_detail->tray_count }} Solid (S)</span>
                                                 @endif
                                             </td>
                                             
