@@ -54,37 +54,57 @@ const PRINT_STYLE = `
 
   /* === MAIN HEADER === */
   .spt-main-header {
-    display: flex !important;
+    display: grid !important;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
-    justify-content: space-between;
     border-bottom: 1.5px solid #222;
     padding-bottom: 2px;
     margin-bottom: 2px;
-    gap: 8px;
+    gap: 12px;
     flex-shrink: 0;
   }
-  .spt-title-block { flex: 1; text-align: center; }
+  .spt-logo-group {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+  }
+  .spt-logo-group img {
+    height: 30px;
+    object-fit: contain;
+  }
+  .spt-title-block { text-align: center; }
   .spt-t1 { font-weight: 900; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; line-height: 1.1; }
   .spt-t2 { font-weight: 700; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; line-height: 1.1; }
 
   /* Document info table — top right */
-  .spt-doc-table { border-collapse: collapse; font-size: 6px; }
+  .spt-doc-table { border-collapse: collapse; font-size: 6px; margin-left: auto; }
   .spt-doc-table td { border: 0.5px solid #444; padding: 1px 4px; white-space: nowrap; line-height: 1.1; }
   .spt-doc-label { font-weight: 700; background: #f0f0f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   /* === SUB-HEADER: Tanggal, PIC, IQF, Shift === */
   .spt-info-row {
-    display: flex !important;
-    gap: 14px;
+    display: grid !important;
+    grid-template-columns: 1.2fr 2.5fr 1fr 1fr;
+    align-items: center;
     font-size: 7.5px;
-    border-bottom: 1px solid #ccc;
-    padding: 1px 0 2px;
+    border: 0.5px solid #666;
+    background: #fafafa !important;
+    padding: 2px 6px;
     margin-bottom: 2px;
-    flex-wrap: wrap;
     line-height: 1.1;
     flex-shrink: 0;
+    box-sizing: border-box !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
-  .spt-info-row b { font-weight: 700; margin-right: 2px; }
+  .spt-info-col {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .spt-info-col b { font-weight: 700; margin-right: 3px; }
 
   .spt-printed { font-size: 6px; color: #666; text-align: right; font-style: italic; margin-bottom: 2px; line-height: 1.1; flex-shrink: 0; }
 
@@ -317,35 +337,10 @@ export default function DataTable({ logsheets }) {
             }
         });
         stopsSet.forEach(st => {
-            if (st.includes('Pergantian Dimsum')) return;
             const dm = st.match(/(\d+)\s*menit/i);
             if (dm) {
                 unplannedMinutes += parseInt(dm[1], 10);
             }
-        });
-
-        let changeoverMinutes = 0;
-        let changeoverCount = 0;
-        let prevProduct = null;
-        let lastPrevProductTimeMins = null;
-
-        sorted.forEach(r => {
-            const currPt = getBaseProduct(r.product_type);
-            const currMins = timeToMinutes(r.time);
-            if (currMins === null) return;
-
-            if (prevProduct !== null && currPt !== prevProduct) {
-                if (lastPrevProductTimeMins !== null) {
-                    const diff = calcDurationMinutes(lastPrevProductTimeMins, currMins);
-                    if (diff !== null && diff > 0 && diff < 720) {
-                        changeoverMinutes += diff;
-                        changeoverCount++;
-                    }
-                }
-            }
-
-            prevProduct = currPt;
-            lastPrevProductTimeMins = currMins;
         });
 
         let spanMins = 0;
@@ -360,13 +355,13 @@ export default function DataTable({ logsheets }) {
 
         const activeMinutes = spanMins;
         const totalWorkMinutes = spanMins;
-        const lossMinutes = Math.max(0, spanMins - (activeMinutes + changeoverMinutes + unplannedMinutes));
+        const lossMinutes = Math.max(0, spanMins - (activeMinutes + unplannedMinutes));
 
         return {
             totalWorkMinutes,
             activeMinutes,
-            changeoverMinutes,
-            changeoverCount,
+            changeoverMinutes: 0,
+            changeoverCount: 0,
             unplannedMinutes,
             lossMinutes,
             spanMinutes: spanMins
@@ -527,46 +522,9 @@ export default function DataTable({ logsheets }) {
                 return 0;
             })
             .map(g => {
-                const chronologicalDetails = [...g.rows]
-                    .filter(r => r.time && r.time !== '-' && !r.isKendalaOnly)
-                    .sort((a, b) => a.time.localeCompare(b.time));
-
-                let prevProduct = null;
-                let lastPrevProductTimeMins = null;
-                const changeoverMap = {};
-
-                chronologicalDetails.forEach(r => {
-                    const currPt = getBaseProduct(r.product_type);
-                    const currMins = timeToMinutes(r.time);
-                    if (currMins === null) return;
-
-                    if (prevProduct !== null && currPt !== prevProduct) {
-                        if (lastPrevProductTimeMins !== null) {
-                            const diff = calcDurationMinutes(lastPrevProductTimeMins, currMins);
-                            if (diff !== null && diff > 0 && diff < 720) {
-                                const timeFormatted = r.time ? r.time.substring(0, 5) : '';
-                                changeoverMap[r.id] = `${timeFormatted} - Pergantian Dimsum (⏱ ${diff} menit)`;
-                            }
-                        }
-                    }
-
-                    prevProduct = currPt;
-                    lastPrevProductTimeMins = currMins;
-                });
-
-                const rowsWithChangeover = g.rows.map(r => {
-                    const coText = changeoverMap[r.id];
-                    if (!coText) return r;
-                    const existing = r.unplanned_stop;
-                    const finalStop = (!existing || existing === '-')
-                        ? coText
-                        : `${coText}, ${existing}`;
-                    return { ...r, unplanned_stop: finalStop };
-                });
-
                 return {
                     ...g,
-                    rows: sortData(rowsWithChangeover, sortConfig)
+                    rows: sortData(g.rows, sortConfig)
                 };
             });
     }, [flatData, search, sortConfig, filterShift, filterMachine, filterDateFrom, filterDateTo]);
@@ -939,25 +897,36 @@ export default function DataTable({ logsheets }) {
                             {/* ── PRINT HEADER (hidden on screen, visible on print) ── */}
                             <div className="print-header hidden flex-col border-b-2 border-slate-300 pb-3 mb-0 px-5 pt-4">
                                 {/* Kop Surat */}
-                                <div className="flex items-center justify-between mb-3">
+                                <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4 mb-3">
                                     {/* Kiri: Logo */}
-                                    <img src="/images/ppa.jpg" alt="Logo PPA" className="h-16 object-contain" />
-
-                                    {/* Tengah: Judul */}
-                                    <div className="flex-1 text-center">
-                                        <p className="font-extrabold text-base tracking-widest uppercase">FORMULIR</p>
-                                        <p className="font-bold text-sm tracking-wider uppercase">INPUT REFREZING</p>
+                                    <div className="flex items-center gap-3">
+                                        <img src="/images/ppa.jpg" alt="Logo PPA" className="h-12 object-contain" />
+                                        <div className="h-8 w-px bg-slate-200"></div>
+                                        <img src="/images/LogoMieGacoan.png" alt="Logo Mie Gacoan" className="h-12 object-contain" />
                                     </div>
 
-                                    {/* Kanan: spacer */}
-                                    <div className="w-24" />
+                                    {/* Tengah: Judul */}
+                                    <div className="text-center">
+                                        <p className="font-extrabold text-base tracking-widest uppercase m-0">FORMULIR</p>
+                                        <p className="font-bold text-sm tracking-wider uppercase m-0">INPUT REFREZING</p>
+                                    </div>
+
+                                    {/* Kanan: Document info table */}
+                                    <table className="border-collapse text-[10px]">
+                                        <tbody>
+                                            <tr><td className="border border-slate-400 px-2 py-0.5 bg-slate-100 font-bold">Departemen</td><td className="border border-slate-400 px-2 py-0.5">Produksi</td></tr>
+                                            <tr><td className="border border-slate-400 px-2 py-0.5 bg-slate-100 font-bold">Nomor Dokumen</td><td className="border border-slate-400 px-2 py-0.5">Form/PROS/IQF-01</td></tr>
+                                            <tr><td className="border border-slate-400 px-2 py-0.5 bg-slate-100 font-bold">Tanggal Berlaku</td><td className="border border-slate-400 px-2 py-0.5">{new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</td></tr>
+                                            <tr><td className="border border-slate-400 px-2 py-0.5 bg-slate-100 font-bold">Factory</td><td className="border border-slate-400 px-2 py-0.5">Malang</td></tr>
+                                        </tbody>
+                                    </table>
                                 </div>
 
-                                <div className="print-info hidden grid grid-cols-2 gap-x-12 text-xs border-t border-slate-300 pt-2">
-                                    <div className="flex gap-2 py-0.5"><span className="font-semibold w-20">Tanggal</span><span>: {formatDate(group.date)}</span></div>
-                                    <div className="flex gap-2 py-0.5"><span className="font-semibold w-20">PIC</span><span>: {uniquePics}</span></div>
-                                    <div className="flex gap-2 py-0.5"><span className="font-semibold w-20">Refrezing</span><span>: {group.machine}</span></div>
-                                    <div className="flex gap-2 py-0.5"><span className="font-semibold w-20">Shift</span><span>: {group.shift}</span></div>
+                                <div className="print-info hidden grid grid-cols-4 gap-4 text-xs border border-slate-300 bg-slate-50 p-2.5 rounded-lg">
+                                    <div><span className="font-semibold text-slate-500">Tanggal:</span> <span className="font-bold">{formatDate(group.date)}</span></div>
+                                    <div><span className="font-semibold text-slate-500">PIC:</span> <span className="font-bold">{uniquePics}</span></div>
+                                    <div><span className="font-semibold text-slate-500">Refrezing:</span> <span className="font-bold">{group.machine}</span></div>
+                                    <div><span className="font-semibold text-slate-500">Shift:</span> <span className="font-bold">{group.shift}</span></div>
                                 </div>
                             </div>
 
@@ -984,7 +953,7 @@ export default function DataTable({ logsheets }) {
                                         const tm = calculateGroupTimeMetrics(group.rows);
                                         return (
                                             <span className="text-[10px] px-2 py-0.5 rounded border font-bold bg-indigo-50 text-indigo-700 border-indigo-200">
-                                                ⏱️ {tm.totalWorkMinutes} mnt
+                                                {tm.totalWorkMinutes} mnt
                                             </span>
                                         );
                                     })()}
@@ -1119,11 +1088,7 @@ export default function DataTable({ logsheets }) {
                                                     </td>
                                                     <td className="px-3 py-1.5 text-xs">
                                                         {row.unplanned_stop !== '-' ? (
-                                                            <span className={`inline-flex px-1.5 py-0.5 rounded font-bold text-[10px] ${
-                                                                row.unplanned_stop.includes('Pergantian Dimsum') && !row.unplanned_stop.includes('Temperatur') && !row.unplanned_stop.includes('Macet')
-                                                                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                                                                    : 'bg-rose-100 text-rose-700'
-                                                            }`}>
+                                                            <span className="inline-flex px-1.5 py-0.5 rounded font-bold text-[10px] bg-rose-100 text-rose-700">
                                                                 {row.unplanned_stop}
                                                             </span>
                                                         ) : <span className="text-slate-300">-</span>}
@@ -1162,7 +1127,7 @@ export default function DataTable({ logsheets }) {
                                                         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-xs">
                                                             {/* Total Waktu Logsheet & Breakdown */}
                                                             <div className="flex flex-wrap items-center gap-2 bg-indigo-50/90 border border-indigo-200 px-3 py-1.5 rounded-lg text-indigo-900 font-bold">
-                                                                <span className="text-indigo-700 font-extrabold flex items-center gap-1">⏱️ Total Waktu:</span>
+                                                                <span className="text-indigo-700 font-extrabold flex items-center gap-1">Total Waktu:</span>
                                                                 <span className="font-black text-indigo-800 font-mono text-sm">{tm.totalWorkMinutes} mnt</span>
                                                             </div>
 
@@ -1428,10 +1393,13 @@ export default function DataTable({ logsheets }) {
 
                         {/* ── MAIN HEADER ── */}
                         <div className="spt-main-header">
-                            <img src="/images/ppa.jpg" alt="Logo PPA" style={{ height: '32px', objectFit: 'contain' }} />
+                            <div className="spt-logo-group">
+                                <img src="/images/ppa.jpg" alt="Logo PPA" style={{ height: '30px', objectFit: 'contain' }} />
+                                <img src="/images/LogoMieGacoan.png" alt="Logo Mie Gacoan" style={{ height: '30px', objectFit: 'contain' }} />
+                            </div>
                             <div className="spt-title-block">
                                 <div className="spt-t1">FORMULIR</div>
-                                <div className="spt-t2">INPUT IQF DAN FREEZING</div>
+                                <div className="spt-t2">INPUT REFREZING</div>
                             </div>
                             <table className="spt-doc-table">
                                 <tbody>
@@ -1445,10 +1413,10 @@ export default function DataTable({ logsheets }) {
 
                         {/* ── SUB-HEADER INFO ── */}
                         <div className="spt-info-row">
-                            <span><b>Tanggal</b>: {formatDate(pg.date)}</span>
-                            <span><b>PIC</b>: {pgPics}</span>
-                            <span><b>IQF</b>: {pg.machine}</span>
-                            <span><b>Shift</b>: {pg.shift}</span>
+                            <div className="spt-info-col"><b>Tanggal</b>: {formatDate(pg.date)}</div>
+                            <div className="spt-info-col"><b>PIC</b>: {pgPics}</div>
+                            <div className="spt-info-col"><b>Refrezing</b>: {pg.machine}</div>
+                            <div className="spt-info-col"><b>Shift</b>: {pg.shift}</div>
                         </div>
 
                         {/* ── PRINTED TIMESTAMP ── */}

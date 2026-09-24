@@ -248,35 +248,9 @@ class RefrezingController extends Controller
 
             foreach ($unplannedStops as $stop) {
                 if ($stop['machine'] === $m) {
-                    if (str_contains($stop['text'], 'Pergantian Dimsum')) {
-                        continue;
-                    }
                     $unplannedMins += (int)($stop['duration_mins'] ?? 0);
                 }
             }
-
-            if ($mDetails->count() > 0) {
-                $prevProduct = null;
-                $lastPrevProductTime = null;
-
-                foreach ($mDetails as $d) {
-                    $currProduct = preg_replace('/_[TWL]$/', '', strtolower($d->product_type));
-                    [$th, $tm] = explode(':', substr($d->time, 0, 5));
-                    $currMins = (int)$th * 60 + (int)$tm;
-
-                    if ($prevProduct !== null && $currProduct !== $prevProduct) {
-                        if ($lastPrevProductTime !== null) {
-                            $diff = $currMins >= $lastPrevProductTime ? ($currMins - $lastPrevProductTime) : ($currMins + 1440 - $lastPrevProductTime);
-                            if ($diff > 0 && $diff < 720) {
-                                $changeoverMinutes += $diff;
-                                $changeoverCount++;
-                            }
-                        }
-                    }
-
-                    $prevProduct = $currProduct;
-                    $lastPrevProductTime = $currMins;
-                }
 
                 $firstDetail = $mDetails->first();
                 $lastDetail  = $mDetails->last();
@@ -411,16 +385,14 @@ class RefrezingController extends Controller
         $totalDowntimeMins = 0;
         $downtimeEntries = [];
         foreach ($unplannedStops as $stop) {
-            if (!str_contains($stop['text'], 'Pergantian Dimsum')) {
-                $durMins = (int)($stop['duration_mins'] ?? 0);
-                $totalDowntimeMins += $durMins;
-                $downtimeEntries[] = [
-                    'text'     => $stop['text'],
-                    'duration' => $stop['duration'],
-                    'dur_mins' => $durMins,
-                    'machine'  => $stop['machine'],
-                ];
-            }
+            $durMins = (int)($stop['duration_mins'] ?? 0);
+            $totalDowntimeMins += $durMins;
+            $downtimeEntries[] = [
+                'text'     => $stop['text'],
+                'duration' => $stop['duration'],
+                'dur_mins' => $durMins,
+                'machine'  => $stop['machine'],
+            ];
         }
 
         $totalActiveDimsumMins = array_sum($activeByProduct);

@@ -298,11 +298,11 @@ export default function RefrezingDashboard() {
                 <div className="bg-slate-50/80 px-6 py-4.5 border-b border-slate-200/80 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-600 to-blue-600 text-white flex items-center justify-center shadow-md shadow-cyan-500/20 text-lg font-bold">
-                            ⏱️
+                            
                         </div>
                         <div>
                             <h3 className="text-base sm:text-lg font-black text-slate-800 m-0">Analisis Jam Kerja Karyawan (Refrezing)</h3>
-                            <p className="text-xs font-semibold text-slate-400 m-0">Breakdown Efisiensi Durasi Input Aktif, Downtime Kendala, Pergantian Dimsum & Loss Time per Mesin</p>
+                            <p className="text-xs font-semibold text-slate-400 m-0">Breakdown Efisiensi Durasi Input Aktif, Downtime Kendala & Loss Time per Mesin</p>
                         </div>
                     </div>
                 </div>
@@ -349,29 +349,20 @@ export default function RefrezingDashboard() {
                                             <span className="text-emerald-600 font-extrabold">{activePct}% Efektif</span>
                                         </div>
                                         <div className="h-3 w-full bg-slate-200/80 rounded-full overflow-hidden flex p-0.5 gap-0.5">
-                                            <div style={{ width: `${activePct}%` }} title={`Input Aktif: ${effData.active_minutes} mnt (${activePct}%) - Termasuk Pergantian Dimsum: ${effData.changeover_minutes} mnt`} className="bg-emerald-500 h-full rounded-l-full transition-all duration-500" />
+                                            <div style={{ width: `${activePct}%` }} title={`Input Aktif: ${effData.active_minutes} mnt (${activePct}%)`} className="bg-emerald-500 h-full rounded-l-full transition-all duration-500" />
                                             <div style={{ width: `${stopPct}%` }} title={`Kendala: ${effData.unplanned_minutes} mnt (${stopPct}%)`} className="bg-rose-500 h-full transition-all duration-500" />
                                             <div style={{ width: `${lossPct}%` }} title={`Loss Time (Idle): ${effData.loss_minutes ?? 0} mnt (${lossPct}%)`} className="bg-purple-500 h-full rounded-r-full transition-all duration-500" />
                                         </div>
                                     </div>
 
                                     {/* Metric Badges Grid */}
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
+                                    <div className="grid grid-cols-3 gap-2.5 pt-2">
                                         <div className="bg-white p-3 rounded-2xl border border-slate-200/80 text-center shadow-2xs">
                                             <p className="text-[10px] font-bold text-slate-400 uppercase m-0 flex items-center justify-center gap-1">
                                                 <span className="w-2 h-2 rounded-full bg-emerald-500" /> Input Aktif
                                             </p>
                                             <p className="text-sm font-black text-emerald-600 mt-1 mb-0">
                                                 {effData.active_minutes} <span className="text-[10px] font-medium text-slate-400">mnt</span>
-                                            </p>
-                                        </div>
-
-                                        <div className="bg-white p-3 rounded-2xl border border-slate-200/80 text-center shadow-2xs" title="Pergantian Dimsum (Termasuk dalam Input Aktif)">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase m-0 flex items-center justify-center gap-1 truncate">
-                                                <span className="w-2 h-2 rounded-full bg-amber-500" /> Pergantian
-                                            </p>
-                                            <p className="text-sm font-black text-amber-600 mt-1 mb-0">
-                                                {effData.changeover_minutes} <span className="text-[10px] font-medium text-slate-400">mnt ({effData.changeover_count}x)</span>
                                             </p>
                                         </div>
 
