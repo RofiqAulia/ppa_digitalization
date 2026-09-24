@@ -230,6 +230,7 @@ class IqfLogsheetController extends Controller
                 }
             }
 
+            if ($mDetails->count() > 0) {
                 $firstDetail = $mDetails->first();
                 $lastDetail  = $mDetails->last();
                 [$fH, $fM]   = explode(':', substr($firstDetail->time, 0, 5));
