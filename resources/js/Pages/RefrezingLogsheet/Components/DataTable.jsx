@@ -24,16 +24,21 @@ const PRINT_STYLE = `
   }
 
   html, body {
-    height: 100% !important;
-    width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: hidden !important;
+    background: white !important;
+    width: 100% !important;
   }
 
   body > *:not(#iqf-spt) { display: none !important; }
 
   #iqf-spt {
+    display: block !important;
+    width: 100% !important;
+    background: white;
+  }
+
+  .spt-page {
     display: flex !important;
     flex-direction: column !important;
     position: relative !important;
@@ -47,9 +52,12 @@ const PRINT_STYLE = `
     box-sizing: border-box !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    page-break-before: avoid !important;
-    page-break-after: avoid !important;
     overflow: hidden !important;
+  }
+
+  .spt-page + .spt-page {
+    page-break-before: always !important;
+    break-before: page !important;
   }
 
   /* === MAIN HEADER === */
@@ -1317,54 +1325,41 @@ export default function DataTable({ logsheets }) {
                 const lumpiaRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'lumpia'));
                 const adonanRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'adonan_pangsit'));
 
-                /* Kunci grid tetap 40 baris per kolom */
-                const PENTOL_CAPACITY_PER_COL = 40;
+                /* Kunci grid per kolom di Halaman 1 = 40 baris */
+                const ROWS_PER_PAGE = 40;
 
-                /* Pentol diisi PENUH di Kolom 1 (kiri) max 40 baris terlebih dahulu, baru melimpah ke Kolom 2 (kanan) max 40 baris */
-                const pentolCol1 = pentolRows.slice(0, PENTOL_CAPACITY_PER_COL);
-                const pentolCol2 = pentolRows.slice(PENTOL_CAPACITY_PER_COL, PENTOL_CAPACITY_PER_COL * 2);
-
-                /* Extract individual unplanned stop items for line-by-line row rendering */
-                const unplannedStopList = (() => {
-                    const stops = [];
-                    pg.rows.forEach(r => {
-                        if (r.unplanned_stop && r.unplanned_stop !== '-') {
-                            r.unplanned_stop.split(', ').forEach(st => {
-                                const clean = st.trim();
-                                if (clean && clean !== '-' && !stops.includes(clean)) {
-                                    stops.push(clean);
-                                }
-                            });
-                        }
-                    });
-
-                    return stops.sort((a, b) => {
-                        const timeA = a.match(/^(\d{1,2}:\d{2})/)?.[1] || '';
-                        const timeB = b.match(/^(\d{1,2}:\d{2})/)?.[1] || '';
-                        if (timeA !== timeB) return timeA.localeCompare(timeB);
-                        return a.localeCompare(b);
-                    });
-                })();
-
-                /* Jumlah baris dikunci tetap 40 baris agar tinggi baris 100% konsisten & identik di semua shift */
-                const maxRows = Math.max(
-                    siomayRows.length,
-                    pentolCol1.length,
-                    pentolCol2.length,
-                    lumpiaRows.length,
-                    adonanRows.length,
-                    unplannedStopList.length,
-                    40
+                const needsPage2 = (
+                    siomayRows.length > ROWS_PER_PAGE ||
+                    pentolRows.length > ROWS_PER_PAGE * 2 ||
+                    lumpiaRows.length > ROWS_PER_PAGE ||
+                    adonanRows.length > ROWS_PER_PAGE ||
+                    unplannedStopList.length > ROWS_PER_PAGE
                 );
 
-                /* Totals */
+                const totalPages = needsPage2 ? 2 : 1;
+
+                /* Page 1 data slices */
+                const siomayP1  = siomayRows.slice(0, ROWS_PER_PAGE);
+                const pentol1P1 = pentolRows.slice(0, ROWS_PER_PAGE);
+                const pentol2P1 = pentolRows.slice(ROWS_PER_PAGE, ROWS_PER_PAGE * 2);
+                const lumpiaP1  = lumpiaRows.slice(0, ROWS_PER_PAGE);
+                const adonanP1  = adonanRows.slice(0, ROWS_PER_PAGE);
+                const stopP1    = unplannedStopList.slice(0, ROWS_PER_PAGE);
+
+                /* Page 2 data slices (if needed) */
+                const siomayP2  = needsPage2 ? siomayRows.slice(ROWS_PER_PAGE, ROWS_PER_PAGE * 2) : [];
+                const pentol1P2 = needsPage2 ? pentolRows.slice(ROWS_PER_PAGE * 2, ROWS_PER_PAGE * 3) : [];
+                const pentol2P2 = needsPage2 ? pentolRows.slice(ROWS_PER_PAGE * 3, ROWS_PER_PAGE * 4) : [];
+                const lumpiaP2  = needsPage2 ? lumpiaRows.slice(ROWS_PER_PAGE, ROWS_PER_PAGE * 2) : [];
+                const adonanP2  = needsPage2 ? adonanRows.slice(ROWS_PER_PAGE, ROWS_PER_PAGE * 2) : [];
+                const stopP2    = needsPage2 ? unplannedStopList.slice(ROWS_PER_PAGE, ROWS_PER_PAGE * 2) : [];
+
+                /* Totals across all rows for the shift */
                 const totSiomay = siomayRows.reduce((s, r) => s + (r.tray_count || 0), 0);
                 const totPentol = pentolRows.reduce((s, r) => s + (r.tray_count || 0), 0);
                 const totLumpia = lumpiaRows.reduce((s, r) => s + (r.tray_count || 0), 0);
                 const totAdonan = adonanRows.reduce((s, r) => s + (r.tray_count || 0), 0);
 
-                /* Unplanned stops & PICs */
-                const unplannedStops = unplannedStopList.join('\n');
                 const pgPics = [...new Set(pg.rows.map(r => r.pic).filter(p => p && p !== '--'))].join(', ') || '-';
 
                 /* Total Unplanned Stop Minutes */
@@ -1388,9 +1383,8 @@ export default function DataTable({ logsheets }) {
                 const tc   = (row)    => (row && row.time && row.time !== '-') ? formatTime(row.time) : '\u00A0';
                 const bold = (row)    => row ? 700 : 'normal';
 
-                return createPortal(
-                    <div id="iqf-spt">
-
+                const renderPrintPage = (pageIdx, sList, p1List, p2List, lList, aList, stList) => (
+                    <div key={pageIdx} className="spt-page">
                         {/* ── MAIN HEADER ── */}
                         <div className="spt-main-header">
                             <div className="spt-logo-group">
@@ -1416,38 +1410,31 @@ export default function DataTable({ logsheets }) {
                             <div className="spt-info-col"><b>Tanggal</b>: {formatDate(pg.date)}</div>
                             <div className="spt-info-col"><b>PIC</b>: {pgPics}</div>
                             <div className="spt-info-col"><b>Refrezing</b>: {pg.machine}</div>
-                            <div className="spt-info-col"><b>Shift</b>: {pg.shift}</div>
+                            <div className="spt-info-col">
+                                <b>Shift</b>: {pg.shift} {totalPages > 1 ? `(Hal ${pageIdx}/${totalPages})` : ''}
+                            </div>
                         </div>
 
                         {/* ── PRINTED TIMESTAMP ── */}
                         <div className="spt-printed">Dicetak pada: {printTime}</div>
 
-                        {/* ── MATRIX TABLE ──
-                            Kolom: SIOMAY(6) | PENTOL(6) | PENTOL(6) | LUMPIA(5) | ADONAN PANGSIT(5) | STOP(1) = 29
-                        ── */}
+                        {/* ── MATRIX TABLE ── */}
                         <table className="spt-tbl">
                             <colgroup>
-                                {/* SIOMAY: Batch|PnlSuhu|PrdSuhu|Mulai|Rak|Loy */}
                                 <col className="spt-c-batch"/><col className="spt-c-suhu"/><col className="spt-c-suhu"/>
                                 <col className="spt-c-time" /><col className="spt-c-rak" /><col className="spt-c-qty" />
-                                {/* PENTOL 1 */}
                                 <col className="spt-c-batch"/><col className="spt-c-suhu"/><col className="spt-c-suhu"/>
                                 <col className="spt-c-time" /><col className="spt-c-rak" /><col className="spt-c-qty" />
-                                {/* PENTOL 2 */}
                                 <col className="spt-c-batch"/><col className="spt-c-suhu"/><col className="spt-c-suhu"/>
                                 <col className="spt-c-time" /><col className="spt-c-rak" /><col className="spt-c-qty" />
-                                {/* LUMPIA: Batch|PnlSuhu|PrdSuhu|Mulai|Keranjang (tanpa Rak) */}
                                 <col className="spt-c-batch"/><col className="spt-c-suhu"/><col className="spt-c-suhu"/>
                                 <col className="spt-c-time" /><col className="spt-c-qty" />
-                                {/* ADONAN: Batch|PnlSuhu|PrdSuhu|Mulai|Keranjang (tanpa Rak) */}
                                 <col className="spt-c-batch"/><col className="spt-c-suhu"/><col className="spt-c-suhu"/>
                                 <col className="spt-c-time" /><col className="spt-c-qty" />
-                                {/* UNPLANNED STOP */}
                                 <col className="spt-c-stop"/>
                             </colgroup>
 
                             <thead>
-                                {/* ROW A: Group Headers */}
                                 <tr>
                                     <th colSpan={6} className="spt-gh-siomay">SIOMAY</th>
                                     <th colSpan={6} className="spt-gh-pentol">PENTOL</th>
@@ -1456,36 +1443,34 @@ export default function DataTable({ logsheets }) {
                                     <th colSpan={5} className="spt-gh-adonan">ADONAN PANGSIT</th>
                                     <th rowSpan={2} className="spt-gh-stop">UNPLANNED STOP</th>
                                 </tr>
-                                {/* ROW B: Sub-headers */}
                                 <tr>
-                                    {/* SIOMAY */}
                                     <th className="spt-sh-siomay">No.<br/>Batch</th>
                                     <th className="spt-sh-siomay">Suhu<br/>Panel</th>
                                     <th className="spt-sh-siomay">Suhu<br/>Produk</th>
                                     <th className="spt-sh-siomay">Mulai</th>
                                     <th className="spt-sh-siomay">Rak</th>
                                     <th className="spt-sh-siomay">Loyang</th>
-                                    {/* PENTOL 1 */}
+
                                     <th className="spt-sh-pentol">No.<br/>Batch</th>
                                     <th className="spt-sh-pentol">Suhu<br/>Panel</th>
                                     <th className="spt-sh-pentol">Suhu<br/>Produk</th>
                                     <th className="spt-sh-pentol">Mulai</th>
                                     <th className="spt-sh-pentol">Rak</th>
                                     <th className="spt-sh-pentol">Loyang</th>
-                                    {/* PENTOL 2 */}
+
                                     <th className="spt-sh-pentol">No.<br/>Batch</th>
                                     <th className="spt-sh-pentol">Suhu<br/>Panel</th>
                                     <th className="spt-sh-pentol">Suhu<br/>Produk</th>
                                     <th className="spt-sh-pentol">Mulai</th>
                                     <th className="spt-sh-pentol">Rak</th>
                                     <th className="spt-sh-pentol">Loyang</th>
-                                    {/* LUMPIA — tanpa Rak */}
+
                                     <th className="spt-sh-lumpia">No.<br/>Batch</th>
                                     <th className="spt-sh-lumpia">Suhu<br/>Panel</th>
                                     <th className="spt-sh-lumpia">Suhu<br/>Produk</th>
                                     <th className="spt-sh-lumpia">Mulai</th>
                                     <th className="spt-sh-lumpia">Keranjang</th>
-                                    {/* ADONAN PANGSIT — tanpa Rak */}
+
                                     <th className="spt-sh-adonan">No.<br/>Batch</th>
                                     <th className="spt-sh-adonan">Suhu<br/>Panel</th>
                                     <th className="spt-sh-adonan">Suhu<br/>Produk</th>
@@ -1495,50 +1480,49 @@ export default function DataTable({ logsheets }) {
                             </thead>
 
                             <tbody>
-                                {Array.from({ length: maxRows }, (_, i) => {
-                                    const s  = siomayRows[i]  || null;
-                                    const p1 = pentolCol1[i]  || null;
-                                    const p2 = pentolCol2[i]  || null;
-                                    const l  = lumpiaRows[i]  || null;
-                                    const a  = adonanRows[i]  || null;
+                                {Array.from({ length: ROWS_PER_PAGE }, (_, i) => {
+                                    const s  = sList[i]  || null;
+                                    const p1 = p1List[i] || null;
+                                    const p2 = p2List[i] || null;
+                                    const l  = lList[i]  || null;
+                                    const a  = aList[i]  || null;
                                     return (
                                         <tr key={i}>
-                                            {/* SIOMAY */}
                                             <td className="spt-d-siomay">{cv(s,'batch_number')}</td>
                                             <td className="spt-d-siomay">{cv(s,'suhu_panel')}</td>
                                             <td className="spt-d-siomay">{cv(s,'suhu_produk')}</td>
                                             <td className="spt-d-siomay">{tc(s)}</td>
                                             <td className="spt-d-siomay" style={{fontWeight:bold(s)}}>{cv(s,'rak')}</td>
                                             <td className="spt-d-siomay" style={{fontWeight:bold(s)}}>{s && s.tray_count !== undefined && s.tray_count !== null ? s.tray_count : '\u00A0'}</td>
-                                            {/* PENTOL 1 */}
+
                                             <td className="spt-d-pentol">{cv(p1,'batch_number')}</td>
                                             <td className="spt-d-pentol">{cv(p1,'suhu_panel')}</td>
                                             <td className="spt-d-pentol">{cv(p1,'suhu_produk')}</td>
                                             <td className="spt-d-pentol">{tc(p1)}</td>
                                             <td className="spt-d-pentol" style={{fontWeight:bold(p1)}}>{cv(p1,'rak')}</td>
                                             <td className="spt-d-pentol" style={{fontWeight:bold(p1)}}>{p1 && p1.tray_count !== undefined && p1.tray_count !== null ? p1.tray_count : '\u00A0'}</td>
-                                            {/* PENTOL 2 — lanjutan */}
+
                                             <td className="spt-d-pentol">{cv(p2,'batch_number')}</td>
                                             <td className="spt-d-pentol">{cv(p2,'suhu_panel')}</td>
                                             <td className="spt-d-pentol">{cv(p2,'suhu_produk')}</td>
                                             <td className="spt-d-pentol">{tc(p2)}</td>
                                             <td className="spt-d-pentol" style={{fontWeight:bold(p2)}}>{cv(p2,'rak')}</td>
                                             <td className="spt-d-pentol" style={{fontWeight:bold(p2)}}>{p2 && p2.tray_count !== undefined && p2.tray_count !== null ? p2.tray_count : '\u00A0'}</td>
-                                            {/* LUMPIA — tanpa kolom rak */}
+
                                             <td className="spt-d-lumpia">{cv(l,'batch_number')}</td>
                                             <td className="spt-d-lumpia">{cv(l,'suhu_panel')}</td>
                                             <td className="spt-d-lumpia">{cv(l,'suhu_produk')}</td>
                                             <td className="spt-d-lumpia">{tc(l)}</td>
                                             <td className="spt-d-lumpia" style={{fontWeight:bold(l)}}>{l && l.tray_count !== undefined && l.tray_count !== null ? l.tray_count : '\u00A0'}</td>
-                                            {/* ADONAN PANGSIT — tanpa kolom rak */}
+
                                             <td className="spt-d-adonan">{cv(a,'batch_number')}</td>
                                             <td className="spt-d-adonan">{cv(a,'suhu_panel')}</td>
                                             <td className="spt-d-adonan">{cv(a,'suhu_produk')}</td>
                                             <td className="spt-d-adonan">{tc(a)}</td>
                                             <td className="spt-d-adonan" style={{fontWeight:bold(a)}}>{a && a.tray_count !== undefined && a.tray_count !== null ? a.tray_count : '\u00A0'}</td>
-                                            {/* UNPLANNED STOP — 1 sel per baris agar sejajar dengan garis row */}
+
                                             <td className="spt-d-stop">
-                                                {unplannedStopList[i] || '\u00A0'}
+                                                {stList[i] || '\u00A0'}
                                             </td>
                                         </tr>
                                     );
@@ -1547,35 +1531,36 @@ export default function DataTable({ logsheets }) {
 
                             <tfoot>
                                 <tr className="spt-total-row">
-                                    {/* SIOMAY total */}
                                     <td colSpan={4} style={{textAlign:'right'}}>TOTAL</td>
                                     <td colSpan={2} style={{fontWeight:900,color:'#e65100'}}>
                                         {totSiomay > 0 ? `${totSiomay} L` : '-'}
                                     </td>
-                                    {/* PENTOL 1 total */}
                                     <td colSpan={4} style={{textAlign:'right'}}>TOTAL</td>
                                     <td colSpan={2} style={{fontWeight:900,color:'#1565c0'}}>
                                         {totPentol > 0 ? `${totPentol} L` : '-'}
                                     </td>
-                                    {/* PENTOL 2 — kosong (total sudah di PENTOL 1) */}
                                     <td colSpan={6} />
-                                    {/* LUMPIA total */}
                                     <td colSpan={3} style={{textAlign:'right'}}>TOTAL</td>
                                     <td colSpan={2} style={{fontWeight:900,color:'#2e7d32'}}>
-                                        {totLumpia > 0 ? `${totLumpia}` : '-'}
+                                        {totLumpia > 0 ? `${totLumpia} K` : '-'}
                                     </td>
-                                    {/* ADONAN total */}
                                     <td colSpan={3} style={{textAlign:'right'}}>TOTAL</td>
                                     <td colSpan={2} style={{fontWeight:900,color:'#6a1b9a'}}>
-                                        {totAdonan > 0 ? `${totAdonan}` : '-'}
+                                        {totAdonan > 0 ? `${totAdonan} S` : '-'}
                                     </td>
-                                    {/* STOP TOTAL */}
                                     <td style={{fontWeight:900,color:'#b71c1c',fontSize:'6px',textAlign:'center'}}>
                                         {totalUnplannedMins > 0 ? `Total: ${totalUnplannedMins} mnt` : '-'}
                                     </td>
                                 </tr>
                             </tfoot>
                         </table>
+                    </div>
+                );
+
+                return createPortal(
+                    <div id="iqf-spt">
+                        {renderPrintPage(1, siomayP1, pentol1P1, pentol2P1, lumpiaP1, adonanP1, stopP1)}
+                        {needsPage2 && renderPrintPage(2, siomayP2, pentol1P2, pentol2P2, lumpiaP2, adonanP2, stopP2)}
                     </div>,
                     document.body
                 );
