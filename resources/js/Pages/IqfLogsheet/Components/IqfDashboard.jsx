@@ -339,9 +339,8 @@ export default function IqfDashboard() {
                                 : effData.total_shift_minutes || 480;
 
                             const activePct  = Math.min(100, Math.round((effData.active_minutes / totalMins) * 100)) || 0;
-                            const changePct  = Math.min(100, Math.round((effData.changeover_minutes / totalMins) * 100)) || 0;
                             const stopPct    = Math.min(100, Math.round((effData.unplanned_minutes / totalMins) * 100)) || 0;
-                            const lossPct    = Math.max(0, 100 - (activePct + changePct + stopPct));
+                            const lossPct    = Math.max(0, 100 - (activePct + stopPct));
 
                             return (
                                 <div key={mName} className="bg-slate-50/60 border border-slate-200 rounded-3xl p-5 md:p-6 flex flex-col justify-between space-y-5 hover:border-indigo-300 transition-colors">
@@ -365,8 +364,7 @@ export default function IqfDashboard() {
                                             <span className="text-emerald-600 font-extrabold">{activePct}% Efektif</span>
                                         </div>
                                         <div className="h-3 w-full bg-slate-200/80 rounded-full overflow-hidden flex p-0.5 gap-0.5">
-                                            <div style={{ width: `${activePct}%` }} title={`Input Aktif: ${effData.active_minutes} mnt (${activePct}%)`} className="bg-emerald-500 h-full rounded-l-full transition-all duration-500" />
-                                            <div style={{ width: `${changePct}%` }} title={`Pergantian Dimsum: ${effData.changeover_minutes} mnt (${changePct}%)`} className="bg-amber-500 h-full transition-all duration-500" />
+                                            <div style={{ width: `${activePct}%` }} title={`Input Aktif: ${effData.active_minutes} mnt (${activePct}%) - Termasuk Pergantian Dimsum: ${effData.changeover_minutes} mnt`} className="bg-emerald-500 h-full rounded-l-full transition-all duration-500" />
                                             <div style={{ width: `${stopPct}%` }} title={`Kendala: ${effData.unplanned_minutes} mnt (${stopPct}%)`} className="bg-rose-500 h-full transition-all duration-500" />
                                             <div style={{ width: `${lossPct}%` }} title={`Loss Time (Idle): ${effData.loss_minutes ?? 0} mnt (${lossPct}%)`} className="bg-purple-500 h-full rounded-r-full transition-all duration-500" />
                                         </div>
@@ -383,7 +381,7 @@ export default function IqfDashboard() {
                                             </p>
                                         </div>
 
-                                        <div className="bg-white p-3 rounded-2xl border border-slate-200/80 text-center shadow-2xs">
+                                        <div className="bg-white p-3 rounded-2xl border border-slate-200/80 text-center shadow-2xs" title="Pergantian Dimsum (Termasuk dalam Input Aktif)">
                                             <p className="text-[10px] font-bold text-slate-400 uppercase m-0 flex items-center justify-center gap-1 truncate">
                                                 <span className="w-2 h-2 rounded-full bg-amber-500" /> Pergantian
                                             </p>

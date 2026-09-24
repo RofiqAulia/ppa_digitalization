@@ -295,9 +295,9 @@ class RefrezingController extends Controller
 
             $totalWorkMinutes = $spanMins;
 
-            // Loss time = Elapsed Shift Time - Total Input Span
-            // Ensures: Shift Berjalan == Input Aktif + Pergantian Dimsum + Kendala + Loss Time
-            $lossMinutes = max(0, $elapsedShiftMinutes - $spanMins);
+            // Loss time = Elapsed Shift Time - Active Minutes - Unplanned Minutes
+            // Ensures: Shift Berjalan == Input Aktif (termasuk Pergantian) + Kendala + Loss Time
+            $lossMinutes = max(0, $elapsedShiftMinutes - $spanMins - $unplannedMins);
 
             // Real-time efficiency: ((active_minutes + unplanned_minutes) / netElapsedWorkMinutes) * 100%
             $efficiencyPercent = $netElapsedWorkMinutes > 0 ? round(($totalWorkMinutes / $netElapsedWorkMinutes) * 100, 1) : 0;
