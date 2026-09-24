@@ -137,7 +137,7 @@ const PRINT_STYLE = `
   .spt-d-pentol { background: #f0f7ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .spt-d-lumpia { background: #f0fff4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .spt-d-adonan { background: #faf0ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-d-stop   { background: #fff5f5 !important; vertical-align: top !important; text-align: left !important; padding: 3px 4px !important; font-size: 5.5px !important; line-height: 1.5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-d-stop   { background: #fff5f5 !important; vertical-align: middle !important; text-align: left !important; padding: 2px 4px !important; font-size: 5.5px !important; line-height: 1.2 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   /* Column width classes (used on <col>) */
   .spt-c-batch { width: 9.5mm; }
@@ -1393,6 +1393,28 @@ export default function DataTable({ logsheets }) {
                 const pentolCol1 = pentolRows.slice(0, PENTOL_CAPACITY_PER_COL);
                 const pentolCol2 = pentolRows.slice(PENTOL_CAPACITY_PER_COL, PENTOL_CAPACITY_PER_COL * 2);
 
+                /* Extract individual unplanned stop items for line-by-line row rendering */
+                const unplannedStopList = (() => {
+                    const stops = [];
+                    pg.rows.forEach(r => {
+                        if (r.unplanned_stop && r.unplanned_stop !== '-') {
+                            r.unplanned_stop.split(', ').forEach(st => {
+                                const clean = st.trim();
+                                if (clean && clean !== '-' && !stops.includes(clean)) {
+                                    stops.push(clean);
+                                }
+                            });
+                        }
+                    });
+
+                    return stops.sort((a, b) => {
+                        const timeA = a.match(/^(\d{1,2}:\d{2})/)?.[1] || '';
+                        const timeB = b.match(/^(\d{1,2}:\d{2})/)?.[1] || '';
+                        if (timeA !== timeB) return timeA.localeCompare(timeB);
+                        return a.localeCompare(b);
+                    });
+                })();
+
                 /* Jumlah baris dikunci tetap 40 baris agar tinggi baris 100% konsisten & identik di semua shift */
                 const maxRows = Math.max(
                     siomayRows.length,
@@ -1400,6 +1422,7 @@ export default function DataTable({ logsheets }) {
                     pentolCol2.length,
                     lumpiaRows.length,
                     adonanRows.length,
+                    unplannedStopList.length,
                     40
                 );
 
@@ -1410,7 +1433,7 @@ export default function DataTable({ logsheets }) {
                 const totAdonan = adonanRows.reduce((s, r) => s + (r.tray_count || 0), 0);
 
                 /* Unplanned stops & PICs */
-                const unplannedStops = [...new Set(pg.rows.map(r => r.unplanned_stop).filter(s => s && s !== '-'))].join('\n') || '';
+                const unplannedStops = unplannedStopList.join('\n');
                 const pgPics = [...new Set(pg.rows.map(r => r.pic).filter(p => p && p !== '--'))].join(', ') || '-';
 
                 /* Total Unplanned Stop Minutes */
@@ -1579,12 +1602,10 @@ export default function DataTable({ logsheets }) {
                                             <td className="spt-d-adonan">{cv(a,'suhu_produk')}</td>
                                             <td className="spt-d-adonan">{tc(a)}</td>
                                             <td className="spt-d-adonan" style={{fontWeight:bold(a)}}>{a && a.tray_count !== undefined && a.tray_count !== null ? a.tray_count : '\u00A0'}</td>
-                                            {/* UNPLANNED STOP — rowSpan, hanya pada baris pertama */}
-                                            {i === 0 && (
-                                                <td rowSpan={maxRows} className="spt-d-stop" style={{whiteSpace:'pre-line', lineHeight:'1.5'}}>
-                                                    {unplannedStops}
-                                                </td>
-                                            )}
+                                            {/* UNPLANNED STOP — 1 sel per baris agar sejajar dengan garis row */}
+                                            <td className="spt-d-stop">
+                                                {unplannedStopList[i] || '\u00A0'}
+                                            </td>
                                         </tr>
                                     );
                                 })}
