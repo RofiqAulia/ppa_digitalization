@@ -89,6 +89,8 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
             };
         });
 
+        const totalDimsumAndDowntime = siomayMins + pentolMins + lumpiaMins + adonanMins + downtime_minutes;
+
         // Define PrimeReact ColumnGroup Header
         const headerGroup = (
             <ColumnGroup>
@@ -101,7 +103,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                     <Column header="UNPLANNED STOP" sortable field="downtime" headerStyle={{ backgroundColor: '#b71c1c', color: '#ffffff', fontWeight: '900', textAlign: 'center', letterSpacing: '0.05em' }} />
                 </Row>
                 <Row>
-                    <Column header="Jumlah Menit" headerStyle={{ backgroundColor: '#f1f5f9', color: '#475569', fontWeight: 'bold', fontStyle: 'italic', textAlign: 'left' }} />
+                    <Column header={`${totalDimsumAndDowntime} menit`} headerStyle={{ backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={`${siomayMins} menit`} headerStyle={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={`${pentolMins} menit`} headerStyle={{ backgroundColor: '#ffe4e6', color: '#be123c', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={`${lumpiaMins} menit`} headerStyle={{ backgroundColor: '#ecfeff', color: '#0891b2', fontWeight: '900', textAlign: 'center' }} />
@@ -204,7 +206,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                     )}
 
                     {/* Ringkasan Menit per Produk & Downtime (KPI Cards) */}
-                    <div>
+                    {/* <div>
                         <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider block mb-2">
                             ⏱️ Ringkasan Durasi Menit per Produk & Downtime ({mName})
                         </span>
@@ -259,7 +261,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                                 </span>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
 
                     {/* PRIMEREACT DATATABLE SPREADSHEET LOGSHEET TEMPLATE WITH SORTING */}
                     <div className="space-y-2 pt-2">

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
-import { Menu, ShieldCheck, LayoutGrid, Sun, Moon, LogOut, User } from 'lucide-react';
-import { ThemeToggle } from './ThemeToggle';
+import { Menu, ShieldCheck, LogOut } from 'lucide-react';
 
 export function TopNav({ setSidebarOpen }) {
     const { auth } = usePage().props;
@@ -57,21 +56,6 @@ export function TopNav({ setSidebarOpen }) {
                     <ShieldCheck className="w-3.5 h-3.5" />
                     <span>Admin Panel</span>
                 </Link>
-
-                {/* Ambil Barang / Quick Link Pill */}
-                <Link
-                    href="/logsheet-iqf"
-                    className="hidden md:inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-2xs transition-all text-decoration-none"
-                >
-                    <LayoutGrid className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Ambil Barang</span>
-                </Link>
-
-                {/* Mode: Siang Pill */}
-                <div className="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100/80 text-amber-800 border border-amber-200/80 px-3 py-1.5 rounded-full text-xs font-bold transition-all">
-                    <Sun className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
-                    <span className="hidden sm:inline">Mode: Siang</span>
-                </div>
 
                 {/* User Avatar Pill Badge */}
                 <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 p-1 pr-3 rounded-full shadow-2xs">
