@@ -1325,6 +1325,28 @@ export default function DataTable({ logsheets }) {
                 const lumpiaRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'lumpia'));
                 const adonanRows  = sortByTimeAsc(pg.rows.filter(r => getBaseProduct(r.product_type) === 'adonan_pangsit'));
 
+                /* Extract individual unplanned stop items for line-by-line row rendering */
+                const unplannedStopList = (() => {
+                    const stops = [];
+                    pg.rows.forEach(r => {
+                        if (r.unplanned_stop && r.unplanned_stop !== '-') {
+                            r.unplanned_stop.split(', ').forEach(st => {
+                                const clean = st.trim();
+                                if (clean && clean !== '-' && !stops.includes(clean)) {
+                                    stops.push(clean);
+                                }
+                            });
+                        }
+                    });
+
+                    return stops.sort((a, b) => {
+                        const timeA = a.match(/^(\d{1,2}:\d{2})/)?.[1] || '';
+                        const timeB = b.match(/^(\d{1,2}:\d{2})/)?.[1] || '';
+                        if (timeA !== timeB) return timeA.localeCompare(timeB);
+                        return a.localeCompare(b);
+                    });
+                })();
+
                 /* Kunci grid per kolom di Halaman 1 = 40 baris */
                 const ROWS_PER_PAGE = 40;
 
