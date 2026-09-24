@@ -48,7 +48,7 @@ const PRINT_STYLE = `
     background: white;
     padding: 4mm 6mm !important;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 6px;
+    font-size: 8px;
     box-sizing: border-box !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
@@ -81,12 +81,12 @@ const PRINT_STYLE = `
     object-fit: contain;
   }
   .spt-title-block { text-align: center; }
-  .spt-t1 { font-weight: 900; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; line-height: 1.1; }
-  .spt-t2 { font-weight: 700; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; line-height: 1.1; }
+  .spt-t1 { font-weight: 900; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; line-height: 1.1; }
+  .spt-t2 { font-weight: 700; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; line-height: 1.1; }
 
   /* Document info table — top right */
-  .spt-doc-table { border-collapse: collapse; font-size: 6px; margin-left: auto; }
-  .spt-doc-table td { border: 0.5px solid #444; padding: 1px 4px; white-space: nowrap; line-height: 1.1; }
+  .spt-doc-table { border-collapse: collapse; font-size: 7.5px; margin-left: auto; }
+  .spt-doc-table td { border: 0.5px solid #444; padding: 1.5px 5px; white-space: nowrap; line-height: 1.1; }
   .spt-doc-label { font-weight: 700; background: #f0f0f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   /* === SUB-HEADER: Tanggal, PIC, IQF, Shift === */
@@ -94,11 +94,11 @@ const PRINT_STYLE = `
     display: grid !important;
     grid-template-columns: 1.2fr 2.5fr 1fr 1fr;
     align-items: center;
-    font-size: 7.5px;
+    font-size: 9px;
     border: 0.5px solid #666;
     background: #fafafa !important;
-    padding: 2px 6px;
-    margin-bottom: 2px;
+    padding: 3px 8px;
+    margin-bottom: 3px;
     line-height: 1.1;
     flex-shrink: 0;
     box-sizing: border-box !important;
@@ -114,7 +114,7 @@ const PRINT_STYLE = `
   }
   .spt-info-col b { font-weight: 700; margin-right: 3px; }
 
-  .spt-printed { font-size: 6px; color: #666; text-align: right; font-style: italic; margin-bottom: 2px; line-height: 1.1; flex-shrink: 0; }
+  .spt-printed { font-size: 7.5px; color: #666; text-align: right; font-style: italic; margin-bottom: 3px; line-height: 1.1; flex-shrink: 0; }
 
   table.spt-tbl {
     width: 100%;
@@ -124,15 +124,15 @@ const PRINT_STYLE = `
     table-layout: fixed;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    font-size: 6px;
+    font-size: 8px;
     line-height: 1.15;
   }
   table.spt-tbl thead { display: table-header-group; }
   table.spt-tbl tfoot { display: table-footer-group; }
   table.spt-tbl tr { page-break-inside: avoid !important; break-inside: avoid !important; }
   table.spt-tbl tbody tr {
-    height: 10px !important;
-    max-height: 10px !important;
+    height: 13.5px !important;
+    max-height: 13.5px !important;
   }
   table.spt-tbl th, table.spt-tbl td {
     border: 0.5px solid #888;
@@ -146,25 +146,25 @@ const PRINT_STYLE = `
   }
 
   /* Group header colors (top row) */
-  .spt-gh-siomay { background: #e65100 !important; color: #fff !important; font-weight: 900; font-size: 6.5px; padding: 1px 1px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-gh-pentol { background: #1565c0 !important; color: #fff !important; font-weight: 900; font-size: 6.5px; padding: 1px 1px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-gh-lumpia { background: #2e7d32 !important; color: #fff !important; font-weight: 900; font-size: 6.5px; padding: 1px 1px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-gh-adonan { background: #6a1b9a !important; color: #fff !important; font-weight: 900; font-size: 6.5px; padding: 1px 1px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-gh-stop   { background: #b71c1c !important; color: #fff !important; font-weight: 900; font-size: 6.5px; padding: 1px 1px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-gh-siomay { background: #e65100 !important; color: #fff !important; font-weight: 900; font-size: 8.5px; padding: 2px 1px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-gh-pentol { background: #1565c0 !important; color: #fff !important; font-weight: 900; font-size: 8.5px; padding: 2px 1px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-gh-lumpia { background: #2e7d32 !important; color: #fff !important; font-weight: 900; font-size: 8.5px; padding: 2px 1px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-gh-adonan { background: #6a1b9a !important; color: #fff !important; font-weight: 900; font-size: 8.5px; padding: 2px 1px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-gh-stop   { background: #b71c1c !important; color: #fff !important; font-weight: 900; font-size: 8.5px; padding: 2px 1px; text-transform: uppercase; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   /* Sub-header row per product */
-  .spt-sh-siomay { background: #fff3e0 !important; font-weight: 700; font-size: 5.5px; padding: 1px 1px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-sh-pentol { background: #e3f2fd !important; font-weight: 700; font-size: 5.5px; padding: 1px 1px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-sh-lumpia { background: #e8f5e9 !important; font-weight: 700; font-size: 5.5px; padding: 1px 1px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-sh-adonan { background: #f3e5f5 !important; font-weight: 700; font-size: 5.5px; padding: 1px 1px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-sh-stop   { background: #ffebee !important; font-weight: 700; font-size: 5.5px; padding: 1px 1px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-sh-siomay { background: #fff3e0 !important; font-weight: 700; font-size: 7.5px; padding: 1.5px 1px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-sh-pentol { background: #e3f2fd !important; font-weight: 700; font-size: 7.5px; padding: 1.5px 1px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-sh-lumpia { background: #e8f5e9 !important; font-weight: 700; font-size: 7.5px; padding: 1.5px 1px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-sh-adonan { background: #f3e5f5 !important; font-weight: 700; font-size: 7.5px; padding: 1.5px 1px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-sh-stop   { background: #ffebee !important; font-weight: 700; font-size: 7.5px; padding: 1.5px 1px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   /* Data cell colors per product */
   .spt-d-siomay { background: #fff9f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .spt-d-pentol { background: #f0f7ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .spt-d-lumpia { background: #f0fff4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .spt-d-adonan { background: #faf0ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .spt-d-stop   { background: #fff5f5 !important; vertical-align: middle !important; text-align: left !important; padding: 2px 4px !important; font-size: 5.5px !important; line-height: 1.2 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spt-d-stop   { background: #fff5f5 !important; vertical-align: middle !important; text-align: left !important; padding: 2px 4px !important; font-size: 7.5px !important; line-height: 1.3 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   /* Column width classes (used on <col>) */
   .spt-c-batch { width: 9.5mm; }
@@ -179,7 +179,7 @@ const PRINT_STYLE = `
     background: #b71c1c !important;
     color: #fff !important;
     font-weight: 900;
-    font-size: 6px;
+    font-size: 8.5px;
     padding: 2px 2px;
     text-transform: uppercase;
     white-space: normal !important;
@@ -193,8 +193,8 @@ const PRINT_STYLE = `
     vertical-align: middle !important;
     text-align: left !important;
     padding: 3px 4px !important;
-    font-size: 5.5px !important;
-    line-height: 1.5 !important;
+    font-size: 7.5px !important;
+    line-height: 1.3 !important;
     word-break: break-word !important;
     white-space: pre-line !important;
     -webkit-print-color-adjust: exact;
@@ -202,7 +202,7 @@ const PRINT_STYLE = `
   }
 
   /* Total / footer rows */
-  .spt-total-row td { font-weight: 700; font-size: 6px; padding: 1px 2px; border-top: 1.5px solid #444 !important; }
+  .spt-total-row td { font-weight: 700; font-size: 8px; padding: 2px 2px; border-top: 1.5px solid #444 !important; }
 }
 `;
 
@@ -1343,8 +1343,8 @@ export default function DataTable({ logsheets }) {
                     });
                 })();
 
-                /* Kunci grid per kolom di Halaman 1 = 40 baris */
-                const ROWS_PER_PAGE = 40;
+                /* Kunci grid per kolom di Halaman 1 = 30 baris */
+                const ROWS_PER_PAGE = 30;
 
                 const needsPage2 = (
                     siomayRows.length > ROWS_PER_PAGE ||
@@ -1566,7 +1566,7 @@ export default function DataTable({ logsheets }) {
                                     <td colSpan={2} style={{fontWeight:900,color:'#6a1b9a'}}>
                                         {totAdonan > 0 ? `${totAdonan} S` : '-'}
                                     </td>
-                                    <td style={{fontWeight:900,color:'#b71c1c',fontSize:'6px',textAlign:'center'}}>
+                                    <td style={{fontWeight:900,color:'#b71c1c',fontSize:'8px',textAlign:'center'}}>
                                         {totalUnplannedMins > 0 ? `Total: ${totalUnplannedMins} mnt` : '-'}
                                     </td>
                                 </tr>
