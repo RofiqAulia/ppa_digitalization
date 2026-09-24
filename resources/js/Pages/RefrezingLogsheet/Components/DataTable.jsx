@@ -455,7 +455,12 @@ export default function DataTable({ logsheets }) {
         const label = PRODUCT_LABELS[base] || base;
         return isTrial(pt) ? `${label} (T)` : label;
     };
-    const unitLabel = pt => ['lumpia','adonan_pangsit'].includes(getBaseProduct(pt)) ? 'K' : 'L';
+    const unitLabel = pt => {
+        const base = getBaseProduct(pt || '').toLowerCase();
+        if (base.includes('adonan')) return 'S';
+        if (base.includes('lumpia')) return 'K';
+        return 'L';
+    };
 
     const handleSort = key => {
         setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' }));
@@ -1168,7 +1173,7 @@ export default function DataTable({ logsheets }) {
                                                                     { label:'Siomay', val: group.totals.siomay, unit:'L', cls:'text-yellow-800 bg-yellow-100 border-yellow-300' },
                                                                     { label:'Pentol', val: group.totals.pentol, unit:'L', cls:'text-blue-800 bg-blue-100 border-blue-300' },
                                                                     { label:'Lumpia', val: group.totals.lumpia, unit:'K', cls:'text-green-800 bg-green-100 border-green-300' },
-                                                                    { label:'Adonan', val: group.totals.adonan, unit:'K', cls:'text-purple-800 bg-purple-100 border-purple-300' },
+                                                                    { label:'Adonan', val: group.totals.adonan, unit:'S', cls:'text-purple-800 bg-purple-100 border-purple-300' },
                                                                 ].map(({ label, val, unit, cls }) => (
                                                                     <div key={label} className="flex items-center gap-1">
                                                                         <span className="text-slate-400">{label}:</span>

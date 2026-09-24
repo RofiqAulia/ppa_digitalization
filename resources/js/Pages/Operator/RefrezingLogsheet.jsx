@@ -134,7 +134,8 @@ function DetailEditRow({ detail, index, isLastInBatch, batchTotal, unplannedStop
 
     const theme = THEMES[detail.product_type] || THEMES.default;
     const isPack = detail.product_type === 'lumpia' || detail.product_type === 'adonan_pangsit';
-    const unit = detail.product_type === 'adonan_pangsit' ? 'S' : (detail.product_type === 'lumpia' ? 'K' : 'L');
+    const cleanPt = (detail.product_type || '').toLowerCase().replace('_t', '');
+    const unit = cleanPt.includes('adonan') ? 'S' : (cleanPt.includes('lumpia') ? 'K' : 'L');
 
     let rowBg;
     if (editing || confirmDel) {
