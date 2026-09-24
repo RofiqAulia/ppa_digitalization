@@ -163,7 +163,7 @@ const PRINT_STYLE = `
   }
   .spt-d-stop {
     background: #fff5f5 !important;
-    vertical-align: top !important;
+    vertical-align: middle !important;
     text-align: left !important;
     padding: 3px 4px !important;
     font-size: 5.5px !important;
