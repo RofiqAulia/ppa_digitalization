@@ -151,8 +151,43 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
 
         return (
             <div key={mName} className={`bg-white border border-slate-200/80 shadow-xs rounded-3xl overflow-hidden print-machine-block ${cardKeyClass}`}>
-                {/* Header Card Per Mesin */}
-                <div className="bg-slate-900 text-white px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800">
+                {/* Print-Only Professional Metadata Header Table */}
+                <div className="hidden print-machine-header mb-4">
+                    <div className="flex items-center justify-between border-b border-slate-900 pb-1.5 mb-2">
+                        <h4 className="text-sm font-black text-slate-900 m-0 uppercase tracking-wide">
+                            FORM REKAP MATRIKS DETEKSI ANOMALI & LOGSHEET ({mName})
+                        </h4>
+                        <span className={`text-[11px] font-black uppercase px-2.5 py-0.5 border ${
+                            isAnomaly ? 'bg-rose-100 text-rose-900 border-rose-500' :
+                            isWarning ? 'bg-amber-100 text-amber-900 border-amber-500' :
+                            'bg-emerald-100 text-emerald-900 border-emerald-500'
+                        }`}>
+                            STATUS: {isAnomaly ? 'ANOMALI' : isWarning ? 'PERHATIAN' : 'NORMAL'}
+                        </span>
+                    </div>
+
+                    <table className="w-full text-xs border-collapse border border-slate-900 mb-3 print-meta-table">
+                        <tbody>
+                            <tr>
+                                <td className="bg-slate-100 font-bold px-3 py-1.5 border border-slate-900 w-1/6 text-slate-800">Mesin Production</td>
+                                <td className="font-extrabold px-3 py-1.5 border border-slate-900 w-1/3 text-slate-900">{mName}</td>
+                                <td className="bg-slate-100 font-bold px-3 py-1.5 border border-slate-900 w-1/6 text-slate-800">Target Shift</td>
+                                <td className="font-extrabold px-3 py-1.5 border border-slate-900 w-1/3 text-slate-900">{target_shift_minutes} menit</td>
+                            </tr>
+                            <tr>
+                                <td className="bg-slate-100 font-bold px-3 py-1.5 border border-slate-900 text-slate-800">Total Cover</td>
+                                <td className="font-extrabold px-3 py-1.5 border border-slate-900 text-emerald-800">{total_recorded_minutes} menit</td>
+                                <td className="bg-slate-100 font-bold px-3 py-1.5 border border-slate-900 text-slate-800">Selisih (Loss Time)</td>
+                                <td className={`font-extrabold px-3 py-1.5 border border-slate-900 ${unaccounted_minutes > 0 ? 'text-rose-700 font-black' : 'text-slate-900'}`}>
+                                    {unaccounted_minutes} menit
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Header Card Per Mesin (Web View Only) */}
+                <div className="bg-slate-900 text-white px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 web-machine-top-header">
                     <div className="flex items-center gap-3">
                         <div className={`w-9 h-9 rounded-2xl flex items-center justify-center text-white font-black text-sm shrink-0 ${
                             isAnomaly ? 'bg-rose-600 shadow-xs' : isWarning ? 'bg-amber-600 shadow-xs' : 'bg-emerald-600 shadow-xs'
@@ -184,10 +219,10 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                     </div>
                 </div>
 
-                <div className="p-5 space-y-4">
+                <div className="p-5 space-y-4 web-card-body">
                     {/* Status Alert Callout */}
                     {isAnomaly ? (
-                        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex items-start gap-3">
+                        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex items-start gap-3 web-anomaly-alert">
                             <ShieldAlert className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
                             <div>
                                 <h5 className="text-xs font-black text-rose-900 m-0 uppercase">
@@ -199,7 +234,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                             </div>
                         </div>
                     ) : isWarning ? (
-                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3 web-anomaly-alert">
                             <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                             <div>
                                 <h5 className="text-xs font-black text-amber-900 m-0 uppercase">
@@ -211,7 +246,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 px-4 flex items-center gap-2.5 text-emerald-900">
+                        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 px-4 flex items-center gap-2.5 text-emerald-900 web-anomaly-alert">
                             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                             <p className="text-xs font-bold m-0">
                                 ✅ Jam kerja {mName} ter-cover 100% tanpa anomali (Total {total_recorded_minutes}m).
@@ -221,7 +256,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
 
                     {/* PRIMEREACT DATATABLE SPREADSHEET LOGSHEET TEMPLATE WITH SORTING & PRINT */}
                     <div className="space-y-2 pt-2">
-                        <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-2 mb-1">
                             <div className="flex items-center gap-2">
                                 <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider block">
                                     📊 Matriks Logsheet PrimeReact DataTable ({mName})
@@ -242,7 +277,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                             </button>
                         </div>
 
-                        <div className="border border-slate-300 rounded-2xl overflow-hidden shadow-2xs bg-white p-1">
+                        <div className="border border-slate-300 rounded-2xl overflow-hidden shadow-2xs bg-white p-1 web-datatable-container">
                             <DataTable
                                 value={tableValue}
                                 headerColumnGroup={headerGroup}
@@ -272,7 +307,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                 printingMachine ? `print-only-${printingMachine.replace(/\s+/g, '-').toLowerCase()}` : ''
             }`}
         >
-            {/* Stylesheet Print CSS untuk cetak A4 */}
+            {/* Stylesheet Print CSS untuk cetak A4 / PDF Admin Profesional */}
             <style>{`
                 @media print {
                     body * { visibility: hidden !important; }
@@ -282,23 +317,87 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                         left: 0 !important;
                         top: 0 !important;
                         width: 100% !important;
-                        padding: 5mm !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
                         background: white !important;
                     }
                     .no-print-anomaly { display: none !important; }
-                    .print-machine-block { page-break-inside: avoid !important; margin-bottom: 20px !important; }
-                    
+
+                    /* Header Dokumen Resmi Cetak */
+                    .print-document-header {
+                        display: block !important;
+                        margin-bottom: 12px !important;
+                    }
+                    .print-machine-header {
+                        display: block !important;
+                    }
+
+                    /* Sembunyikan elemen web card UI saat cetak */
+                    .web-machine-top-header { display: none !important; }
+                    .web-card-body { padding: 0 !important; }
+
+                    /* Hilangkan Kontainer Box & Rounded Border saat Cetak */
+                    .print-machine-block {
+                        page-break-inside: avoid !important;
+                        margin-bottom: 25px !important;
+                        border: none !important;
+                        border-radius: 0 !important;
+                        box-shadow: none !important;
+                        background: transparent !important;
+                        padding: 0 !important;
+                    }
+                    .web-datatable-container {
+                        border: none !important;
+                        border-radius: 0 !important;
+                        box-shadow: none !important;
+                        padding: 0 !important;
+                        background: transparent !important;
+                    }
+                    .web-anomaly-alert {
+                        border-radius: 0 !important;
+                        border: 1px solid #cbd5e1 !important;
+                        box-shadow: none !important;
+                        margin-bottom: 12px !important;
+                    }
+
                     /* Specific machine print filtering */
                     .print-only-iqf-1 .machine-card-iqf-2 { display: none !important; }
                     .print-only-iqf-2 .machine-card-iqf-1 { display: none !important; }
                     .print-only-iqf-1 .anomaly-main-header,
                     .print-only-iqf-2 .anomaly-main-header { display: none !important; }
 
+                    /* Tabel Grid Rapi Profesional dengan Solid Border */
                     .p-datatable {
                         width: 100% !important;
+                        border: 1px solid #0f172a !important;
+                        border-radius: 0 !important;
+                    }
+                    .p-datatable table {
+                        width: 100% !important;
+                        border-collapse: collapse !important;
+                    }
+                    .p-datatable .p-datatable-thead > tr > th {
+                        border: 1px solid #0f172a !important;
+                        border-radius: 0 !important;
+                        padding: 6px 8px !important;
+                        font-size: 11px !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                    .p-datatable .p-datatable-tbody > tr > td {
+                        border: 1px solid #334155 !important;
+                        border-radius: 0 !important;
+                        padding: 5px 8px !important;
+                        font-size: 11px !important;
+                        color: #0f172a !important;
                     }
                     .p-datatable-wrapper {
                         overflow: visible !important;
+                        border-radius: 0 !important;
+                    }
+                    .print-meta-table {
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
                     }
                 }
                 .p-datatable .p-datatable-thead > tr > th {
@@ -313,6 +412,23 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                     justify-content: center !important;
                 }
             `}</style>
+
+            {/* Official Document Header (Only visible when printing) */}
+            <div className="hidden print-document-header border-b-2 border-slate-900 pb-3 mb-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        {/* Logo PPA di kiri */}
+                        <img src="/images/ppa.jpg" alt="PPA Logo" className="h-10 w-auto object-contain rounded-sm" />
+                        {/* Disusul Logo Gacoan */}
+                        <img src="/images/LogoMieGacoan.png" alt="Mie Gacoan Logo" className="h-10 w-auto object-contain" />
+                    </div>
+                    <div className="text-right leading-tight">
+                        <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight m-0">PT. PESTA PORA ABADI</h2>
+                        <h3 className="text-xs font-bold text-slate-700 m-0">PPA DIGITALIZATION — PRODUCTION SYSTEMS</h3>
+                        <p className="text-[10px] font-semibold text-slate-500 m-0 mt-0.5">Form Laporan Deteksi Anomali & Matriks Logsheet IQF</p>
+                    </div>
+                </div>
+            </div>
 
             {/* Section Main Header Bar */}
             <div className="bg-white border border-slate-200/80 shadow-xs rounded-3xl p-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 anomaly-main-header">
