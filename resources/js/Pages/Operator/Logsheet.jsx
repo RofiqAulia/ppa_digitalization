@@ -550,7 +550,7 @@ export default function OperatorLogsheet({ logsheets }) {
                             if (group.totalsByProduct['siomay'])       totalsArr.push(<span key="sio" className="bg-yellow-100 text-yellow-800 border border-yellow-200 px-2 py-0.5 rounded font-bold text-[10px]">Sio: {group.totalsByProduct['siomay']}L</span>);
                             if (group.totalsByProduct['pentol'])        totalsArr.push(<span key="pen" className="bg-blue-100 text-blue-800 border border-blue-200 px-2 py-0.5 rounded font-bold text-[10px]">Pen: {group.totalsByProduct['pentol']}L</span>);
                             if (group.totalsByProduct['lumpia'])        totalsArr.push(<span key="lum" className="bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded font-bold text-[10px]">Lum: {group.totalsByProduct['lumpia']}K</span>);
-                            if (group.totalsByProduct['adonan_pangsit'])totalsArr.push(<span key="ado" className="bg-purple-100 text-purple-800 border border-purple-200 px-2 py-0.5 rounded font-bold text-[10px]">Ado: {group.totalsByProduct['adonan_pangsit']}K</span>);
+                            if (group.totalsByProduct['adonan_pangsit'])totalsArr.push(<span key="ado" className="bg-purple-100 text-purple-800 border border-purple-200 px-2 py-0.5 rounded font-bold text-[10px]">Ado: {group.totalsByProduct['adonan_pangsit']}S</span>);
 
                             const dParts = group.date.split('-');
                             const formattedDate = dParts.length === 3 ? `${dParts[2]}/${dParts[1]}/${dParts[0]}` : group.date;
@@ -583,7 +583,7 @@ export default function OperatorLogsheet({ logsheets }) {
                                                     <th className="py-2.5 px-2 text-center">No Batch</th>
                                                     <th className="py-2.5 px-2 text-center">Waktu</th>
                                                     <th className="py-2.5 px-2 text-center">Rak/Rongga</th>
-                                                    <th className="py-2.5 px-2 text-center">Jumlah (Loyang/Keranjang)</th>
+                                                    <th className="py-2.5 px-2 text-center">Jumlah (Loyang/Keranjang/Solid)</th>
                                                     <th className="py-2.5 px-2 text-center bg-[#0f766e]">Total</th>
                                                     <th className="py-2.5 px-3 text-left min-w-[200px]">Unplanned Stop</th>
                                                 </tr>
