@@ -21,7 +21,12 @@ class IqfLogsheetController extends Controller
         $toTime   = $request->get('to_time',   '23:59');
         $queryDate = $request->get('date', $date);
 
-        $toTimeSql = ($toTime === '00:00' && $fromTime !== '00:00') ? '23:59:59' : ($toTime . ':59');
+        $toTimeSql = match ($toTime) {
+            '16:00' => '15:59:59',
+            '00:00' => ($fromTime === '00:00' ? '00:00:59' : '23:59:59'),
+            '08:00' => ($fromTime === '00:00' ? '07:59:59' : '08:00:59'),
+            default => $toTime . ':59',
+        };
 
         $products = ['siomay', 'pentol', 'lumpia', 'adonan_pangsit'];
         $machines = ['IQF 1', 'IQF 2'];

@@ -77,29 +77,8 @@ export function SidebarAnomalyWidget({ isCollapsed }) {
                     <Bell className="w-3.5 h-3.5 text-rose-600 fill-rose-100" />
                     <span>Perhatian Anomali!</span>
                 </div>
-                {/* <span className="text-[11px] font-black bg-rose-500 text-white px-2 py-0.5 rounded-full shadow-2xs">
-                    {unaccounted_minutes > 0 ? `${unaccounted_minutes}m` : '0'}
-                </span> */}
             </div>
-            {/* <p className="text-[11px] text-rose-800 font-medium leading-tight">
-                {unaccounted_minutes > 0 
-                    ? `Terdapat selisih ${unaccounted_minutes} menit waktu belum teridentifikasi.` 
-                    : `Semua aktivitas jam kerja shift ini berjalan normal.`}
-            </p> */}
 
-            {/* Micro Breakdown Pill Table */}
-            {/* <div className="grid grid-cols-2 gap-1 text-[10px] font-semibold text-rose-900 bg-white/70 p-2 rounded-xl border border-rose-200/60 shadow-2xs">
-                <div>🧆 Pentol: <span className="font-extrabold text-amber-700">{active_minutes_by_product.pentol ?? 0}m</span></div>
-                <div>🥟 Siomay: <span className="font-extrabold text-blue-700">{active_minutes_by_product.siomay ?? 0}m</span></div>
-                <div>🥢 Lumpia: <span className="font-extrabold text-emerald-700">{active_minutes_by_product.lumpia ?? 0}m</span></div>
-                <div>🫙 Adonan: <span className="font-extrabold text-purple-700">{active_minutes_by_product.adonan_pangsit ?? 0}m</span></div>
-                <div className="col-span-2 pt-1 border-t border-rose-200/60 flex justify-between items-center text-slate-600">
-                    <span>🛑 Downtime: <strong className="text-rose-600">{downtime_minutes}m</strong></span>
-                    <span>Total: <strong className="text-slate-800">{total_recorded_minutes}/{target_shift_minutes}m</strong></span>
-                </div>
-            </div> */}
-
-            {/* Red Action Button (Matching "Buka Deteksi Stok" in Gambar 1) */}
             <button
                 type="button"
                 onClick={scrollToAnomalySection}
