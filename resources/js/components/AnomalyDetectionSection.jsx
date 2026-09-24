@@ -8,6 +8,7 @@ import 'primereact/resources/primereact.min.css';
 
 export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi Anomali & Rekap Shift IQF" }) {
     const [selectedTab, setSelectedTab] = useState('ALL'); // 'ALL', 'IQF 1', 'IQF 2'
+    const [printingMachine, setPrintingMachine] = useState(null); // null, 'IQF 1', 'IQF 2'
 
     if (!anomalyData) {
         return (
@@ -23,7 +24,18 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
     const iqf2Data = machineDataMap['IQF 2'] || null;
 
     const handlePrintAnomaly = () => {
-        window.print();
+        setPrintingMachine(null);
+        setTimeout(() => {
+            window.print();
+        }, 100);
+    };
+
+    const handlePrintMachine = (mName) => {
+        setPrintingMachine(mName);
+        setTimeout(() => {
+            window.print();
+            setTimeout(() => setPrintingMachine(null), 500);
+        }, 150);
     };
 
     const renderMachineCard = (mName, mData) => {
@@ -135,8 +147,10 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
             </span>
         );
 
+        const cardKeyClass = `machine-card-${mName.replace(/\s+/g, '-').toLowerCase()}`;
+
         return (
-            <div key={mName} className="bg-white border border-slate-200/80 shadow-xs rounded-3xl overflow-hidden print-machine-block">
+            <div key={mName} className={`bg-white border border-slate-200/80 shadow-xs rounded-3xl overflow-hidden print-machine-block ${cardKeyClass}`}>
                 {/* Header Card Per Mesin */}
                 <div className="bg-slate-900 text-white px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800">
                     <div className="flex items-center gap-3">
@@ -205,73 +219,27 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                         </div>
                     )}
 
-                    {/* Ringkasan Menit per Produk & Downtime (KPI Cards) */}
-                    {/* <div>
-                        <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider block mb-2">
-                            ⏱️ Ringkasan Durasi Menit per Produk & Downtime ({mName})
-                        </span>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                            <div className="bg-[#e0f2fe] border border-[#0284c7]/30 rounded-2xl p-3 text-center shadow-2xs">
-                                <span className="text-[11px] font-black text-[#0369a1] block">🥟 SIOMAY</span>
-                                <span className="text-lg font-black text-[#0c4a6e] block mt-0.5">
-                                    {siomayMins} <span className="text-xs font-medium text-slate-600">mnt</span>
-                                </span>
-                                <span className="text-[10px] text-[#0369a1] font-semibold block mt-0.5">
-                                    {siomayRows.length} kali input
-                                </span>
-                            </div>
-
-                            <div className="bg-[#ffe4e6] border border-[#f43f5e]/30 rounded-2xl p-3 text-center shadow-2xs">
-                                <span className="text-[11px] font-black text-[#be123c] block">🧆 PENTOL</span>
-                                <span className="text-lg font-black text-[#881337] block mt-0.5">
-                                    {pentolMins} <span className="text-xs font-medium text-slate-600">mnt</span>
-                                </span>
-                                <span className="text-[10px] text-[#be123c] font-semibold block mt-0.5">
-                                    {pentolRows.length} kali input
-                                </span>
-                            </div>
-
-                            <div className="bg-[#ecfeff] border border-[#06b6d4]/30 rounded-2xl p-3 text-center shadow-2xs">
-                                <span className="text-[11px] font-black text-[#0891b2] block">🥢 LUMPIA</span>
-                                <span className="text-lg font-black text-[#155e75] block mt-0.5">
-                                    {lumpiaMins} <span className="text-xs font-medium text-slate-600">mnt</span>
-                                </span>
-                                <span className="text-[10px] text-[#0891b2] font-semibold block mt-0.5">
-                                    {lumpiaRows.length} kali input
-                                </span>
-                            </div>
-
-                            <div className="bg-[#fdf4ff] border border-[#d946ef]/30 rounded-2xl p-3 text-center shadow-2xs">
-                                <span className="text-[11px] font-black text-[#a21caf] block">🫙 ADONAN PANGSIT</span>
-                                <span className="text-lg font-black text-[#701a75] block mt-0.5">
-                                    {adonanMins} <span className="text-xs font-medium text-slate-600">mnt</span>
-                                </span>
-                                <span className="text-[10px] text-[#a21caf] font-semibold block mt-0.5">
-                                    {adonanRows.length} kali input
-                                </span>
-                            </div>
-
-                            <div className="bg-[#fef2f2] border border-rose-300 rounded-2xl p-3 text-center shadow-2xs col-span-2 sm:col-span-1">
-                                <span className="text-[11px] font-black text-[#b71c1c] block">🛑 UNPLANNED STOP</span>
-                                <span className="text-lg font-black text-[#7f1d1d] block mt-0.5">
-                                    {downtime_minutes} <span className="text-xs font-medium text-slate-600">mnt</span>
-                                </span>
-                                <span className="text-[10px] text-[#b71c1c] font-semibold block mt-0.5">
-                                    {sortedDowntime.length} kejadian
-                                </span>
-                            </div>
-                        </div>
-                    </div> */}
-
-                    {/* PRIMEREACT DATATABLE SPREADSHEET LOGSHEET TEMPLATE WITH SORTING */}
+                    {/* PRIMEREACT DATATABLE SPREADSHEET LOGSHEET TEMPLATE WITH SORTING & PRINT */}
                     <div className="space-y-2 pt-2">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider block">
-                                📊 Matriks Logsheet PrimeReact DataTable ({mName})
-                            </span>
-                            <span className="text-[11px] text-slate-400 font-medium italic">
-                                PrimeReact DataTable dengan ColumnGroup & Interaktif Sorting
-                            </span>
+                        <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider block">
+                                    📊 Matriks Logsheet PrimeReact DataTable ({mName})
+                                </span>
+                                <span className="text-[11px] text-slate-400 font-medium italic hidden sm:inline">
+                                    • ColumnGroup & Interaktif Sorting
+                                </span>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => handlePrintMachine(mName)}
+                                className="h-8 px-3.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer border-0 shrink-0 no-print-anomaly"
+                                title={`Cetak Form Matriks ${mName}`}
+                            >
+                                <Printer className="w-3.5 h-3.5 text-cyan-400" />
+                                <span>Cetak Form {mName}</span>
+                            </button>
                         </div>
 
                         <div className="border border-slate-300 rounded-2xl overflow-hidden shadow-2xs bg-white p-1">
@@ -298,7 +266,12 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
     };
 
     return (
-        <div id="deteksi-anomali-section" className="space-y-4 select-none">
+        <div
+            id="deteksi-anomali-section"
+            className={`space-y-4 select-none ${
+                printingMachine ? `print-only-${printingMachine.replace(/\s+/g, '-').toLowerCase()}` : ''
+            }`}
+        >
             {/* Stylesheet Print CSS untuk cetak A4 */}
             <style>{`
                 @media print {
@@ -309,11 +282,24 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                         left: 0 !important;
                         top: 0 !important;
                         width: 100% !important;
-                        padding: 10mm !important;
+                        padding: 5mm !important;
                         background: white !important;
                     }
                     .no-print-anomaly { display: none !important; }
                     .print-machine-block { page-break-inside: avoid !important; margin-bottom: 20px !important; }
+                    
+                    /* Specific machine print filtering */
+                    .print-only-iqf-1 .machine-card-iqf-2 { display: none !important; }
+                    .print-only-iqf-2 .machine-card-iqf-1 { display: none !important; }
+                    .print-only-iqf-1 .anomaly-main-header,
+                    .print-only-iqf-2 .anomaly-main-header { display: none !important; }
+
+                    .p-datatable {
+                        width: 100% !important;
+                    }
+                    .p-datatable-wrapper {
+                        overflow: visible !important;
+                    }
                 }
                 .p-datatable .p-datatable-thead > tr > th {
                     padding: 0.6rem 0.75rem !important;
@@ -329,7 +315,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
             `}</style>
 
             {/* Section Main Header Bar */}
-            <div className="bg-white border border-slate-200/80 shadow-xs rounded-3xl p-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+            <div className="bg-white border border-slate-200/80 shadow-xs rounded-3xl p-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 anomaly-main-header">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-[#0284c7] text-white flex items-center justify-center font-black text-lg shadow-xs shrink-0">
                         <Activity className="w-5 h-5" />
