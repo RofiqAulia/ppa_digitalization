@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, CheckCircle2, ShieldAlert, Clock, Layers, Printer, Activity } from 'lucide-react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
@@ -300,187 +301,219 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
         );
     };
 
+    const targetPrintMachine = printingMachine || selectedTab;
+
     return (
-        <div
-            id="deteksi-anomali-section"
-            className={`space-y-4 select-none ${
-                printingMachine ? `print-only-${printingMachine.replace(/\s+/g, '-').toLowerCase()}` : ''
-            }`}
-        >
-            {/* Stylesheet Print CSS untuk cetak A4 / PDF Admin Profesional */}
-            <style>{`
-                @media print {
-                    body * { visibility: hidden !important; }
-                    #deteksi-anomali-section, #deteksi-anomali-section * { visibility: visible !important; }
-                    #deteksi-anomali-section {
-                        position: absolute !important;
-                        left: 0 !important;
-                        top: 0 !important;
-                        width: 100% !important;
-                        padding: 0 !important;
-                        margin: 0 !important;
-                        background: white !important;
-                    }
-                    .no-print-anomaly { display: none !important; }
+        <>
+            {/* Render Dedicated Print Portal directly into document.body */}
+            {typeof document !== 'undefined' && createPortal(
+                <div id="anomaly-print-portal">
+                    {/* Official Document Header (Only visible when printing) */}
+                    <div className="print-document-header border-b-2 border-slate-900 pb-3 mb-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                {/* Logo PPA di kiri */}
+                                <img src="/images/ppa.jpg" alt="PPA Logo" className="h-10 w-auto object-contain rounded-sm" />
+                                {/* Disusul Logo Gacoan */}
+                                <img src="/images/LogoMieGacoan.png" alt="Mie Gacoan Logo" className="h-10 w-auto object-contain" />
+                            </div>
+                            <div className="text-right leading-tight">
+                                <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight m-0">PT. PESTA PORA ABADI</h2>
+                                <h3 className="text-xs font-bold text-slate-700 m-0">PPA DIGITALIZATION — PRODUCTION SYSTEMS</h3>
+                                <p className="text-[10px] font-semibold text-slate-500 m-0 mt-0.5">Form Laporan Deteksi Anomali & Matriks Logsheet IQF</p>
+                            </div>
+                        </div>
+                    </div>
 
-                    /* Header Dokumen Resmi Cetak */
-                    .print-document-header {
-                        display: block !important;
-                        margin-bottom: 12px !important;
-                    }
-                    .print-machine-header {
-                        display: block !important;
+                    {/* Machine Cards for Print */}
+                    <div className="space-y-6">
+                        {(targetPrintMachine === 'ALL' || targetPrintMachine === 'IQF 1') && renderMachineCard('IQF 1', iqf1Data || anomalyData)}
+                        {(targetPrintMachine === 'ALL' || targetPrintMachine === 'IQF 2') && renderMachineCard('IQF 2', iqf2Data || anomalyData)}
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            <div id="deteksi-anomali-section" className="space-y-4 select-none">
+                {/* Stylesheet Print CSS untuk cetak A4 / PDF Admin Profesional */}
+                <style>{`
+                    @media print {
+                        @page {
+                            size: A4 portrait;
+                            margin: 8mm;
+                        }
+
+                        /* Sembunyikan SEMUA elemen di body KECUALI #anomaly-print-portal */
+                        body > *:not(#anomaly-print-portal) {
+                            display: none !important;
+                        }
+
+                        #anomaly-print-portal {
+                            display: block !important;
+                            position: static !important;
+                            width: 100% !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            background: white !important;
+                        }
+
+                        .no-print-anomaly {
+                            display: none !important;
+                        }
+
+                        /* Header Dokumen Resmi Cetak */
+                        .print-document-header {
+                            display: block !important;
+                            margin-bottom: 12px !important;
+                        }
+                        .print-machine-header {
+                            display: block !important;
+                        }
+
+                        /* Sembunyikan elemen web card UI saat cetak */
+                        .web-machine-top-header { display: none !important; }
+                        .web-card-body { padding: 0 !important; }
+
+                        /* Hilangkan Kontainer Box & Rounded Border saat Cetak */
+                        .print-machine-block {
+                            page-break-inside: auto !important;
+                            break-inside: auto !important;
+                            margin-bottom: 25px !important;
+                            border: none !important;
+                            border-radius: 0 !important;
+                            box-shadow: none !important;
+                            background: transparent !important;
+                            padding: 0 !important;
+                        }
+                        .web-datatable-container {
+                            border: none !important;
+                            border-radius: 0 !important;
+                            box-shadow: none !important;
+                            padding: 0 !important;
+                            background: transparent !important;
+                        }
+                        .web-anomaly-alert {
+                            border-radius: 0 !important;
+                            border: 1px solid #cbd5e1 !important;
+                            box-shadow: none !important;
+                            margin-bottom: 12px !important;
+                            page-break-inside: avoid !important;
+                        }
+
+                        /* Tabel Grid Rapi Profesional dengan Solid Border */
+                        .p-datatable {
+                            width: 100% !important;
+                            border: 1px solid #0f172a !important;
+                            border-radius: 0 !important;
+                        }
+                        .p-datatable table {
+                            width: 100% !important;
+                            border-collapse: collapse !important;
+                        }
+                        .p-datatable .p-datatable-thead {
+                            display: table-header-group !important;
+                        }
+                        .p-datatable .p-datatable-thead > tr > th {
+                            border: 1px solid #0f172a !important;
+                            border-radius: 0 !important;
+                            padding: 5px 6px !important;
+                            font-size: 10px !important;
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                        }
+                        .p-datatable .p-datatable-tbody > tr {
+                            page-break-inside: avoid !important;
+                            break-inside: avoid !important;
+                        }
+                        .p-datatable .p-datatable-tbody > tr > td {
+                            border: 1px solid #334155 !important;
+                            border-radius: 0 !important;
+                            padding: 4px 6px !important;
+                            font-size: 10px !important;
+                            color: #0f172a !important;
+                        }
+                        .p-datatable-wrapper {
+                            overflow: visible !important;
+                            border-radius: 0 !important;
+                        }
+                        .print-meta-table {
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                        }
                     }
 
-                    /* Sembunyikan elemen web card UI saat cetak */
-                    .web-machine-top-header { display: none !important; }
-                    .web-card-body { padding: 0 !important; }
-
-                    /* Hilangkan Kontainer Box & Rounded Border saat Cetak */
-                    .print-machine-block {
-                        page-break-inside: avoid !important;
-                        margin-bottom: 25px !important;
-                        border: none !important;
-                        border-radius: 0 !important;
-                        box-shadow: none !important;
-                        background: transparent !important;
-                        padding: 0 !important;
-                    }
-                    .web-datatable-container {
-                        border: none !important;
-                        border-radius: 0 !important;
-                        box-shadow: none !important;
-                        padding: 0 !important;
-                        background: transparent !important;
-                    }
-                    .web-anomaly-alert {
-                        border-radius: 0 !important;
-                        border: 1px solid #cbd5e1 !important;
-                        box-shadow: none !important;
-                        margin-bottom: 12px !important;
+                    @media screen {
+                        #anomaly-print-portal {
+                            display: none !important;
+                        }
                     }
 
-                    /* Specific machine print filtering */
-                    .print-only-iqf-1 .machine-card-iqf-2 { display: none !important; }
-                    .print-only-iqf-2 .machine-card-iqf-1 { display: none !important; }
-                    .print-only-iqf-1 .anomaly-main-header,
-                    .print-only-iqf-2 .anomaly-main-header { display: none !important; }
-
-                    /* Tabel Grid Rapi Profesional dengan Solid Border */
-                    .p-datatable {
-                        width: 100% !important;
-                        border: 1px solid #0f172a !important;
-                        border-radius: 0 !important;
-                    }
-                    .p-datatable table {
-                        width: 100% !important;
-                        border-collapse: collapse !important;
-                    }
                     .p-datatable .p-datatable-thead > tr > th {
-                        border: 1px solid #0f172a !important;
-                        border-radius: 0 !important;
-                        padding: 6px 8px !important;
-                        font-size: 11px !important;
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
+                        padding: 0.6rem 0.75rem !important;
+                        font-size: 0.75rem !important;
                     }
                     .p-datatable .p-datatable-tbody > tr > td {
-                        border: 1px solid #334155 !important;
-                        border-radius: 0 !important;
-                        padding: 5px 8px !important;
-                        font-size: 11px !important;
-                        color: #0f172a !important;
+                        padding: 0.5rem 0.75rem !important;
+                        font-size: 0.75rem !important;
                     }
-                    .p-datatable-wrapper {
-                        overflow: visible !important;
-                        border-radius: 0 !important;
+                    .p-column-header-content {
+                        justify-content: center !important;
                     }
-                    .print-meta-table {
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-                }
-                .p-datatable .p-datatable-thead > tr > th {
-                    padding: 0.6rem 0.75rem !important;
-                    font-size: 0.75rem !important;
-                }
-                .p-datatable .p-datatable-tbody > tr > td {
-                    padding: 0.5rem 0.75rem !important;
-                    font-size: 0.75rem !important;
-                }
-                .p-column-header-content {
-                    justify-content: center !important;
-                }
-            `}</style>
+                `}</style>
 
-            {/* Official Document Header (Only visible when printing) */}
-            <div className="hidden print-document-header border-b-2 border-slate-900 pb-3 mb-4">
-                <div className="flex items-center justify-between">
+                {/* Section Main Header Bar */}
+                <div className="bg-white border border-slate-200/80 shadow-xs rounded-3xl p-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 anomaly-main-header">
                     <div className="flex items-center gap-3">
-                        {/* Logo PPA di kiri */}
-                        <img src="/images/ppa.jpg" alt="PPA Logo" className="h-10 w-auto object-contain rounded-sm" />
-                        {/* Disusul Logo Gacoan */}
-                        <img src="/images/LogoMieGacoan.png" alt="Mie Gacoan Logo" className="h-10 w-auto object-contain" />
+                        <div className="w-10 h-10 rounded-2xl bg-[#0284c7] text-white flex items-center justify-center font-black text-lg shadow-xs shrink-0">
+                            <Activity className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h3 className="text-base sm:text-lg font-black text-slate-900 m-0 tracking-tight">{title}</h3>
+                            <p className="text-xs font-semibold text-slate-400 m-0">
+                                Analisis durasi input aktif produk, downtime kendala, dan loss time terpisah untuk IQF 1 & IQF 2
+                            </p>
+                        </div>
                     </div>
-                    <div className="text-right leading-tight">
-                        <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight m-0">PT. PESTA PORA ABADI</h2>
-                        <h3 className="text-xs font-bold text-slate-700 m-0">PPA DIGITALIZATION — PRODUCTION SYSTEMS</h3>
-                        <p className="text-[10px] font-semibold text-slate-500 m-0 mt-0.5">Form Laporan Deteksi Anomali & Matriks Logsheet IQF</p>
+
+                    <div className="flex items-center gap-2.5 no-print-anomaly">
+                        {/* Tab Switcher */}
+                        <div className="flex items-center bg-slate-100 p-1 rounded-full border border-slate-200">
+                            {['ALL', 'IQF 1', 'IQF 2'].map(tab => (
+                                <button
+                                    key={tab}
+                                    type="button"
+                                    onClick={() => setSelectedTab(tab)}
+                                    className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition-all border-0 ${
+                                        selectedTab === tab
+                                            ? 'bg-[#0284c7] text-white shadow-2xs font-extrabold'
+                                            : 'text-slate-600 hover:text-slate-900'
+                                    }`}
+                                >
+                                    {tab === 'ALL' ? 'Semua Mesin' : tab}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Print Button */}
+                        <button
+                            type="button"
+                            onClick={handlePrintAnomaly}
+                            className="h-9 px-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-2 shadow-xs transition-all cursor-pointer border-0 shrink-0"
+                            title="Cetak Laporan Anomali"
+                        >
+                            <Printer className="w-3.5 h-3.5" />
+                            <span>Cetak Laporan</span>
+                        </button>
                     </div>
                 </div>
-            </div>
 
-            {/* Section Main Header Bar */}
-            <div className="bg-white border border-slate-200/80 shadow-xs rounded-3xl p-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 anomaly-main-header">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-[#0284c7] text-white flex items-center justify-center font-black text-lg shadow-xs shrink-0">
-                        <Activity className="w-5 h-5" />
-                    </div>
-                    <div>
-                        <h3 className="text-base sm:text-lg font-black text-slate-900 m-0 tracking-tight">{title}</h3>
-                        <p className="text-xs font-semibold text-slate-400 m-0">
-                            Analisis durasi input aktif produk, downtime kendala, dan loss time terpisah untuk IQF 1 & IQF 2
-                        </p>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-2.5 no-print-anomaly">
-                    {/* Tab Switcher */}
-                    <div className="flex items-center bg-slate-100 p-1 rounded-full border border-slate-200">
-                        {['ALL', 'IQF 1', 'IQF 2'].map(tab => (
-                            <button
-                                key={tab}
-                                type="button"
-                                onClick={() => setSelectedTab(tab)}
-                                className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition-all border-0 ${
-                                    selectedTab === tab
-                                        ? 'bg-[#0284c7] text-white shadow-2xs font-extrabold'
-                                        : 'text-slate-600 hover:text-slate-900'
-                                }`}
-                            >
-                                {tab === 'ALL' ? 'Semua Mesin' : tab}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Print Button */}
-                    <button
-                        type="button"
-                        onClick={handlePrintAnomaly}
-                        className="h-9 px-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-2 shadow-xs transition-all cursor-pointer border-0 shrink-0"
-                        title="Cetak Laporan Anomali"
-                    >
-                        <Printer className="w-3.5 h-3.5" />
-                        <span>Cetak Laporan</span>
-                    </button>
+                {/* Grid Display for IQF 1 & IQF 2 */}
+                <div className="space-y-6">
+                    {(selectedTab === 'ALL' || selectedTab === 'IQF 1') && renderMachineCard('IQF 1', iqf1Data || anomalyData)}
+                    {(selectedTab === 'ALL' || selectedTab === 'IQF 2') && renderMachineCard('IQF 2', iqf2Data || anomalyData)}
                 </div>
             </div>
-
-            {/* Grid Display for IQF 1 & IQF 2 */}
-            <div className="space-y-6">
-                {(selectedTab === 'ALL' || selectedTab === 'IQF 1') && renderMachineCard('IQF 1', iqf1Data || anomalyData)}
-                {(selectedTab === 'ALL' || selectedTab === 'IQF 2') && renderMachineCard('IQF 2', iqf2Data || anomalyData)}
-            </div>
-        </div>
+        </>
     );
 }
+
