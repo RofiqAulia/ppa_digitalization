@@ -283,24 +283,13 @@ export default function DataTable({ logsheets }) {
         if (!stopText || stopText === '-') return '-';
         const stops = stopText.split(',').map(s => s.trim()).filter(Boolean);
 
-        const machineLogsheets = logsheets
-            .filter(l => l.machine === ls.machine)
-            .sort((a, b) => {
-                if (a.date !== b.date) return a.date < b.date ? -1 : 1;
-                return a.shift - b.shift;
-            });
-
-        const idx = machineLogsheets.findIndex(l => l.id === ls.id);
+        const machineLogsheets = logsheets.filter(l => l.machine === ls.machine && l.date === ls.date);
         let relevantDetails = [];
-        if (idx !== -1) {
-            for (let i = idx; i < machineLogsheets.length; i++) {
-                relevantDetails.push(...(machineLogsheets[i].details || []));
+        machineLogsheets.forEach(l => {
+            if (l.details && l.details.length > 0) {
+                relevantDetails.push(...l.details);
             }
-        }
-
-        const sortedDetails = relevantDetails
-            .filter(d => d.created_at && d.time)
-            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        });
 
         const now = new Date();
         const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
@@ -311,15 +300,21 @@ export default function DataTable({ logsheets }) {
             if (!timeMatch) return st;
 
             const stopMin = parseInt(timeMatch[1]) * 60 + parseInt(timeMatch[2]);
-            const nextDetail = sortedDetails.find(d => {
+            let nextDetail = null;
+            let minDiff = 999999;
+
+            relevantDetails.forEach(d => {
                 const dmTime = timeToMinutes(d.time);
-                if (dmTime === null) return false;
+                if (dmTime === null) return;
                 const diff = calcDurationMinutes(stopMin, dmTime);
-                return diff > 0 && diff < 720;
+                if (diff > 0 && diff < 720 && diff < minDiff) {
+                    minDiff = diff;
+                    nextDetail = d;
+                }
             });
 
             if (nextDetail) {
-                const duration = calcDurationMinutes(stopMin, timeToMinutes(nextDetail.time));
+                const duration = minDiff;
                 return `${st} (⏱ ${duration} menit)`;
             } else {
                 const runningDuration = calcDurationMinutes(stopMin, nowMinutes);

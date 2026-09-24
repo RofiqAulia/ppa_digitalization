@@ -121,22 +121,24 @@ class IqfLogsheetController extends Controller
                         }
                     }
 
-                    // Find the first detail on THIS MACHINE (any logsheet) entered AFTER the stop time
-                    $nextDetail = $machineSortedDetails->first(function($d) use ($stopMin) {
-                        $wibTime = $d->created_at->setTimezone('Asia/Jakarta')->format('H:i');
-                        [$h, $m] = explode(':', $wibTime);
-                        $dmCreated = (int)$h * 60 + (int)$m;
-                        $diff = $dmCreated >= $stopMin ? $dmCreated - $stopMin : $dmCreated + 1440 - $stopMin;
-                        return $diff >= 0 && $diff < 720;
-                    });
+                    // Find the first detail on THIS MACHINE (any logsheet) entered AFTER the stop time (based on production time)
+                    $nextDetail = null;
+                    $minDiff = 999999;
+                    foreach ($machineSortedDetails as $d) {
+                        if (empty($d->time) || $d->time === '-') continue;
+                        [$th, $tm] = explode(':', substr($d->time, 0, 5));
+                        $dMin = (int)$th * 60 + (int)$tm;
+                        $diff = $dMin >= $stopMin ? $dMin - $stopMin : $dMin + 1440 - $stopMin;
+                        if ($diff > 0 && $diff < 720 && $diff < $minDiff) {
+                            $minDiff = $diff;
+                            $nextDetail = $d;
+                        }
+                    }
 
                     $duration = null;
                     $durMins = 0;
                     if ($nextDetail) {
-                        // Use the `time` field (operator-entered time) for duration calculation
-                        [$th, $tm] = explode(':', substr($nextDetail->time, 0, 5));
-                        $nextMin = (int)$th * 60 + (int)$tm;
-                        $durMins = $nextMin >= $stopMin ? $nextMin - $stopMin : $nextMin + 1440 - $stopMin;
+                        $durMins = $minDiff;
                         $duration = $durMins . ' menit';
                     } else {
                         $nowWib = now('Asia/Jakarta');

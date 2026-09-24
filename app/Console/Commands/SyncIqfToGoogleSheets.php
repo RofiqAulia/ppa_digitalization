@@ -716,31 +716,32 @@ class SyncIqfToGoogleSheets extends Command
         if (!$stopText || $stopText === '-') return '-';
         $stops = array_filter(array_map('trim', explode(',', $stopText)));
 
-        $details = DB::table('iqf_logsheet_details')
-            ->where('iqf_logsheet_id', $logsheet->id)
-            ->whereNotNull('time')
-            ->orderBy('created_at', 'asc')
+        $details = DB::table('iqf_logsheet_details as d')
+            ->join('iqf_logsheets as h', 'd.iqf_logsheet_id', '=', 'h.id')
+            ->where('h.machine', $logsheet->machine)
+            ->where('h.date', $logsheet->date)
+            ->whereNotNull('d.time')
             ->get();
 
         $result = [];
         foreach ($stops as $st) {
             if (preg_match('/^(\d{1,2}):(\d{2})/', $st, $matches)) {
                 $stopMin = (int)$matches[1] * 60 + (int)$matches[2];
-                $nextDetail = $details->first(function($d) use ($stopMin) {
+                $nextDetail = null;
+                $minDiff = 999999;
+                foreach ($details as $d) {
                     $timeParts = explode(':', $d->time);
-                    if (count($timeParts) < 2) return false;
+                    if (count($timeParts) < 2) continue;
                     $dmTime = (int)$timeParts[0] * 60 + (int)$timeParts[1];
-                    $diff = $dmTime - $stopMin;
-                    if ($diff < 0) $diff += 1440;
-                    return $diff > 0 && $diff < 720;
-                });
+                    $diff = $dmTime >= $stopMin ? $dmTime - $stopMin : $dmTime + 1440 - $stopMin;
+                    if ($diff > 0 && $diff < 720 && $diff < $minDiff) {
+                        $minDiff = $diff;
+                        $nextDetail = $d;
+                    }
+                }
 
                 if ($nextDetail) {
-                    $timeParts = explode(':', $nextDetail->time);
-                    $dmTime = (int)$timeParts[0] * 60 + (int)$timeParts[1];
-                    $duration = $dmTime - $stopMin;
-                    if ($duration < 0) $duration += 1440;
-                    $result[] = "{$st} (⏱ {$duration} mnt)";
+                    $result[] = "{$st} (⏱ {$minDiff} mnt)";
                 } else {
                     $result[] = "{$st} (🔴 Blm Selesai)";
                 }

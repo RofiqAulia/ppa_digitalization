@@ -123,9 +123,27 @@ class RefrezingController extends Controller
             ->with('details')
             ->get();
 
+        $allRefrezingByMachine = RefrezingLogsheet::with('details')
+            ->where('date', $queryDate)
+            ->get()
+            ->groupBy('machine');
+
+        $refDetailsByMachine = [];
+        foreach ($allRefrezingByMachine as $machine => $logsheets) {
+            $allDetails = collect();
+            foreach ($logsheets as $ls) {
+                foreach ($ls->details as $d) {
+                    if ($d->time) {
+                        $allDetails->push($d);
+                    }
+                }
+            }
+            $refDetailsByMachine[$machine] = $allDetails;
+        }
+
         foreach ($logsheetsWithStops as $ls) {
             $stops = array_filter(array_map('trim', explode(',', $ls->unplanned_stop)));
-            $sortedDetails = $ls->details->sortBy('created_at')->values();
+            $sortedDetails = $refDetailsByMachine[$ls->machine] ?? collect();
 
             foreach ($stops as $stopText) {
                 $durationStr = 'Belum Selesai';
@@ -146,20 +164,22 @@ class RefrezingController extends Controller
                         }
                     }
 
-                    $nextDetail = $sortedDetails->first(function ($d) use ($stopMin) {
-                        $dt = new Carbon($d->created_at);
-                        $dt->setTimezone('Asia/Jakarta');
-                        $dm = (int)$dt->format('H') * 60 + (int)$dt->format('i');
-                        $diff = $dm >= $stopMin ? $dm - $stopMin : $dm + 1440 - $stopMin;
-                        return $diff >= 0 && $diff < 720;
-                    });
-                    if ($nextDetail) {
-                        $parts = explode(':', $nextDetail->time);
-                        if (count($parts) >= 2) {
-                            $nextMin = (int)$parts[0] * 60 + (int)$parts[1];
-                            $durMins = $nextMin >= $stopMin ? $nextMin - $stopMin : $nextMin + 1440 - $stopMin;
-                            $durationStr = $durMins . ' menit';
+                    $nextDetail = null;
+                    $minDiff = 999999;
+                    foreach ($sortedDetails as $d) {
+                        if (empty($d->time) || $d->time === '-') continue;
+                        $parts = explode(':', substr($d->time, 0, 5));
+                        if (count($parts) < 2) continue;
+                        $dMin = (int)$parts[0] * 60 + (int)$parts[1];
+                        $diff = $dMin >= $stopMin ? $dMin - $stopMin : $dMin + 1440 - $stopMin;
+                        if ($diff > 0 && $diff < 720 && $diff < $minDiff) {
+                            $minDiff = $diff;
+                            $nextDetail = $d;
                         }
+                    }
+                    if ($nextDetail) {
+                        $durMins = $minDiff;
+                        $durationStr = $durMins . ' menit';
                     } else {
                         $nowWib = now('Asia/Jakarta');
                         $nowMins = (int)$nowWib->format('H') * 60 + (int)$nowWib->format('i');
