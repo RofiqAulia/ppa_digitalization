@@ -140,10 +140,10 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
             return uniqueBatches.size > 0 ? uniqueBatches.size : (rows.length > 0 ? 1 : 0);
         };
 
-        const siomayRakTerakhir = getRakTerakhir(siomayRows);
-        const pentolRakTerakhir = getRakTerakhir(pentolRows);
-        const lumpiaBatchTerakhir = getBatchTerakhir(lumpiaRows);
-        const adonanTotalSolid = adonanRows.reduce((sum, r) => sum + (Number(r.tray_count) || 0), 0);
+        const siomayTotalLoyang = siomayRows.reduce((sum, r) => sum + (Number(r.tray_count) || 0), 0);
+        const pentolTotalLoyang = pentolRows.reduce((sum, r) => sum + (Number(r.tray_count) || 0), 0);
+        const lumpiaTotalSolid = lumpiaRows.reduce((sum, r) => sum + (Number(r.tray_count) || 0), 0);
+        const adonanTotalKeranjang = adonanRows.reduce((sum, r) => sum + (Number(r.tray_count) || 0), 0);
 
         // Format to 1 decimal place if not a whole integer (e.g., 67.7 for 14 raks)
         const formatMins = (val) => {
@@ -152,20 +152,25 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
             return Number.isInteger(num) ? num.toString() : num.toFixed(1);
         };
 
-        const siomayLossMinsVal = (siomayRakTerakhir * 290) / 60;
-        const pentolLossMinsVal = (pentolRakTerakhir * 290) / 60;
-        const lumpiaLossMinsVal = lumpiaBatchTerakhir * 12;
-        const adonanLossMinsVal = (adonanTotalSolid * 71) / 60;
+        // Waktu Sesuai Resep (Standar Resep):
+        // 1. Siomay & Pentol: (Jumlah Loyang x 13.2) / 60 menit
+        // 2. Lumpia: (Jumlah Solid x 71) / 60 menit
+        // 3. Adonan Pangsit: Jumlah Keranjang x 1.5 menit
+        const siomayResepVal = (siomayTotalLoyang * 13.2) / 60;
+        const pentolResepVal = (pentolTotalLoyang * 13.2) / 60;
+        const lumpiaResepVal = (lumpiaTotalSolid * 71) / 60;
+        const adonanResepVal = adonanTotalKeranjang * 1.5;
 
-        const siomayLossMins = formatMins(siomayLossMinsVal);
-        const pentolLossMins = formatMins(pentolLossMinsVal);
-        const lumpiaLossMins = formatMins(lumpiaLossMinsVal);
-        const adonanLossMins = formatMins(adonanLossMinsVal);
+        const siomayResepMins = formatMins(siomayResepVal);
+        const pentolResepMins = formatMins(pentolResepVal);
+        const lumpiaResepMins = formatMins(lumpiaResepVal);
+        const adonanResepMins = formatMins(adonanResepVal);
 
-        const siomaySelisihVal = siomayMins - siomayLossMinsVal;
-        const pentolSelisihVal = pentolMins - pentolLossMinsVal;
-        const lumpiaSelisihVal = lumpiaMins - lumpiaLossMinsVal;
-        const adonanSelisihVal = adonanMins - adonanLossMinsVal;
+        // Selisih = Jumlah Waktu (Input Aktif) - Waktu Resep
+        const siomaySelisihVal = siomayMins - siomayResepVal;
+        const pentolSelisihVal = pentolMins - pentolResepVal;
+        const lumpiaSelisihVal = lumpiaMins - lumpiaResepVal;
+        const adonanSelisihVal = adonanMins - adonanResepVal;
 
         const formatSelisih = (val) => {
             const num = Number(val);
@@ -180,8 +185,8 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
         const adonanSelisih = formatSelisih(adonanSelisihVal);
 
         const totalDimsumMins = siomayMins + pentolMins + lumpiaMins + adonanMins;
-        const totalLossMinsVal = siomayLossMinsVal + pentolLossMinsVal + lumpiaLossMinsVal + adonanLossMinsVal;
-        const totalLossMins = formatMins(totalLossMinsVal);
+        const totalResepVal = siomayResepVal + pentolResepVal + lumpiaResepVal + adonanResepVal;
+        const totalResepMins = formatMins(totalResepVal);
         const totalSelisihVal = siomaySelisihVal + pentolSelisihVal + lumpiaSelisihVal + adonanSelisihVal;
         const totalSelisih = formatSelisih(totalSelisihVal);
 
@@ -238,32 +243,32 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                 <Row>
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
-                            <span className="text-[10px] uppercase font-extrabold tracking-tight">LOSS TIME</span>
-                            <span className="text-xs font-black mt-0.5">{totalLossMins} menit</span>
+                            <span className="text-[10px] uppercase font-extrabold tracking-tight">WAKTU RESEP</span>
+                            <span className="text-xs font-black mt-0.5">{totalResepMins} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
-                            <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">(JUMLAH RAK X 290 DETIK)/60DETIK</span>
-                            <span className="text-xs font-black mt-0.5">{siomayLossMins} menit</span>
+                            <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">(LOYANG X 13.2)/60</span>
+                            <span className="text-xs font-black mt-0.5">{siomayResepMins} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
-                            <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">(JUMLAH RAK X 290 DETIK)/60DETIK</span>
-                            <span className="text-xs font-black mt-0.5">{pentolLossMins} menit</span>
+                            <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">(LOYANG X 13.2)/60</span>
+                            <span className="text-xs font-black mt-0.5">{pentolResepMins} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ffe4e6', color: '#be123c', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
-                            <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">JUMLAH BATCH X 12 MENIT</span>
-                            <span className="text-xs font-black mt-0.5">{lumpiaLossMins} menit</span>
+                            <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">(SOLID X 71)/60</span>
+                            <span className="text-xs font-black mt-0.5">{lumpiaResepMins} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ecfeff', color: '#0891b2', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
-                            <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">(JUMLAH SOLID X 71 DETIK)/60DETIK</span>
-                            <span className="text-xs font-black mt-0.5">{adonanLossMins} menit</span>
+                            <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">KERANJANG X 1.5</span>
+                            <span className="text-xs font-black mt-0.5">{adonanResepMins} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#fdf4ff', color: '#a21caf', fontWeight: '900', textAlign: 'center' }} />
                 </Row>
