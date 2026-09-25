@@ -108,24 +108,64 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
 
         const totalDimsumAndDowntime = siomayMins + pentolMins + lumpiaMins + adonanMins + downtime_minutes;
 
-        // Loss Time calculations according to user rules:
-        // - SIOMAY & PENTOL: JUMLAH RAK = Nomor Rak Terakhir (Highest/Last Rak number)
-        // - LUMPIA: JUMLAH BATCH = Nomor Batch Terakhir (Highest/Last Batch number)
-        // - ADONAN PANGSIT: JUMLAH SOLID = Total Akumulasi Jumlah Solid
-        const siomayRakTerakhir = siomayRows.reduce((max, r) => Math.max(max, Number(r.rak) || Number(r.tray_count) || 0), 0);
-        const pentolRakTerakhir = pentolRows.reduce((max, r) => Math.max(max, Number(r.rak) || Number(r.tray_count) || 0), 0);
-        const lumpiaBatchTerakhir = lumpiaRows.reduce((max, r) => Math.max(max, Number(r.batch_number) || Number(r.tray_count) || 0), 0);
+        // Helper function to get the last valid Rak number (or max rak) without falling back to tray_count
+        const getRakTerakhir = (rows) => {
+            if (!rows || rows.length === 0) return 0;
+            for (let i = rows.length - 1; i >= 0; i--) {
+                const val = Number(rows[i].rak);
+                if (val && !isNaN(val) && val > 0) return val;
+            }
+            const validRaks = rows.map(r => Number(r.rak)).filter(v => v && !isNaN(v) && v > 0);
+            return validRaks.length > 0 ? Math.max(...validRaks) : rows.length;
+        };
+
+        // Helper function to get the last valid Batch number
+        const getBatchTerakhir = (rows) => {
+            if (!rows || rows.length === 0) return 0;
+            for (let i = rows.length - 1; i >= 0; i--) {
+                const val = Number(rows[i].batch_number);
+                if (val && !isNaN(val) && val > 0) return val;
+            }
+            const validBatches = rows.map(r => Number(r.batch_number)).filter(v => v && !isNaN(v) && v > 0);
+            return validBatches.length > 0 ? Math.max(...validBatches) : rows.length;
+        };
+
+        const siomayRakTerakhir = getRakTerakhir(siomayRows);
+        const pentolRakTerakhir = getRakTerakhir(pentolRows);
+        const lumpiaBatchTerakhir = getBatchTerakhir(lumpiaRows);
         const adonanTotalSolid = adonanRows.reduce((sum, r) => sum + (Number(r.tray_count) || 0), 0);
 
-        const siomayLossMins = Math.round((siomayRakTerakhir * 290) / 60);
-        const pentolLossMins = Math.round((pentolRakTerakhir * 290) / 60);
-        const lumpiaLossMins = lumpiaBatchTerakhir * 12;
-        const adonanLossMins = adonanTotalSolid * 71;
+        // Format to 1 decimal place if not a whole integer (e.g., 67.6 for 14 raks)
+        const formatMins = (val) => {
+            const num = Number(val);
+            if (isNaN(num)) return '0';
+            return Number.isInteger(num) ? num.toString() : num.toFixed(1);
+        };
 
-        const siomaySelisih = siomayMins - siomayLossMins;
-        const pentolSelisih = pentolMins - pentolLossMins;
-        const lumpiaSelisih = lumpiaMins - lumpiaLossMins;
-        const adonanSelisih = adonanMins - adonanLossMins;
+        const siomayLossMinsVal = (siomayRakTerakhir * 290) / 60;
+        const pentolLossMinsVal = (pentolRakTerakhir * 290) / 60;
+        const lumpiaLossMinsVal = lumpiaBatchTerakhir * 12;
+        const adonanLossMinsVal = adonanTotalSolid * 71;
+
+        const siomayLossMins = formatMins(siomayLossMinsVal);
+        const pentolLossMins = formatMins(pentolLossMinsVal);
+        const lumpiaLossMins = formatMins(lumpiaLossMinsVal);
+        const adonanLossMins = formatMins(adonanLossMinsVal);
+
+        const siomaySelisihVal = siomayMins - siomayLossMinsVal;
+        const pentolSelisihVal = pentolMins - pentolLossMinsVal;
+        const lumpiaSelisihVal = lumpiaMins - lumpiaLossMinsVal;
+        const adonanSelisihVal = adonanMins - adonanLossMinsVal;
+
+        const formatSelisih = (val) => {
+            const str = formatMins(val);
+            return val > 0 ? `+${str}` : str;
+        };
+
+        const siomaySelisih = formatSelisih(siomaySelisihVal);
+        const pentolSelisih = formatSelisih(pentolSelisihVal);
+        const lumpiaSelisih = formatSelisih(lumpiaSelisihVal);
+        const adonanSelisih = formatSelisih(adonanSelisihVal);
 
         // Define PrimeReact ColumnGroup Header
         const headerGroup = (
