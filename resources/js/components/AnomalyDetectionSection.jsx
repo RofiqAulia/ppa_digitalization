@@ -112,20 +112,29 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
         const getRakTerakhir = (rows) => {
             if (!rows || rows.length === 0) return 0;
             for (let i = rows.length - 1; i >= 0; i--) {
-                const val = parseInt(rows[i].rak, 10);
-                if (!isNaN(val) && val > 0) return val;
+                const raw = rows[i].rak;
+                if (raw !== null && raw !== undefined) {
+                    const str = String(raw).replace(/\D/g, '');
+                    const val = parseInt(str, 10);
+                    if (!isNaN(val) && val > 0) return val;
+                }
             }
-            return rows.length;
+            return 0;
         };
 
-        // Helper function to get the last valid Batch number (Nomor Batch Terakhir from d.batch_number)
+        // Helper function to get the last valid Batch number (Nomor Batch Terakhir from d.batch_number or head_batch)
         const getBatchTerakhir = (rows) => {
             if (!rows || rows.length === 0) return 0;
             for (let i = rows.length - 1; i >= 0; i--) {
-                const val = parseInt(rows[i].batch_number, 10);
-                if (!isNaN(val) && val > 0) return val;
+                const raw = rows[i].batch_number || rows[i].head_batch;
+                if (raw !== null && raw !== undefined) {
+                    const str = String(raw).replace(/\D/g, '');
+                    const val = parseInt(str, 10);
+                    if (!isNaN(val) && val > 0) return val;
+                }
             }
-            return rows.length;
+            const uniqueBatches = new Set(rows.map(r => r.batch_number || r.head_batch).filter(Boolean));
+            return uniqueBatches.size > 0 ? uniqueBatches.size : (rows.length > 0 ? 1 : 0);
         };
 
         const siomayRakTerakhir = getRakTerakhir(siomayRows);
@@ -143,7 +152,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
         const siomayLossMinsVal = (siomayRakTerakhir * 290) / 60;
         const pentolLossMinsVal = (pentolRakTerakhir * 290) / 60;
         const lumpiaLossMinsVal = lumpiaBatchTerakhir * 12;
-        const adonanLossMinsVal = adonanTotalSolid * 71;
+        const adonanLossMinsVal = (adonanTotalSolid * 71) / 60;
 
         const siomayLossMins = formatMins(siomayLossMinsVal);
         const pentolLossMins = formatMins(pentolLossMinsVal);
@@ -234,7 +243,7 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                     } headerStyle={{ backgroundColor: '#ecfeff', color: '#0891b2', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
-                            <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">JUMLAH SOLID X 71MENIT</span>
+                            <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">(JUMLAH SOLID X 71 DETIK)/60DETIK</span>
                             <span className="text-xs font-black mt-0.5">{adonanLossMins} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#fdf4ff', color: '#a21caf', fontWeight: '900', textAlign: 'center' }} />
