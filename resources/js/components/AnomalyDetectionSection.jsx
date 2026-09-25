@@ -108,31 +108,34 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
 
         const totalDimsumAndDowntime = siomayMins + pentolMins + lumpiaMins + adonanMins + downtime_minutes;
 
-        // Helper function to get the last valid Rak number (Nomor Rak Terakhir from d.rak)
+        // Helper function to get the last/highest valid Rak number (Nomor Rak Terakhir from d.rak)
         const getRakTerakhir = (rows) => {
             if (!rows || rows.length === 0) return 0;
-            for (let i = rows.length - 1; i >= 0; i--) {
+            let maxVal = 0;
+            for (let i = 0; i < rows.length; i++) {
                 const raw = rows[i].rak;
                 if (raw !== null && raw !== undefined) {
                     const str = String(raw).replace(/\D/g, '');
                     const val = parseInt(str, 10);
-                    if (!isNaN(val) && val > 0) return val;
+                    if (!isNaN(val) && val > maxVal) maxVal = val;
                 }
             }
-            return 0;
+            return maxVal;
         };
 
-        // Helper function to get the last valid Batch number (Nomor Batch Terakhir from d.batch_number or head_batch)
+        // Helper function to get the last/highest valid Batch number (Nomor Batch Terakhir from d.batch_number or head_batch)
         const getBatchTerakhir = (rows) => {
             if (!rows || rows.length === 0) return 0;
-            for (let i = rows.length - 1; i >= 0; i--) {
+            let maxVal = 0;
+            for (let i = 0; i < rows.length; i++) {
                 const raw = rows[i].batch_number || rows[i].head_batch;
                 if (raw !== null && raw !== undefined) {
                     const str = String(raw).replace(/\D/g, '');
                     const val = parseInt(str, 10);
-                    if (!isNaN(val) && val > 0) return val;
+                    if (!isNaN(val) && val > maxVal) maxVal = val;
                 }
             }
+            if (maxVal > 0) return maxVal;
             const uniqueBatches = new Set(rows.map(r => r.batch_number || r.head_batch).filter(Boolean));
             return uniqueBatches.size > 0 ? uniqueBatches.size : (rows.length > 0 ? 1 : 0);
         };
@@ -253,25 +256,25 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
-                            <span className="text-xs font-black mt-0.5">{siomaySelisih > 0 ? `+${siomaySelisih}` : siomaySelisih} menit</span>
+                            <span className="text-xs font-black mt-0.5">{siomaySelisih} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
-                            <span className="text-xs font-black mt-0.5">{pentolSelisih > 0 ? `+${pentolSelisih}` : pentolSelisih} menit</span>
+                            <span className="text-xs font-black mt-0.5">{pentolSelisih} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ffe4e6', color: '#be123c', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
-                            <span className="text-xs font-black mt-0.5">{lumpiaSelisih > 0 ? `+${lumpiaSelisih}` : lumpiaSelisih} menit</span>
+                            <span className="text-xs font-black mt-0.5">{lumpiaSelisih} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ecfeff', color: '#0891b2', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
-                            <span className="text-xs font-black mt-0.5">{adonanSelisih > 0 ? `+${adonanSelisih}` : adonanSelisih} menit</span>
+                            <span className="text-xs font-black mt-0.5">{adonanSelisih} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#fdf4ff', color: '#a21caf', fontWeight: '900', textAlign: 'center' }} />
                 </Row>
