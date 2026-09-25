@@ -300,7 +300,7 @@ class IqfLogsheetController extends Controller
             // Fetch details for this machine and date/time filter
             $machineShiftDetails = DB::table('iqf_logsheets as h')
                 ->join('iqf_logsheet_details as d', 'd.iqf_logsheet_id', '=', 'h.id')
-                ->select('h.product_type', 'h.machine', 'd.time', 'd.tray_count', 'd.rak', 'd.created_at')
+                ->select('h.product_type', 'h.machine', 'h.batch_number as head_batch', 'd.time', 'd.tray_count', 'd.rak', 'd.batch_number', 'd.created_at')
                 ->where('h.date', $queryDate)
                 ->where('h.machine', $m)
                 ->where('d.time', '>=', $fromTime . ':00')
@@ -423,6 +423,8 @@ class IqfLogsheetController extends Controller
                     'time'         => substr($d->time, 0, 5),
                     'machine'      => $d->machine,
                     'tray_count'   => $d->tray_count,
+                    'rak'          => $d->rak,
+                    'batch_number' => $d->batch_number ?: ($d->head_batch ?? null),
                 ];
             }
 

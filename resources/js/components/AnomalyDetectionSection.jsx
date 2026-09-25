@@ -108,18 +108,18 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
 
         const totalDimsumAndDowntime = siomayMins + pentolMins + lumpiaMins + adonanMins + downtime_minutes;
 
-        // Calculate total rak/batch/solid and standard loss time per formula from matrix table diagram:
-        // SIOMAY & PENTOL: (JUMLAH RAK X 290 DETIK) / 60 DETIK
-        // LUMPIA: JUMLAH BATCH X 12 MENIT
-        // ADONAN: JUMLAH SOLID X 71 MENIT
-        const siomayTotalRak = siomayRows.reduce((sum, r) => sum + (Number(r.tray_count) || 0), 0);
-        const pentolTotalRak = pentolRows.reduce((sum, r) => sum + (Number(r.tray_count) || 0), 0);
-        const lumpiaTotalBatch = lumpiaRows.reduce((sum, r) => sum + (Number(r.tray_count) || 0), 0);
+        // Loss Time calculations according to user rules:
+        // - SIOMAY & PENTOL: JUMLAH RAK = Nomor Rak Terakhir (Highest/Last Rak number)
+        // - LUMPIA: JUMLAH BATCH = Nomor Batch Terakhir (Highest/Last Batch number)
+        // - ADONAN PANGSIT: JUMLAH SOLID = Total Akumulasi Jumlah Solid
+        const siomayRakTerakhir = siomayRows.reduce((max, r) => Math.max(max, Number(r.rak) || Number(r.tray_count) || 0), 0);
+        const pentolRakTerakhir = pentolRows.reduce((max, r) => Math.max(max, Number(r.rak) || Number(r.tray_count) || 0), 0);
+        const lumpiaBatchTerakhir = lumpiaRows.reduce((max, r) => Math.max(max, Number(r.batch_number) || Number(r.tray_count) || 0), 0);
         const adonanTotalSolid = adonanRows.reduce((sum, r) => sum + (Number(r.tray_count) || 0), 0);
 
-        const siomayLossMins = Math.round((siomayTotalRak * 290) / 60);
-        const pentolLossMins = Math.round((pentolTotalRak * 290) / 60);
-        const lumpiaLossMins = lumpiaTotalBatch * 12;
+        const siomayLossMins = Math.round((siomayRakTerakhir * 290) / 60);
+        const pentolLossMins = Math.round((pentolRakTerakhir * 290) / 60);
+        const lumpiaLossMins = lumpiaBatchTerakhir * 12;
         const adonanLossMins = adonanTotalSolid * 71;
 
         const siomaySelisih = siomayMins - siomayLossMins;

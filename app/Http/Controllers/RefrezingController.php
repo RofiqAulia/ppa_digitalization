@@ -337,7 +337,7 @@ class RefrezingController extends Controller
         // Fetch all details for this date and time filter across all logsheets
         $shiftDetails = \Illuminate\Support\Facades\DB::table('refrezing_logsheets as h')
             ->join('refrezing_logsheet_details as d', 'd.refrezing_logsheet_id', '=', 'h.id')
-            ->select('h.product_type', 'h.machine', 'd.time', 'd.tray_count', 'd.rak', 'd.created_at')
+            ->select('h.product_type', 'h.machine', 'h.batch_number as head_batch', 'd.time', 'd.tray_count', 'd.rak', 'd.batch_number', 'd.created_at')
             ->where('h.date', $queryDate)
             ->where('d.time', '>=', $fromTime . ':00')
             ->where('d.time', '<=', $toTimeSql)
@@ -459,6 +459,8 @@ class RefrezingController extends Controller
                 'time'         => substr($d->time, 0, 5),
                 'machine'      => $d->machine,
                 'tray_count'   => $d->tray_count,
+                'rak'          => $d->rak,
+                'batch_number' => $d->batch_number ?: ($d->head_batch ?? null),
             ];
         }
 
