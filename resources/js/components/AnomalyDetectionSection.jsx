@@ -108,11 +108,30 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
 
         const totalDimsumAndDowntime = siomayMins + pentolMins + lumpiaMins + adonanMins + downtime_minutes;
 
+        // Calculate total rak/batch/solid and standard loss time per formula from matrix table diagram:
+        // SIOMAY & PENTOL: (JUMLAH RAK X 290 DETIK) / 60 DETIK
+        // LUMPIA: JUMLAH BATCH X 12 MENIT
+        // ADONAN: JUMLAH SOLID X 71 MENIT
+        const siomayTotalRak = siomayRows.reduce((sum, r) => sum + (Number(r.tray_count) || 0), 0);
+        const pentolTotalRak = pentolRows.reduce((sum, r) => sum + (Number(r.tray_count) || 0), 0);
+        const lumpiaTotalBatch = lumpiaRows.reduce((sum, r) => sum + (Number(r.tray_count) || 0), 0);
+        const adonanTotalSolid = adonanRows.reduce((sum, r) => sum + (Number(r.tray_count) || 0), 0);
+
+        const siomayLossMins = Math.round((siomayTotalRak * 290) / 60);
+        const pentolLossMins = Math.round((pentolTotalRak * 290) / 60);
+        const lumpiaLossMins = lumpiaTotalBatch * 12;
+        const adonanLossMins = adonanTotalSolid * 71;
+
+        const siomaySelisih = siomayMins - siomayLossMins;
+        const pentolSelisih = pentolMins - pentolLossMins;
+        const lumpiaSelisih = lumpiaMins - lumpiaLossMins;
+        const adonanSelisih = adonanMins - adonanLossMins;
+
         // Define PrimeReact ColumnGroup Header
         const headerGroup = (
             <ColumnGroup>
                 <Row>
-                    <Column header="#" sortable field="index" headerStyle={{ backgroundColor: '#1e293b', color: '#ffffff', fontWeight: 'bold', width: '3.5rem', textAlign: 'center', borderRight: '1px solid #334155' }} />
+                    <Column header="NO" sortable field="index" headerStyle={{ backgroundColor: '#475569', color: '#ffffff', fontWeight: 'bold', width: '3.5rem', textAlign: 'center', borderRight: '1px solid #334155' }} />
                     <Column header="SIOMAY" sortable field="siomay" headerStyle={{ backgroundColor: '#0284c7', color: '#ffffff', fontWeight: '900', textAlign: 'center', letterSpacing: '0.05em' }} />
                     <Column header="PENTOL" sortable field="pentol" headerStyle={{ backgroundColor: '#e11d48', color: '#ffffff', fontWeight: '900', textAlign: 'center', letterSpacing: '0.05em' }} />
                     <Column header="LUMPIA" sortable field="lumpia" headerStyle={{ backgroundColor: '#0d9488', color: '#ffffff', fontWeight: '900', textAlign: 'center', letterSpacing: '0.05em' }} />
@@ -120,12 +139,92 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                     <Column header="UNPLANNED STOP" sortable field="downtime" headerStyle={{ backgroundColor: '#b71c1c', color: '#ffffff', fontWeight: '900', textAlign: 'center', letterSpacing: '0.05em' }} />
                 </Row>
                 <Row>
-                    <Column header={`${totalDimsumAndDowntime} menit`} headerStyle={{ backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '900', textAlign: 'center' }} />
-                    <Column header={`${siomayMins} menit`} headerStyle={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: '900', textAlign: 'center' }} />
-                    <Column header={`${pentolMins} menit`} headerStyle={{ backgroundColor: '#ffe4e6', color: '#be123c', fontWeight: '900', textAlign: 'center' }} />
-                    <Column header={`${lumpiaMins} menit`} headerStyle={{ backgroundColor: '#ecfeff', color: '#0891b2', fontWeight: '900', textAlign: 'center' }} />
-                    <Column header={`${adonanMins} menit`} headerStyle={{ backgroundColor: '#fdf4ff', color: '#a21caf', fontWeight: '900', textAlign: 'center' }} />
-                    <Column header={`${downtime_minutes} menit (${sortedDowntime.length} kendala)`} headerStyle={{ backgroundColor: '#fef2f2', color: '#b71c1c', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header="TOTAL MENIT" headerStyle={{ backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+                            <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JLH MENIT</span>
+                            <span className="text-xs font-black mt-0.5">{siomayMins} menit</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+                            <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JLH MENIT</span>
+                            <span className="text-xs font-black mt-0.5">{pentolMins} menit</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#ffe4e6', color: '#be123c', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+                            <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JLH MENIT</span>
+                            <span className="text-xs font-black mt-0.5">{lumpiaMins} menit</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#ecfeff', color: '#0891b2', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+                            <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JLH MENIT</span>
+                            <span className="text-xs font-black mt-0.5">{adonanMins} menit</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#fdf4ff', color: '#a21caf', fontWeight: '900', textAlign: 'center' }} />
+                    <Column rowSpan={3} header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-1">
+                            <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JLH MENIT</span>
+                            <span className="text-xs font-black mt-1">{downtime_minutes} menit</span>
+                            <span className="text-[10px] font-semibold mt-0.5">({sortedDowntime.length} kendala)</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#fef9c3', color: '#854d0e', fontWeight: '900', textAlign: 'center' }} />
+                </Row>
+                <Row>
+                    <Column header="LOSS TIME" headerStyle={{ backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+                            <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">(JUMLAH RAK X 290 DETIK)/60DETIK</span>
+                            <span className="text-xs font-black mt-0.5">{siomayLossMins} menit</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+                            <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">(JUMLAH RAK X 290 DETIK)/60DETIK</span>
+                            <span className="text-xs font-black mt-0.5">{pentolLossMins} menit</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#ffe4e6', color: '#be123c', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+                            <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">JUMLAH BATCH X 12 MENIT</span>
+                            <span className="text-xs font-black mt-0.5">{lumpiaLossMins} menit</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#ecfeff', color: '#0891b2', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+                            <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">JUMLAH SOLID X 71MENIT</span>
+                            <span className="text-xs font-black mt-0.5">{adonanLossMins} menit</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#fdf4ff', color: '#a21caf', fontWeight: '900', textAlign: 'center' }} />
+                </Row>
+                <Row>
+                    <Column header="TOTAL SELISIH" headerStyle={{ backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+                            <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
+                            <span className="text-xs font-black mt-0.5">{siomaySelisih > 0 ? `+${siomaySelisih}` : siomaySelisih} menit</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+                            <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
+                            <span className="text-xs font-black mt-0.5">{pentolSelisih > 0 ? `+${pentolSelisih}` : pentolSelisih} menit</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#ffe4e6', color: '#be123c', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+                            <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
+                            <span className="text-xs font-black mt-0.5">{lumpiaSelisih > 0 ? `+${lumpiaSelisih}` : lumpiaSelisih} menit</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#ecfeff', color: '#0891b2', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+                            <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
+                            <span className="text-xs font-black mt-0.5">{adonanSelisih > 0 ? `+${adonanSelisih}` : adonanSelisih} menit</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#fdf4ff', color: '#a21caf', fontWeight: '900', textAlign: 'center' }} />
                 </Row>
             </ColumnGroup>
         );
