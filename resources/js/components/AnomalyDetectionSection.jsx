@@ -195,31 +195,31 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JLH MENIT</span>
-                            <span className="text-xs font-black mt-0.5">{siomayMins} menit</span>
+                            <span className="text-xs font-black mt-0.5">{siomayMins}</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JLH MENIT</span>
-                            <span className="text-xs font-black mt-0.5">{pentolMins} menit</span>
+                            <span className="text-xs font-black mt-0.5">{pentolMins}</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ffe4e6', color: '#be123c', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JLH MENIT</span>
-                            <span className="text-xs font-black mt-0.5">{lumpiaMins} menit</span>
+                            <span className="text-xs font-black mt-0.5">{lumpiaMins}</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ecfeff', color: '#0891b2', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JLH MENIT</span>
-                            <span className="text-xs font-black mt-0.5">{adonanMins} menit</span>
+                            <span className="text-xs font-black mt-0.5">{adonanMins}</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#fdf4ff', color: '#a21caf', fontWeight: '900', textAlign: 'center' }} />
                     <Column rowSpan={3} header={
                         <div className="flex flex-col items-center justify-center leading-tight py-1">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JLH MENIT</span>
-                            <span className="text-xs font-black mt-1">{downtime_minutes} menit</span>
+                            <span className="text-xs font-black mt-1">{downtime_minutes}</span>
                             <span className="text-[10px] font-semibold mt-0.5">({sortedDowntime.length} kendala)</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#fef9c3', color: '#854d0e', fontWeight: '900', textAlign: 'center' }} />
@@ -229,25 +229,25 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">(JUMLAH RAK X 290 DETIK)/60DETIK</span>
-                            <span className="text-xs font-black mt-0.5">{siomayLossMins} menit</span>
+                            <span className="text-xs font-black mt-0.5">{siomayLossMins}</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">(JUMLAH RAK X 290 DETIK)/60DETIK</span>
-                            <span className="text-xs font-black mt-0.5">{pentolLossMins} menit</span>
+                            <span className="text-xs font-black mt-0.5">{pentolLossMins}</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ffe4e6', color: '#be123c', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">JUMLAH BATCH X 12 MENIT</span>
-                            <span className="text-xs font-black mt-0.5">{lumpiaLossMins} menit</span>
+                            <span className="text-xs font-black mt-0.5">{lumpiaLossMins}</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ecfeff', color: '#0891b2', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">(JUMLAH SOLID X 71 DETIK)/60DETIK</span>
-                            <span className="text-xs font-black mt-0.5">{adonanLossMins} menit</span>
+                            <span className="text-xs font-black mt-0.5">{adonanLossMins}</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#fdf4ff', color: '#a21caf', fontWeight: '900', textAlign: 'center' }} />
                 </Row>
@@ -256,25 +256,25 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
-                            <span className="text-xs font-black mt-0.5">{siomaySelisih} menit</span>
+                            <span className="text-xs font-black mt-0.5">{siomaySelisih}</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
-                            <span className="text-xs font-black mt-0.5">{pentolSelisih} menit</span>
+                            <span className="text-xs font-black mt-0.5">{pentolSelisih}</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ffe4e6', color: '#be123c', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
-                            <span className="text-xs font-black mt-0.5">{lumpiaSelisih} menit</span>
+                            <span className="text-xs font-black mt-0.5">{lumpiaSelisih}</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ecfeff', color: '#0891b2', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
-                            <span className="text-xs font-black mt-0.5">{adonanSelisih} menit</span>
+                            <span className="text-xs font-black mt-0.5">{adonanSelisih}</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#fdf4ff', color: '#a21caf', fontWeight: '900', textAlign: 'center' }} />
                 </Row>
