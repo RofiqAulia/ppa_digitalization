@@ -108,26 +108,26 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
 
         const totalDimsumAndDowntime = siomayMins + pentolMins + lumpiaMins + adonanMins + downtime_minutes;
 
-        // Helper function to get the last valid Rak number (or max rak) without falling back to tray_count
+        // Helper function to get the last valid Rak number (Nomor Rak Terakhir)
         const getRakTerakhir = (rows) => {
             if (!rows || rows.length === 0) return 0;
+            // Iterate from the last entry backwards to find the last recorded rak number
             for (let i = rows.length - 1; i >= 0; i--) {
-                const val = Number(rows[i].rak);
-                if (val && !isNaN(val) && val > 0) return val;
+                const val = parseInt(rows[i].rak, 10);
+                if (!isNaN(val) && val > 0) return val;
             }
-            const validRaks = rows.map(r => Number(r.rak)).filter(v => v && !isNaN(v) && v > 0);
-            return validRaks.length > 0 ? Math.max(...validRaks) : rows.length;
+            // Fallback if rak is not recorded on detail rows: return rows.length
+            return rows.length;
         };
 
-        // Helper function to get the last valid Batch number
+        // Helper function to get the last valid Batch number (Nomor Batch Terakhir)
         const getBatchTerakhir = (rows) => {
             if (!rows || rows.length === 0) return 0;
             for (let i = rows.length - 1; i >= 0; i--) {
-                const val = Number(rows[i].batch_number);
-                if (val && !isNaN(val) && val > 0) return val;
+                const val = parseInt(rows[i].batch_number, 10);
+                if (!isNaN(val) && val > 0) return val;
             }
-            const validBatches = rows.map(r => Number(r.batch_number)).filter(v => v && !isNaN(v) && v > 0);
-            return validBatches.length > 0 ? Math.max(...validBatches) : rows.length;
+            return rows.length;
         };
 
         const siomayRakTerakhir = getRakTerakhir(siomayRows);
@@ -135,17 +135,17 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
         const lumpiaBatchTerakhir = getBatchTerakhir(lumpiaRows);
         const adonanTotalSolid = adonanRows.reduce((sum, r) => sum + (Number(r.tray_count) || 0), 0);
 
-        // Format to 1 decimal place if not a whole integer (e.g., 67.6 for 14 raks)
+        // Format minutes as clean rounded whole integer numbers
         const formatMins = (val) => {
             const num = Number(val);
             if (isNaN(num)) return '0';
-            return Number.isInteger(num) ? num.toString() : num.toFixed(1);
+            return Math.round(num).toString();
         };
 
-        const siomayLossMinsVal = (siomayRakTerakhir * 290) / 60;
-        const pentolLossMinsVal = (pentolRakTerakhir * 290) / 60;
-        const lumpiaLossMinsVal = lumpiaBatchTerakhir * 12;
-        const adonanLossMinsVal = adonanTotalSolid * 71;
+        const siomayLossMinsVal = Math.round((siomayRakTerakhir * 290) / 60);
+        const pentolLossMinsVal = Math.round((pentolRakTerakhir * 290) / 60);
+        const lumpiaLossMinsVal = Math.round(lumpiaBatchTerakhir * 12);
+        const adonanLossMinsVal = Math.round(adonanTotalSolid * 71);
 
         const siomayLossMins = formatMins(siomayLossMinsVal);
         const pentolLossMins = formatMins(pentolLossMinsVal);
@@ -158,8 +158,8 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
         const adonanSelisihVal = adonanMins - adonanLossMinsVal;
 
         const formatSelisih = (val) => {
-            const str = formatMins(val);
-            return val > 0 ? `+${str}` : str;
+            const num = Math.round(Number(val) || 0);
+            return num > 0 ? `+${num}` : num.toString();
         };
 
         const siomaySelisih = formatSelisih(siomaySelisihVal);
