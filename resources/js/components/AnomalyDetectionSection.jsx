@@ -179,6 +179,12 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
         const lumpiaSelisih = formatSelisih(lumpiaSelisihVal);
         const adonanSelisih = formatSelisih(adonanSelisihVal);
 
+        const totalDimsumMins = siomayMins + pentolMins + lumpiaMins + adonanMins;
+        const totalLossMinsVal = siomayLossMinsVal + pentolLossMinsVal + lumpiaLossMinsVal + adonanLossMinsVal;
+        const totalLossMins = formatMins(totalLossMinsVal);
+        const totalSelisihVal = siomaySelisihVal + pentolSelisihVal + lumpiaSelisihVal + adonanSelisihVal;
+        const totalSelisih = formatSelisih(totalSelisihVal);
+
         // Define PrimeReact ColumnGroup Header
         const headerGroup = (
             <ColumnGroup>
@@ -191,90 +197,105 @@ export default function AnomalyDetectionSection({ anomalyData, title = "Deteksi 
                     <Column header="UNPLANNED STOP" sortable field="downtime" headerStyle={{ backgroundColor: '#b71c1c', color: '#ffffff', fontWeight: '900', textAlign: 'center', letterSpacing: '0.05em' }} />
                 </Row>
                 <Row>
-                    <Column header="TOTAL MENIT" headerStyle={{ backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+                            <span className="text-[10px] uppercase font-extrabold tracking-tight">TOTAL MENIT</span>
+                            <span className="text-xs font-black mt-0.5">{totalDimsumMins} menit</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JLH MENIT</span>
-                            <span className="text-xs font-black mt-0.5">{siomayMins}</span>
+                            <span className="text-xs font-black mt-0.5">{siomayMins} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JLH MENIT</span>
-                            <span className="text-xs font-black mt-0.5">{pentolMins}</span>
+                            <span className="text-xs font-black mt-0.5">{pentolMins} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ffe4e6', color: '#be123c', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JLH MENIT</span>
-                            <span className="text-xs font-black mt-0.5">{lumpiaMins}</span>
+                            <span className="text-xs font-black mt-0.5">{lumpiaMins} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ecfeff', color: '#0891b2', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JLH MENIT</span>
-                            <span className="text-xs font-black mt-0.5">{adonanMins}</span>
+                            <span className="text-xs font-black mt-0.5">{adonanMins} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#fdf4ff', color: '#a21caf', fontWeight: '900', textAlign: 'center' }} />
                     <Column rowSpan={3} header={
                         <div className="flex flex-col items-center justify-center leading-tight py-1">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JLH MENIT</span>
-                            <span className="text-xs font-black mt-1">{downtime_minutes}</span>
+                            <span className="text-xs font-black mt-1">{downtime_minutes} menit</span>
                             <span className="text-[10px] font-semibold mt-0.5">({sortedDowntime.length} kendala)</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#fef9c3', color: '#854d0e', fontWeight: '900', textAlign: 'center' }} />
                 </Row>
                 <Row>
-                    <Column header="LOSS TIME" headerStyle={{ backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+                            <span className="text-[10px] uppercase font-extrabold tracking-tight">LOSS TIME</span>
+                            <span className="text-xs font-black mt-0.5">{totalLossMins} menit</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">(JUMLAH RAK X 290 DETIK)/60DETIK</span>
-                            <span className="text-xs font-black mt-0.5">{siomayLossMins}</span>
+                            <span className="text-xs font-black mt-0.5">{siomayLossMins} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">(JUMLAH RAK X 290 DETIK)/60DETIK</span>
-                            <span className="text-xs font-black mt-0.5">{pentolLossMins}</span>
+                            <span className="text-xs font-black mt-0.5">{pentolLossMins} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ffe4e6', color: '#be123c', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">JUMLAH BATCH X 12 MENIT</span>
-                            <span className="text-xs font-black mt-0.5">{lumpiaLossMins}</span>
+                            <span className="text-xs font-black mt-0.5">{lumpiaLossMins} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ecfeff', color: '#0891b2', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[9px] uppercase font-bold tracking-tight opacity-80">(JUMLAH SOLID X 71 DETIK)/60DETIK</span>
-                            <span className="text-xs font-black mt-0.5">{adonanLossMins}</span>
+                            <span className="text-xs font-black mt-0.5">{adonanLossMins} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#fdf4ff', color: '#a21caf', fontWeight: '900', textAlign: 'center' }} />
                 </Row>
                 <Row>
-                    <Column header="TOTAL SELISIH" headerStyle={{ backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '900', textAlign: 'center' }} />
+                    <Column header={
+                        <div className="flex flex-col items-center justify-center leading-tight py-0.5">
+                            <span className="text-[10px] uppercase font-extrabold tracking-tight">TOTAL SELISIH</span>
+                            <span className="text-xs font-black mt-0.5">{totalSelisih} menit</span>
+                        </div>
+                    } headerStyle={{ backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
-                            <span className="text-xs font-black mt-0.5">{siomaySelisih}</span>
+                            <span className="text-xs font-black mt-0.5">{siomaySelisih} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
-                            <span className="text-xs font-black mt-0.5">{pentolSelisih}</span>
+                            <span className="text-xs font-black mt-0.5">{pentolSelisih} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ffe4e6', color: '#be123c', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
-                            <span className="text-xs font-black mt-0.5">{lumpiaSelisih}</span>
+                            <span className="text-xs font-black mt-0.5">{lumpiaSelisih} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#ecfeff', color: '#0891b2', fontWeight: '900', textAlign: 'center' }} />
                     <Column header={
                         <div className="flex flex-col items-center justify-center leading-tight py-0.5">
                             <span className="text-[10px] uppercase font-bold tracking-tight opacity-80">JUMLAH SELISIH</span>
-                            <span className="text-xs font-black mt-0.5">{adonanSelisih}</span>
+                            <span className="text-xs font-black mt-0.5">{adonanSelisih} menit</span>
                         </div>
                     } headerStyle={{ backgroundColor: '#fdf4ff', color: '#a21caf', fontWeight: '900', textAlign: 'center' }} />
                 </Row>
